@@ -13,13 +13,25 @@ cnv <- read.delim(file.path(oncogrid_path_input, "copy_number_gene"), header = F
 deg <- read.delim(file.path(oncogrid_path_input, "all_cnv_tgen_genes"), header = F)
 
 # histology
-hist <- read.csv('data/1633446748485-manifest.csv') 
-annot_info <- hist %>%
-  dplyr::select(sample_id, Kids.First.Biospecimen.ID) %>%
+cavatica_manifest <- read.csv('data/1633446748485-manifest.csv') 
+annot_info <- cavatica_manifest %>%
+  dplyr::select(case_id, sample_id, Kids.First.Biospecimen.ID, experimental_strategy) %>%
   unique()
 
+hist <- readxl::read_xlsx('data/CPTAC Cohort 2 (100) Clinical Data Manifest 2021-06-14-corr.xlsx', sheet = 3)
+hist <- annot_info %>%
+  inner_join(hist %>%
+               dplyr::select(`Research ID`, `CBTN Specimen Group ID`, `Gender`, `Diagnosis Type`, Diagnosis), 
+                             by = c("case_id" = "Research ID", 
+                                    "sample_id" = "CBTN Specimen Group ID")) %>%
+  unique()
+
+annot_info <- annot_info %>%
+  filter(sample_id %in% hist$sample_id,
+         case_id %in% hist$case_id)
+
 # 1. get degene info PNOC008 patientss vs GTEx Brain
-genes_df <- readRDS(file.path("results/hope_cohort_vs_gtex_brain_degs.rds"))
+genes_df <- readRDS(file.path("results/hope_cohort_vs_gtex_brain_degs_edgeR.rds"))
 deg_genes <- genes_df %>%
   dplyr::mutate(label = ifelse(diff_expr == "up", "OVE", "UNE"),
          Gene_name = gene_symbol,
@@ -104,9 +116,9 @@ annot_info <- hist %>%
   group_by(sample_id) %>%
   dplyr::mutate(Sample = sample_id,
                 Sequencing_Experiment = toString(unique(sort(experimental_strategy))),
-                Tumor_Descriptor = toString(unique(Tumor.Descriptor)),
-                Integrated_Diagnosis = toString(unique(disease_type)),
-                Gender = toString(unique(gender))) %>%
+                Tumor_Descriptor = toString(unique(`Diagnosis Type`)),
+                Integrated_Diagnosis = toString(unique(Diagnosis)),
+                Gender = toString(unique(Gender))) %>%
   dplyr::select(Sample, Sequencing_Experiment, Tumor_Descriptor, Integrated_Diagnosis, Gender) %>%
   unique()
 annot_info$sample_id <- NULL
