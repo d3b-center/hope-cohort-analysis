@@ -62,6 +62,7 @@ annot_info <- annot_info %>%
   remove_rownames() %>%
   column_to_rownames('Sample') %>%
   as.data.frame()
+annot_info <- annot_info[colnames(mat),]
 
 # annotation 1
 ha = HeatmapAnnotation(df = annot_info , col = list(
