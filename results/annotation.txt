@@ -1,72 +1,75 @@
-Sample	Sequencing_Experiment	Tumor_Descriptor	Integrated_Diagnosis	Gender
-7316-2599	RNA-Seq	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-913	RNA-Seq, WGS	Second Malignancy	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-2151	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-204	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-194	WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-3058	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-1723	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-895	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-4293	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2176	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-2140	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-3303	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-3625	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-870	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-3935	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-4942	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-4993	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-1769	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-1889	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2660	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-1763	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-1844	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2069	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-3771	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-409	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-231	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-195	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2092	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-5087	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-85	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2751	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-388	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-3765	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-6310	WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-622	RNA-Seq	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-5267	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2241	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-624	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-4516	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-4337	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-1774	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2274	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-2152	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-466	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2737	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2857	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-161	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-1052	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-1956	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-1099	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-255	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-2594	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-371	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-1746	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-1946	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-5928	WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-2810	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-620	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-288	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-2536	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-2146	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-619	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-4723	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-1455	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-89	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-114	RNA-Seq, WGS	Second Malignancy	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-3769	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female
-7316-1106	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-445	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-287	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
-7316-2777	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male
+Sample	Sequencing_Experiment	Tumor_Descriptor	Integrated_Diagnosis	Gender	Age
+7316-2599	RNA-Seq	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-913	RNA-Seq, WGS	Second Malignancy	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	15-35
+7316-2151	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-204	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-194	WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-3058	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-1723	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-895	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316UP-310	RNA-Seq	Primary	Glioblastoma	Female	15-35
+7316-4293	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-2176	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	15-35
+7316-2140	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-3303	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-3625	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-870	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-3935	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-4942	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-4993	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-1769	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-1889	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-2660	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-1763	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-1844	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-2069	RNA-Seq, WGS	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-3771	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-409	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-231	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	15-35
+7316-195	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316UP-759	WGS	recurrent	Astrocytoma;Oligoastrocytoma	Male	15-35
+7316-2092	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-5087	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-85	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-2751	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-388	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-3765	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-6310	WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-622	RNA-Seq	Recurrence	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-5267	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-2241	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-624	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-4516	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-4337	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	15-35
+7316-1774	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-2274	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-2152	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316UP-1104	RNA-Seq, WGS	Primary	Astrocytoma	Female	15-35
+7316-466	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-2737	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-2857	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-161	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-1052	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-1956	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-1099	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-255	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	15-35
+7316-2594	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-371	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-1746	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-1946	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-5928	WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-2810	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-620	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-288	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-2536	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-2146	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-619	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-4723	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	15-35
+7316-1455	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-89	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-114	RNA-Seq, WGS	Second Malignancy	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	15-35
+7316-3769	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
+7316-1106	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-445	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	15-35
+7316-287	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
+7316-2777	RNA-Seq	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15

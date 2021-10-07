@@ -18,14 +18,17 @@ annot_info <- cavatica_manifest %>%
   dplyr::select(case_id, sample_id, Kids.First.Biospecimen.ID, experimental_strategy) %>%
   unique()
 
-hist <- readxl::read_xlsx('data/CPTAC Cohort 2 (100) Clinical Data Manifest 2021-06-14-corr.xlsx', sheet = 3)
+hist1 <- readxl::read_xlsx('data/CPTAC Cohort 2 (100) Clinical Data Manifest 2021-06-14-corr.xlsx', sheet = 2) # upenn
+hist2 <- readxl::read_xlsx('data/CPTAC Cohort 2 (100) Clinical Data Manifest 2021-06-14-corr.xlsx', sheet = 3) # cbtn
+hist <- rbind(hist1, hist2)
 hist <- annot_info %>%
   inner_join(hist %>%
-               dplyr::select(`Research ID`, `CBTN Specimen Group ID`, `Gender`, `Diagnosis Type`, Diagnosis), 
+               dplyr::select(`Research ID`, `CBTN Specimen Group ID`, `Gender`, `Diagnosis Type`, Diagnosis, `Age at Specimen Diagnosis`), 
                              by = c("case_id" = "Research ID", 
                                     "sample_id" = "CBTN Specimen Group ID")) %>%
   unique()
-
+hist$`Age at Specimen Diagnosis` <- as.numeric(hist$`Age at Specimen Diagnosis`)/365
+hist$`Age at Specimen Diagnosis` <- ifelse(hist$`Age at Specimen Diagnosis` > 0 & hist$`Age at Specimen Diagnosis` <= 15, "0-15", "15-35")
 annot_info <- annot_info %>%
   filter(sample_id %in% hist$sample_id,
          case_id %in% hist$case_id)
@@ -115,11 +118,12 @@ write.table(oncogrid_mat, file = file.path("results", "oncoprint.txt"), quote = 
 annot_info <- hist %>%
   group_by(sample_id) %>%
   dplyr::mutate(Sample = sample_id,
+                Age = toString(unique(sort(`Age at Specimen Diagnosis`))),
                 Sequencing_Experiment = toString(unique(sort(experimental_strategy))),
                 Tumor_Descriptor = toString(unique(`Diagnosis Type`)),
                 Integrated_Diagnosis = toString(unique(Diagnosis)),
                 Gender = toString(unique(Gender))) %>%
-  dplyr::select(Sample, Sequencing_Experiment, Tumor_Descriptor, Integrated_Diagnosis, Gender) %>%
+  dplyr::select(Sample, Sequencing_Experiment, Tumor_Descriptor, Integrated_Diagnosis, Gender, Age) %>%
   unique()
 annot_info$sample_id <- NULL
 write.table(annot_info, file = file.path("results", "annotation.txt"), quote = F, sep = "\t", row.names = F)
