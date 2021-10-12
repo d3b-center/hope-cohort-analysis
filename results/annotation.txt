@@ -27,7 +27,7 @@ Sample	Sequencing_Experiment	Tumor_Descriptor	Integrated_Diagnosis	Gender	Age
 7316-409	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
 7316-231	RNA-Seq	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	15-35
 7316-195	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
-7316UP-759	WGS	recurrent	Astrocytoma;Oligoastrocytoma	Male	15-35
+7316UP-759	WGS	Recurrence	Astrocytoma;Oligoastrocytoma	Male	15-35
 7316-2092	RNA-Seq, WGS	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-15
 7316-5087	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15
 7316-85	RNA-Seq, WGS	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-15

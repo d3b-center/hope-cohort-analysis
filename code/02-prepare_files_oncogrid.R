@@ -8,6 +8,8 @@ suppressPackageStartupMessages({
 # read reference gene lists from OMPARE/PNOC003
 oncogrid_path_input <- '~/Projects/OMPARE/data/oncogrid/input'
 snv <- read.delim(file.path(oncogrid_path_input, "snv-genes"), header = F)
+snv  <- rbind(snv, data.frame(V1 = c("HIST1H3B","ASXL1","PPM1D","ACVR1","GNAQ","BCOR","NF1","KRAS","ARID1A","LMNA")))
+snv <- unique(snv)
 fusion <- read.delim(file.path(oncogrid_path_input, "fusion_genes"), header = F)
 cnv <- read.delim(file.path(oncogrid_path_input, "copy_number_gene"), header = F)
 deg <- read.delim(file.path(oncogrid_path_input, "all_cnv_tgen_genes"), header = F)
@@ -125,5 +127,6 @@ annot_info <- hist %>%
                 Gender = toString(unique(Gender))) %>%
   dplyr::select(Sample, Sequencing_Experiment, Tumor_Descriptor, Integrated_Diagnosis, Gender, Age) %>%
   unique()
+annot_info$Tumor_Descriptor[annot_info$Tumor_Descriptor == "recurrent"] <- "Recurrence"
 annot_info$sample_id <- NULL
 write.table(annot_info, file = file.path("results", "annotation.txt"), quote = F, sep = "\t", row.names = F)

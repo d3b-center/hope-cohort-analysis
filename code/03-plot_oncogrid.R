@@ -75,6 +75,7 @@ ha = HeatmapAnnotation(df = annot_info , col = list(
                        "Recurrence" = "#363062",
                        "Second Malignancy" = "#005082"),
   Integrated_Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="#347474",
+                           "Astrocytoma;Oligoastrocytoma" = "orange",
                            "Astrocytoma" = "darkred", 
                            "Glioblastoma" = "navy"),
   Gender = c("Female" = "deeppink4",
@@ -107,5 +108,46 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
 
 
 pdf(file = 'results/oncoplot.pdf', width = 20, height = 10) 
+draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
+dev.off()
+
+# column order by gender
+gender_ordered <- annot_info %>% 
+  arrange(Gender)
+ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
+               alter_fun = alter_fun, col = col, show_column_names =TRUE, column_names_gp = gpar(fontsize = 9),
+               column_order = match(rownames(gender_ordered), colnames(mat)),
+               column_names_side = "top",
+               top_annotation = ha,
+               right_annotation = NULL,
+               row_names_side = "left",
+               pct_side = "right",
+               row_split = amp,
+               remove_empty_rows = TRUE,
+               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
+               ))
+pdf(file = 'results/oncoplot_orderby_gender.pdf', width = 20, height = 10) 
+draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
+dev.off()
+
+# column order by H3F3A status
+n <- grep("H3F3A", rownames(mat))
+ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
+               alter_fun = alter_fun, col = col, show_column_names =TRUE, column_names_gp = gpar(fontsize = 9),
+               column_order = order(mat[n,], decreasing = T),
+               column_names_side = "top",
+               top_annotation = ha,
+               right_annotation = NULL,
+               row_names_side = "left",
+               pct_side = "right",
+               row_split = amp,
+               remove_empty_rows = TRUE,
+               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
+               ))
+pdf(file = 'results/oncoplot_orderby_H3F3A.pdf', width = 20, height = 10) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
