@@ -151,3 +151,51 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
 pdf(file = 'results/oncoplot_orderby_H3F3A.pdf', width = 20, height = 10) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
+
+
+# column order by gender + H3F3A
+tmp <- reshape2::melt(mat) %>%
+  filter(Var1 == "H3F3A")
+tmp <- annot_info %>% 
+  rownames_to_column("sample_id") %>%
+  inner_join(tmp, by = c("sample_id" = "Var2")) %>%
+  arrange(Gender, desc(value)) %>%
+  column_to_rownames("sample_id")
+ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
+               alter_fun = alter_fun, col = col, show_column_names =TRUE, column_names_gp = gpar(fontsize = 9),
+               column_order = match(rownames(tmp), colnames(mat)),
+               column_names_side = "top",
+               top_annotation = ha,
+               right_annotation = NULL,
+               row_names_side = "left",
+               pct_side = "right",
+               row_split = amp,
+               remove_empty_rows = TRUE,
+               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
+               ))
+pdf(file = 'results/oncoplot_orderby_gender_H3F3A_status.pdf', width = 20, height = 10) 
+draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
+dev.off()
+
+# column order by gender + age
+gender_age_ordered <- annot_info %>% 
+  arrange(Gender, Age)
+ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
+               alter_fun = alter_fun, col = col, show_column_names =TRUE, column_names_gp = gpar(fontsize = 9),
+               column_order = match(rownames(gender_age_ordered), colnames(mat)),
+               column_names_side = "top",
+               top_annotation = ha,
+               right_annotation = NULL,
+               row_names_side = "left",
+               pct_side = "right",
+               row_split = amp,
+               remove_empty_rows = TRUE,
+               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
+               ))
+pdf(file = 'results/oncoplot_orderby_gender_age.pdf', width = 20, height = 10) 
+draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
+dev.off()
