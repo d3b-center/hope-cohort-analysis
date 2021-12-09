@@ -16,11 +16,15 @@ chr_map <- chr_map %>%
 cancer_genes <- readRDS('~/Projects/OMPARE/data/cancer_gene_list.rds')
 
 # histologies
-hist <- read.csv('data/1633446748485-manifest.csv')
-hist$name <- gsub('.call.seg|.kallisto.abundance.tsv.gz', '', hist$name)
-hist <- hist %>%
+manifest <- list.files(path = 'data/', pattern = "csv", full.names = T)
+manifest <- lapply(manifest, FUN = function(x) read.csv(x))
+manifest <- data.table::rbindlist(manifest)
+manifest <- manifest %>%
   dplyr::select(name, Kids.First.Biospecimen.ID) %>%
+  mutate(name = gsub('.*/', '', name),
+         name = gsub('[.].*', '', name)) %>%
   unique()
+hist <- manifest
 
 # TPM
 # merge
@@ -54,7 +58,7 @@ cmd <- paste('Rscript', '~/Projects/Utils/collapse_rnaseq.R',
              '--outfile', 'data/merged_files/gene-counts-rsem-expected_count-collapsed.rds')
 system(cmd)
 
-# add BS id to TPM
+# add BS id to TPM (n = 82)
 tpm <- readRDS('data/merged_files/gene-expression-rsem-tpm-collapsed.rds')
 rna_hist <- hist %>%
   filter(name %in% colnames(tpm))
@@ -64,7 +68,7 @@ identical(rna_hist$name, colnames(tpm))
 colnames(tpm) <- rna_hist$Kids.First.Biospecimen.ID
 saveRDS(tpm, file = 'data/merged_files/gene-expression-rsem-tpm-collapsed.rds')
 
-# add BS id to expected counts
+# add BS id to expected counts (n = 82)
 exp_count <- readRDS('data/merged_files/gene-counts-rsem-expected_count-collapsed.rds')
 rna_hist <- hist %>%
   filter(name %in% colnames(exp_count))
@@ -111,7 +115,7 @@ merge_files <- function(nm){
   } 
 }
 
-# merge mutations
+# merge mutations (n = 65)
 hope_cohort_mutations <- list.files(path = 'data/consensus_maf/', pattern = "*.maf", recursive = TRUE, full.names = T)
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) merge_files(x))
 hope_cohort_mutations <- data.table::rbindlist(hope_cohort_mutations)
@@ -119,15 +123,17 @@ hope_cohort_mutations <- data.table::rbindlist(hope_cohort_mutations)
 # filter mutations
 hope_cohort_mutations <- filter_mutations(myMutData = hope_cohort_mutations, myCancerGenes = cancer_genes)
 hope_cohort_mutations$sample_name <- NULL
+length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
 saveRDS(hope_cohort_mutations, file = file.path("data/merged_files", "consensus_mutation_filtered.rds"))
 
-# merge and filter cnv
+# merge and filter cnv (n = 65)
 hope_cohort_cnv <- list.files(path = 'data/copy_number', pattern = "*.txt", recursive = TRUE, full.names = T)
 hope_cohort_cnv <- lapply(hope_cohort_cnv, FUN = function(x) merge_cnv(nm = x))
 hope_cohort_cnv <- data.table::rbindlist(hope_cohort_cnv)
+print(length(unique(hope_cohort_cnv$sample_name)))
 saveRDS(hope_cohort_cnv, file = file.path("data/merged_files", "cnv_filtered.rds"))
 
-# fusions
+# fusions (n = 82)
 hope_cohort_fusions <- list.files(path = 'data/arriba_fusions/', pattern = "*.arriba.fusions.tsv", recursive = TRUE, full.names = T)
 hope_cohort_fusions <- lapply(hope_cohort_fusions, FUN = function(x) merge_files(x))
 hope_cohort_fusions <- data.table::rbindlist(hope_cohort_fusions)
@@ -142,5 +148,6 @@ hope_cohort_fusions <- hope_cohort_fusions %>%
   separate_rows(Gene, convert = TRUE) %>%
   filter(Gene %in% cancer_genes$Gene_Symbol) %>%
   unique()
+print(length(unique(hope_cohort_fusions$sample_name)))
 saveRDS(hope_cohort_fusions, file = file.path('data/merged_files', "fusions_filtered.rds"))
 

@@ -66,18 +66,20 @@ annot_info <- annot_info[colnames(mat),]
 
 # annotation 1
 ha = HeatmapAnnotation(df = annot_info , col = list(
-  Sequencing_Experiment = c("WGS" = "#009999",
-                            "RNA-Seq" = "#bac964",
-                            "RNA-Seq, WGS" = "#5a3d55"),
+  Sequencing_Experiment = c("WGS" = "red",
+                            "RNA-Seq" = "yellow",
+                            "RNA-Seq, WGS" = "orange"),
   Tumor_Descriptor = c("Progressive" = "#827397", 
                        "Primary" = "#d8b9c3",
                        "Initial CNS Tumor" = "#cee397",
                        "Recurrence" = "#363062",
                        "Second Malignancy" = "#005082"),
-  Integrated_Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="#347474",
-                           "Astrocytoma;Oligoastrocytoma" = "orange",
-                           "Astrocytoma" = "darkred", 
-                           "Glioblastoma" = "navy"),
+  Integrated_Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
+                           "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
+                           "Astrocytoma" = "brown2", 
+                           "Glioblastoma" = "orange",
+                           "Ependymoma" = "darkgreen",
+                           "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2"),
   Gender = c("Female" = "deeppink4",
              "Male" = "navy"),
   Age = c("0-15" = "gold",
@@ -107,7 +109,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                ))
 
 
-pdf(file = 'results/oncoplot.pdf', width = 20, height = 10) 
+pdf(file = 'results/oncoplot.pdf', width = 22, height = 20) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -128,12 +130,12 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
                                            labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
                ))
-pdf(file = 'results/oncoplot_orderby_gender.pdf', width = 20, height = 10) 
+pdf(file = 'results/oncoplot_orderby_gender.pdf', width = 22, height = 20) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
 # column order by H3F3A status
-n <- grep("H3F3A", rownames(mat))
+n <- grep("H3F3A$", rownames(mat))
 ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                alter_fun = alter_fun, col = col, show_column_names =TRUE, column_names_gp = gpar(fontsize = 9),
                column_order = order(mat[n,], decreasing = T),
@@ -148,7 +150,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
                                            labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
                ))
-pdf(file = 'results/oncoplot_orderby_H3F3A.pdf', width = 20, height = 10) 
+pdf(file = 'results/oncoplot_orderby_H3F3A.pdf', width = 22, height = 20) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -175,7 +177,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
                                            labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
                ))
-pdf(file = 'results/oncoplot_orderby_gender_H3F3A_status.pdf', width = 20, height = 10) 
+pdf(file = 'results/oncoplot_orderby_gender_H3F3A_status.pdf', width = 22, height = 20) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -196,6 +198,6 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
                                            labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
                ))
-pdf(file = 'results/oncoplot_orderby_gender_age.pdf', width = 20, height = 10) 
+pdf(file = 'results/oncoplot_orderby_gender_age.pdf', width = 22, height = 20) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
