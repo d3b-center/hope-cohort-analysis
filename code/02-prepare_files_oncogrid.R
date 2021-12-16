@@ -64,6 +64,8 @@ hist$Age <- ifelse(hist$Age > 0 & hist$Age <= 15, "0-15", "15-35")
 
 annot_info <- hist %>%
   inner_join(annot_info, by = "Sample")
+annot_info <- annot_info %>%
+  dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Gender, Age, Sequencing_Experiment)
 write.table(annot_info, file = file.path("results", "annotation.txt"), quote = F, sep = "\t", row.names = F)
 
 # 1. get degene info PNOC008 patientss vs GTEx Brain

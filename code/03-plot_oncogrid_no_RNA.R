@@ -201,3 +201,29 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
 pdf(file = 'results/oncoplot_orderby_gender_age_norna.pdf', width = 15, height = 12) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
+
+# column order by gender + age + histone
+tmp <- reshape2::melt(mat) %>%
+  filter(Var1 == "H3F3A")
+tmp <- annot_info %>% 
+  rownames_to_column("sample_id") %>%
+  inner_join(tmp, by = c("sample_id" = "Var2")) %>%
+  arrange(Gender, Age, desc(value)) %>%
+  column_to_rownames("sample_id")
+ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
+               alter_fun = alter_fun, col = col, show_column_names =TRUE, column_names_gp = gpar(fontsize = 9),
+               column_order = match(rownames(tmp), colnames(mat)),
+               column_names_side = "top",
+               top_annotation = ha,
+               right_annotation = NULL,
+               row_names_side = "left",
+               pct_side = "right",
+               row_split = amp,
+               remove_empty_rows = TRUE,
+               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD"),
+                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del")
+               ))
+pdf(file = 'results/oncoplot_orderby_gender_age_H3F3A_status_norna.pdf', width = 15, height = 12) 
+draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
+dev.off()
