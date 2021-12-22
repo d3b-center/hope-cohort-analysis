@@ -55,17 +55,18 @@ hist <- hist %>%
   mutate(Age = toString(unique(sort(`Age at Specimen Diagnosis`))),
          Tumor_Descriptor = toString(unique(`Diagnosis Type`)),
          Integrated_Diagnosis = toString(unique(Diagnosis)),
-         Gender = toString(unique(Gender))) %>%
-  dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Age, Gender) %>%
+         Sex = toString(unique(Gender))) %>%
+  dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Age, Sex) %>%
   unique()
 hist$Tumor_Descriptor[hist$Tumor_Descriptor == "recurrent"] <- "Recurrence"
 hist$Age <- as.numeric(hist$Age)/365
-hist$Age <- ifelse(hist$Age > 0 & hist$Age <= 15, "0-15", "15-35")
-
+# hist$Age <- ifelse(hist$Age > 0 & hist$Age <= 15, "0-15", "15-35")
+hist$Age <- ifelse(hist$Age > 0 & hist$Age <= 14, "0-14", 
+                   ifelse(hist$Age > 14 & hist$Age <= 33.5, "14-33.5", ">33.5"))
 annot_info <- hist %>%
   inner_join(annot_info, by = "Sample")
 annot_info <- annot_info %>%
-  dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Gender, Age, Sequencing_Experiment)
+  dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Sex, Age, Sequencing_Experiment)
 write.table(annot_info, file = file.path("results", "annotation.txt"), quote = F, sep = "\t", row.names = F)
 
 # 1. get degene info PNOC008 patientss vs GTEx Brain
