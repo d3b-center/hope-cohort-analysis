@@ -91,6 +91,18 @@ cnv_genes <- cnv_genes %>%
 
 # 3. get snv info
 mut_genes <- readRDS(file.path("data/merged_files/consensus_mutation_filtered.rds"))
+
+# check if the wgs tumor-only match the snv calls
+wgs_only <- read.delim('data/wgs_tumor_only.tsv', header = F)
+wgs_only_samples <- manifest %>% 
+  filter(Sample %in% wgs_only$V1)
+mut_genes_tumor_only <- mut_genes %>%
+  filter(Tumor_Sample_Barcode %in% wgs_only_samples$Kids.First.Biospecimen.ID) %>%
+  nrow()
+if(mut_genes_tumor_only == 0){
+  print("WGS tumor only has no SNV data")
+}
+
 mut_genes <- mut_genes %>%
   filter(!Variant_Classification %in% c("3'Flank", "5'Flank", "3'UTR", "5'UTR", "IGR", "Intron", "RNA")) %>%
   dplyr::mutate(label = case_when(Variant_Classification %in% "Missense_Mutation" ~ "MIS",
