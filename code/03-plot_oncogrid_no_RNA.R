@@ -7,11 +7,18 @@ suppressPackageStartupMessages({
 
 # matrix
 mat = read.table(file.path("results", "oncoprint.txt"),  header = TRUE, stringsAsFactors=FALSE, sep = "\t",check.names = FALSE)
+
+# subset to 95 samples 
+hope_cohort_subset <- read.delim('data/hope_cohort_subset.tsv', header = F)
+mat <- mat %>%
+  filter(Sample %in% hope_cohort_subset$V1)
+
 mat[is.na(mat)] = ""
 rownames(mat) = mat[, 1]
 mat = mat[, -1]
 mat = t(as.matrix(mat))
 
+# code
 mat[mat == "OVE"] <- ""
 mat[mat == "UNE"] <- ""
 mat = gsub(";UNE", "", mat)

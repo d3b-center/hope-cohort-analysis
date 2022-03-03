@@ -60,7 +60,6 @@ hist <- hist %>%
   unique()
 hist$Tumor_Descriptor[hist$Tumor_Descriptor == "recurrent"] <- "Recurrence"
 hist$Age <- as.numeric(hist$Age)/365
-# hist$Age <- ifelse(hist$Age > 0 & hist$Age <= 15, "0-15", "15-35")
 hist$Age <- ifelse(hist$Age > 0 & hist$Age <= 14, "0-14", 
                    ifelse(hist$Age > 14 & hist$Age <= 33.5, "14-33.5", ">33.5"))
 annot_info <- hist %>%
