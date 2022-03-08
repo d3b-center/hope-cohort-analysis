@@ -73,7 +73,7 @@ mat <- mat[,rownames(annot_info)]
 annot_info <- annot_info[colnames(mat),]
 
 # annotation 1
-ha = HeatmapAnnotation(df = annot_info , col = list(
+ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experiment)), col = list(
   Sequencing_Experiment = c("WGS" = "red",
                             "RNA-Seq, WGS" = "orange"),
   Tumor_Descriptor = c("Progressive" = "#827397", 
@@ -93,7 +93,7 @@ ha = HeatmapAnnotation(df = annot_info , col = list(
           "14-33.5" = "purple")),
   gp = gpar(col = "#595959"), simple_anno_size = unit(4, "mm"), annotation_name_side = "left",
   annotation_legend_param = list(
-    Sequencing_Experiment = list(nrow =3)
+    # Sequencing_Experiment = list(nrow =3)
   ))
 
 # annotation 2
@@ -234,3 +234,109 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
 pdf(file = 'results/oncoplot_orderby_sex_age_H3F3A_status_norna.pdf', width = 15, height = 12) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
+
+# annotation 1
+ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(Tumor_Descriptor, Integrated_Diagnosis, Age, Sex), 
+                       col = list(
+  Sequencing_Experiment = c("WGS" = "red",
+                            "RNA-Seq, WGS" = "orange"),
+  Tumor_Descriptor = c("Progressive" = "#827397", 
+                       "Primary" = "#d8b9c3",
+                       "Initial CNS Tumor" = "#cee397",
+                       "Recurrence" = "#363062",
+                       "Second Malignancy" = "#005082"),
+  Integrated_Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
+                           "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
+                           "Astrocytoma" = "brown2", 
+                           "Glioblastoma" = "orange",
+                           "Ependymoma" = "darkgreen",
+                           "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2"),
+  Age = c("0-14" = "gold",
+          "14-33.5" = "purple"),
+  Sex = c("Female" = "deeppink4",
+          "Male" = "navy")),
+  gp = gpar(col = "#595959"), simple_anno_size = unit(4, "mm"), annotation_name_side = "left",
+  annotation_legend_param = list(
+    # Sequencing_Experiment = list(nrow =3)
+  ))
+
+# annotation 2
+amp = ifelse(apply(mat, 1, function(x) sum(grepl("GAI", x) + grepl("LOS",x))/length(x) > 0),"Copy number alteration","Genetic and Fusion alteration")
+amp = factor(amp, levels = c("Genetic and Fusion alteration", "Copy number alteration"))
+
+# column order age
+age_ordered <- annot_info %>% 
+  arrange(Age)
+ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
+               alter_fun = alter_fun, col = col, show_column_names =TRUE, column_names_gp = gpar(fontsize = 9),
+               column_order = match(rownames(age_ordered), colnames(mat)),
+               column_names_side = "top",
+               top_annotation = ha,
+               right_annotation = NULL,
+               row_names_side = "left",
+               pct_side = "right",
+               row_split = amp,
+               remove_empty_rows = TRUE,
+               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD"),
+                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del")
+               ))
+pdf(file = 'results/oncoplot_orderby_age_norna.pdf', width = 15, height = 12) 
+draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
+dev.off()
+
+# column order by age + histone
+tmp <- reshape2::melt(mat) %>%
+  filter(Var1 == "H3F3A")
+tmp <- annot_info %>% 
+  rownames_to_column("sample_id") %>%
+  inner_join(tmp, by = c("sample_id" = "Var2")) %>%
+  arrange(Age, desc(value)) %>%
+  column_to_rownames("sample_id")
+ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
+               alter_fun = alter_fun, col = col, show_column_names =TRUE, column_names_gp = gpar(fontsize = 9),
+               column_order = match(rownames(tmp), colnames(mat)),
+               column_names_side = "top",
+               top_annotation = ha,
+               right_annotation = NULL,
+               row_names_side = "left",
+               pct_side = "right",
+               row_split = amp,
+               remove_empty_rows = TRUE,
+               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD"),
+                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del")
+               ))
+pdf(file = 'results/oncoplot_orderby_age_H3F3A_status_norna.pdf', width = 15, height = 12) 
+draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
+dev.off()
+
+# column order by age + sex + histone
+tmp <- reshape2::melt(mat) %>%
+  filter(Var1 == "H3F3A")
+tmp <- annot_info %>% 
+  rownames_to_column("sample_id") %>%
+  inner_join(tmp, by = c("sample_id" = "Var2")) %>%
+  arrange(Age, Sex, desc(value)) %>%
+  column_to_rownames("sample_id")
+ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
+               alter_fun = alter_fun, col = col, show_column_names =TRUE, column_names_gp = gpar(fontsize = 9),
+               column_order = match(rownames(tmp), colnames(mat)),
+               column_names_side = "top",
+               top_annotation = ha,
+               right_annotation = NULL,
+               row_names_side = "left",
+               pct_side = "right",
+               row_split = amp,
+               remove_empty_rows = TRUE,
+               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD"),
+                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del")
+               ))
+pdf(file = 'results/oncoplot_orderby_age_sex_H3F3A_status_norna.pdf', width = 15, height = 12) 
+draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
+dev.off()
+
+
+
+
