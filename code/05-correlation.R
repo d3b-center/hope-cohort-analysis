@@ -60,6 +60,7 @@ compute_corr <- function(dat, cols){
 output <- plyr::ddply(.data = mat, 
                           .variables = "gene", 
                           .fun = function(x) compute_corr(x, cols = cols_to_use))
+write.table(output, file = 'results/correlation.tsv', quote = F, row.names = F, sep = "\t")
 genes_of_interest <- read.delim(text = "NF1
  TP53
  IDH1
