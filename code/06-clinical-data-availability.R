@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 })
 
 # only clinical data
-annot <- readxl::read_xlsx('~/Downloads/clini_m_030722-for_Komal.xlsx')
+annot <- readxl::read_xlsx('data/clini_m_030722-for_Komal.xlsx')
 annot <- annot %>%
   dplyr::select(Sample_ID, Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3) %>%
   column_to_rownames('Sample_ID')

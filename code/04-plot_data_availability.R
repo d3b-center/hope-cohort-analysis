@@ -82,7 +82,7 @@ q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
 ggsave(filename = "results/hope_cohort_data_availability.png", plot = q, width = 14, height = 3)
 
 # add annotations
-# annot <- readxl::read_xlsx('~/Downloads/clini_m_030722-for_Komal.xlsx')
+# annot <- readxl::read_xlsx('data/clini_m_030722-for_Komal.xlsx')
 # annot <- annot %>%
 #   dplyr::select(Sample_ID, Diagnosis_demoted,Gender, age.class, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3)
 # annot <- melt(annot, id.vars = "Sample_ID", variable.name = "data_type", value.name = "data_availability")
@@ -127,7 +127,7 @@ ggsave(filename = "results/hope_cohort_data_availability.png", plot = q, width =
 #   xlab("") + ylab("")
 
 # only clinical data
-annot <- readxl::read_xlsx('~/Downloads/clini_m_030722-for_Komal.xlsx')
+annot <- readxl::read_xlsx('data/clini_m_030722-for_Komal.xlsx')
 annot <- annot %>%
   dplyr::select(Sample_ID, Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3)
 sample_order <- annot %>%
