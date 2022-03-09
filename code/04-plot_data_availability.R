@@ -44,22 +44,22 @@ dat$data_type <- factor(dat$data_type, levels=c("methylation", "RNASeq", "WGS_tu
 dat$Sample <- factor(dat$Sample, levels = sample_order)
 dat <- dat %>%
   mutate(label = ifelse(data_availability == TRUE, as.character(data_type), FALSE))
-p <- ggplot(dat, aes(Sample, data_type, fill = label)) + 
-  geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
-  scale_fill_manual(values = c("FALSE" = "white", 
-                               "proteomics" = "#08306B", 
-                               "phosphoproteomics" = "#08519C",
-                               "WGS" = "#2171B5", 
-                               "WGS_tumor_only" = "#4292C6",
-                               "RNASeq" = "#6BAED6", 
-                               "methylation" = "#9ECAE1")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 10)) + 
-  xlab("") + ylab("") +
-  theme(legend.position = "none")
-ggsave(filename = "results/hope_cohort_data_availability.png", width = 15, height = 3)
+# p <- ggplot(dat, aes(Sample, data_type, fill = label)) + 
+#   geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
+#   scale_fill_manual(values = c("FALSE" = "white", 
+#                                "proteomics" = "#08306B", 
+#                                "phosphoproteomics" = "#08519C",
+#                                "WGS" = "#2171B5", 
+#                                "WGS_tumor_only" = "#4292C6",
+#                                "RNASeq" = "#6BAED6", 
+#                                "methylation" = "#9ECAE1")) +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 10)) + 
+#   xlab("") + ylab("") +
+#   theme(legend.position = "none")
+# ggsave(filename = "results/hope_cohort_data_availability.png", width = 15, height = 3)
 
 # updated version
-p <- ggplot(dat %>% filter(data_type != "WGS_tumor_only"), aes(Sample, data_type, fill = label)) + 
+q <- ggplot(dat %>% filter(data_type != "WGS_tumor_only"), aes(Sample, data_type, fill = label)) + 
   geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
   scale_fill_manual(values = c("FALSE" = "white", 
                                "proteomics" = "#08306B", 
@@ -75,9 +75,94 @@ dat_tmp <- dat %>%
   filter(data_type == "WGS_tumor_only") %>%
   mutate(data_type = "WGS", 
          label = ifelse(label != FALSE | Sample %in% wgs$Sample, "WGS", FALSE))
-p + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
+q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
   theme(
     panel.background = element_rect(fill = "white"),
     plot.margin = margin(2, 1, 1, 1, "cm"))
-ggsave(filename = "results/hope_cohort_data_availability.png", width = 14, height = 3)
+ggsave(filename = "results/hope_cohort_data_availability.png", plot = q, width = 14, height = 3)
 
+# add annotations
+# annot <- readxl::read_xlsx('~/Downloads/clini_m_030722-for_Komal.xlsx')
+# annot <- annot %>%
+#   dplyr::select(Sample_ID, Diagnosis_demoted,Gender, age.class, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3)
+# annot <- melt(annot, id.vars = "Sample_ID", variable.name = "data_type", value.name = "data_availability")
+# annot <- annot %>%
+#   dplyr::rename("Sample" = "Sample_ID") %>%
+#   mutate(label = data_availability)
+# res <- rbind(annot, dat)
+# res$label[res$label == "FALSE"] <- "No_data"
+# all_together <- ggplot(res, aes(Sample, data_type, fill = label)) + 
+#   geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
+#   scale_fill_manual(values = c("No_data" = "white", 
+#                                "proteomics" = "#08306B", 
+#                                "phosphoproteomics" = "#08519C",
+#                                "WGS" = "#2171B5", 
+#                                "WGS_tumor_only" = "#4292C6",
+#                                "RNASeq" = "#6BAED6", 
+#                                "methylation" = "#9ECAE1",
+#                                "Male" = "navy",
+#                                "Female" = "deeppink4",
+#                                "High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
+#                                "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
+#                                "Astrocytoma" = "brown2", 
+#                                "Glioblastoma" = "orange",
+#                                "Ependymoma" = "darkgreen",
+#                                "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2",
+#                                "[0,15]" = "gold",
+#                                "(15,40]" = "purple",
+#                                "Treatment naive" = "lightgray",
+#                                "Post-treatment" = "gray50",
+#                                "Post-mortem" = "black",
+#                                "Progressive" = "#827397", 
+#                                "Primary" = "#d8b9c3",
+#                                "Initial CNS Tumor" = "#cee397",
+#                                "Recurrence" = "#363062",
+#                                "Second Malignancy" = "#005082",
+#                                "Cortical" = "magenta",
+#                                "Other/Multiple locations/NOS" = "pink",
+#                                "Midline" = "purple",
+#                                "Cerebellar" = "navy")) +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
+#         axis.text.y = element_text(size = 8)) + 
+#   xlab("") + ylab("")
+
+# only clinical data
+annot <- readxl::read_xlsx('~/Downloads/clini_m_030722-for_Komal.xlsx')
+annot <- annot %>%
+  dplyr::select(Sample_ID, Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3)
+sample_order <- annot %>%
+  arrange(Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3) %>%
+  pull(Sample_ID)
+annot <- melt(annot, id.vars = "Sample_ID", variable.name = "data_type", value.name = "data_availability")
+annot <- annot %>%
+  dplyr::rename("Sample" = "Sample_ID") %>%
+  mutate(label = data_availability)
+annot$Sample <- factor(annot$Sample, levels = sample_order)
+annot$data_type <- factor(annot$data_type, levels = rev(levels(annot$data_type)))
+only_clinical <- ggplot(annot, aes(Sample, data_type, fill = label)) + 
+  geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
+  scale_fill_manual(values = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
+                               "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
+                               "Astrocytoma" = "brown2", 
+                               "Glioblastoma" = "orange",
+                               "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2",
+                               "Male" = "navy",
+                               "Female" = "deeppink4",
+                               "[0,15]" = "gold",
+                               "(15,40]" = "purple",
+                               "Progressive" = "#827397", 
+                               "Initial CNS Tumor" = "#cee397",
+                               "Recurrence" = "#363062",
+                               "Second Malignancy" = "#005082",
+                               "Treatment naive" = "lightgray",
+                               "Post-treatment" = "gray50",
+                               "Post-mortem" = "black",
+                               "Cortical" = "magenta",
+                               "Other/Multiple locations/NOS" = "pink",
+                               "Midline" = "purple",
+                               "Cerebellar" = "navy")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
+        axis.text.y = element_text(size = 8)) + 
+  xlab("") + ylab("") 
+only_clinical
+ggsave(filename = 'results/hope_cohort_data_availability_clinical.png', plot = only_clinical, width = 15, height = 5)
