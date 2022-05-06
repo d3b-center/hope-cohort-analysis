@@ -8,16 +8,21 @@ suppressPackageStartupMessages({
 
 # hope cohort subset of 95 samples to plot
 dat <- read.delim('data/hope_cohort_subset.tsv', header = F, col.names = "Sample")
+dat <- dat %>%
+  filter(Sample != "7316-4065")
 dat$proteomics <- TRUE
 dat$phosphoproteomics <- TRUE
 
 # add methylation
 methylation <- read.delim('data/methylation_subset.tsv', header = F)
+methylation <- methylation %>%
+  filter(V1 != "7316-4065")
 dat$methylation <- dat$Sample %in% methylation$V1
 
 # add RNA-seq and WGS info
 annot_info <- read.delim(file.path("results", "annotation.txt"), header = TRUE, check.names = TRUE)
 annot_info <- annot_info %>%
+  filter(Sample != "7316-4065") %>%
   dplyr::select(Sample, Sequencing_Experiment) %>%
   mutate(Sequencing_Experiment = strsplit(as.character(Sequencing_Experiment), ", ")) %>% 
   unnest(Sequencing_Experiment) %>%
@@ -129,6 +134,7 @@ ggsave(filename = "results/hope_cohort_data_availability.png", plot = q, width =
 # only clinical data
 annot <- readxl::read_xlsx('data/clini_m_030722-for_Komal.xlsx')
 annot <- annot %>%
+  filter(Sample_ID != "7316-4065") %>%
   dplyr::select(Sample_ID, Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3)
 sample_order <- annot %>%
   arrange(Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3) %>%

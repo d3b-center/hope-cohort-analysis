@@ -10,6 +10,7 @@ suppressPackageStartupMessages({
 # only clinical data
 annot <- readxl::read_xlsx('data/clini_m_030722-for_Komal.xlsx')
 annot <- annot %>%
+  filter(Sample_ID != "7316-4065") %>%
   dplyr::select(Sample_ID, Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3) %>%
   column_to_rownames('Sample_ID')
 split <- annot$Diagnosis_demoted
@@ -33,6 +34,7 @@ col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagre
                  "Other/Multiple locations/NOS" = "pink",
                  "Midline" = "purple",
                  "Cerebellar" = "navy")
+circos.clear()
 pdf(file = "results/hope_cohort_data_availability_clinical.pdf", width = 10, height = 10)
 circos.par(start.degree = 30, gap.degree = 0.7)
 circos.heatmap(annot, 
