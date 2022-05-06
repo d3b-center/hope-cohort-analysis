@@ -8,10 +8,11 @@ suppressPackageStartupMessages({
 # matrix
 mat = read.table(file.path("results", "oncoprint.txt"),  header = TRUE, stringsAsFactors=FALSE, sep = "\t",check.names = FALSE)
 
-# subset to 95 samples 
-hope_cohort_subset <- read.delim('data/hope_cohort_subset.tsv', header = F)
+# subset to 94 samples 
+# hope_cohort_subset <- read.delim('data/hope_cohort_subset.tsv', header = F)
+hope_cohort_subset <- readxl::read_xlsx('data/hope_clinical_table_033022.xlsx', sheet = 1)
 mat <- mat %>%
-  filter(Sample %in% hope_cohort_subset$V1)
+  filter(Sample %in% hope_cohort_subset$Sample_ID)
 
 mat[is.na(mat)] = ""
 rownames(mat) = mat[, 1]
