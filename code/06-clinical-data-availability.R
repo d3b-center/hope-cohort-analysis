@@ -18,7 +18,7 @@ col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagre
                  "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
                  "Astrocytoma" = "brown2", 
                  "Glioblastoma" = "orange",
-                 "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2",
+                 # "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2",
                  "Male" = "navy",
                  "Female" = "deeppink4",
                  "[0,15]" = "gold",
@@ -36,16 +36,23 @@ col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagre
                  "Cerebellar" = "navy")
 circos.clear()
 pdf(file = "results/hope_cohort_data_availability_clinical.pdf", width = 10, height = 10)
-circos.par(start.degree = 30, gap.degree = 0.7)
+circos.par(start.degree = 30, gap.degree = 1, points.overflow.warning = FALSE)
 circos.heatmap(annot, 
                split = split, 
-               col = col_fun1, 
+               col = unlist(col_fun1), 
                track.height = 0.4, 
-               bg.border = "gray50",
-               show.sector.labels = F)
+               bg.border = "gray50", bg.lwd = 2,
+               show.sector.labels = F, cell.border = "white")
+# add border colors to sectors
+for(sn in get.all.sector.index()) {
+  set.current.cell(sector.index = sn, track.index = 1)
+  circos.rect(CELL_META$cell.xlim[1], CELL_META$cell.ylim[1],
+              CELL_META$cell.xlim[2], CELL_META$cell.ylim[2],
+              col = NA, border = unlist(col_fun1)[sn])
+}
 lgd_diagnosis = Legend(title = "Diagnosis", 
                        at = c("High-grade glioma/astrocytoma (WHO grade III/IV)",
-                              "Low-grade glioma/astrocytoma (WHO grade I/II)",
+                              # "Low-grade glioma/astrocytoma (WHO grade I/II)",
                               "Astrocytoma;Oligoastrocytoma",
                               "Astrocytoma",
                               "Glioblastoma"), 
