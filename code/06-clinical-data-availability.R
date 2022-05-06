@@ -13,7 +13,10 @@ annot <- annot %>%
   filter(Sample_ID != "7316-4065") %>%
   dplyr::select(Sample_ID, Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3) %>%
   column_to_rownames('Sample_ID')
-split <- annot$Diagnosis_demoted
+split <- factor(annot$Diagnosis_demoted, levels = c("Astrocytoma;Oligoastrocytoma",
+                                                    "High-grade glioma/astrocytoma (WHO grade III/IV)",
+                                                    "Astrocytoma", 
+                                                    "Glioblastoma"))
 col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
                  "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
                  "Astrocytoma" = "brown2", 
@@ -41,7 +44,7 @@ circos.heatmap(annot,
                split = split, 
                col = unlist(col_fun1), 
                track.height = 0.4, 
-               bg.border = "gray50", bg.lwd = 2,
+               bg.border = "gray50", bg.lwd = 2, cell.lwd = 4,
                show.sector.labels = F, cell.border = "white")
 # add border colors to sectors
 for(sn in get.all.sector.index()) {
