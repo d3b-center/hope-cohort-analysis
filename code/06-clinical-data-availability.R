@@ -12,7 +12,8 @@ annot <- readxl::read_xlsx('data/clini_m_030722-for_Komal.xlsx')
 annot <- annot %>%
   filter(Sample_ID != "7316-4065") %>%
   dplyr::select(Sample_ID, Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3) %>%
-  column_to_rownames('Sample_ID')
+  column_to_rownames('Sample_ID') %>%
+  arrange(Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3)
 split <- factor(annot$Diagnosis_demoted, levels = c("Astrocytoma;Oligoastrocytoma",
                                                     "High-grade glioma/astrocytoma (WHO grade III/IV)",
                                                     "Astrocytoma", 
@@ -59,7 +60,9 @@ lgd_diagnosis = Legend(title = "Diagnosis",
                               "Astrocytoma;Oligoastrocytoma",
                               "Astrocytoma",
                               "Glioblastoma"), 
-                       legend_gp = gpar(fill = c("lightseagreen", "blue2", "mediumorchid2", "brown2", "orange")))
+                       legend_gp = gpar(fill = c("lightseagreen", 
+                                                 # "blue2", 
+                                                 "mediumorchid2", "brown2", "orange")))
 lgd_gender = Legend(title = "Sex", 
                  at = c("Male", "Female"), 
                  legend_gp = gpar(fill = c("navy", "deeppink4")))

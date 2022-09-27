@@ -49,16 +49,16 @@ dat$data_type <- factor(dat$data_type, levels=c("methylation", "RNASeq", "WGS_tu
 dat$Sample <- factor(dat$Sample, levels = sample_order)
 dat <- dat %>%
   mutate(label = ifelse(data_availability == TRUE, as.character(data_type), FALSE))
-# p <- ggplot(dat, aes(Sample, data_type, fill = label)) + 
+# p <- ggplot(dat, aes(Sample, data_type, fill = label)) +
 #   geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
-#   scale_fill_manual(values = c("FALSE" = "white", 
-#                                "proteomics" = "#08306B", 
+#   scale_fill_manual(values = c("FALSE" = "white",
+#                                "proteomics" = "#08306B",
 #                                "phosphoproteomics" = "#08519C",
-#                                "WGS" = "#2171B5", 
+#                                "WGS" = "#2171B5",
 #                                "WGS_tumor_only" = "#4292C6",
-#                                "RNASeq" = "#6BAED6", 
+#                                "RNASeq" = "#6BAED6",
 #                                "methylation" = "#9ECAE1")) +
-#   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 10)) + 
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 10)) +
 #   xlab("") + ylab("") +
 #   theme(legend.position = "none")
 # ggsave(filename = "results/hope_cohort_data_availability.png", width = 15, height = 3)
@@ -80,7 +80,7 @@ dat_tmp <- dat %>%
   filter(data_type == "WGS_tumor_only") %>%
   mutate(data_type = "WGS", 
          label = ifelse(label != FALSE | Sample %in% wgs$Sample, "WGS", FALSE))
-q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
+q <- q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
   theme(
     panel.background = element_rect(fill = "white"),
     plot.margin = margin(2, 1, 1, 1, "cm"))
