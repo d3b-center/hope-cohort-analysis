@@ -1,3 +1,7 @@
+suppressPackageStartupMessages({
+  library(tidyverse)
+})
+
 # compute correlations and pvalues for two variables in the clinical file
 dat <- readxl::read_xlsx('data/Sequenced RNA additional selectionMK_ with extraction data-2.xlsx', skip = 1, sheet = 2)
 dat <- dat[,1:22]
@@ -28,7 +32,8 @@ num_pairs_corr <- list(c("260/230", "Concentration...19"),
                    c("Concentration...19", "Reads Aligned in Pairs"),
                    c("RIN", "Reads Aligned in Pairs"),
                    c("Concentration...19",	"RQS"),
-                   c("RIN", "Concentration...19"))		
+                   c("RIN", "Concentration...19"),
+                   c("260/230", "Contamination %"))		
 
 num_vars_output <- data.frame()
 for(i in 1:length(num_pairs_corr)){
