@@ -5,40 +5,48 @@ suppressPackageStartupMessages({
 })
 
 # data directory
-data_dir <- 'data/'
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+data_dir <- file.path(root_dir, "data")
 
 # source function
-source('utils/ss_diffexpr.R')
+source(file.path(root_dir, "utils", "ss_diffexpr.R"))
 
 # gencode reference
-gencode_v27 <- read.delim(file.path(data_dir, 'gencode.v27.primary_assembly.annotation.txt'))
-gencode_v27_pc <- gencode_v27 %>%
-  filter(biotype == "protein_coding")
+gencode_gtf <- rtracklayer::import(con = "data/gencode.v39.primary_assembly.annotation.gtf.gz")
+gencode_gtf <- as.data.frame(gencode_gtf)
+gencode_gtf <- gencode_gtf %>%
+  dplyr::select(gene_id, gene_name, gene_type) %>%
+  filter(gene_type == "protein_coding") %>%
+  unique()
 
 # Dataset1: GTex Brain
-gtex_brain_tpm <- readRDS(file.path(data_dir, "gtex", "gtex_brain_tpm.rds"))
+gtex_brain_tpm <- readRDS(file.path(data_dir, "gtex", "normal_subset_tissues_tpm.rds"))
 gtex_brain_tpm <- gtex_brain_tpm[grep("^HIST", rownames(gtex_brain_tpm), invert = T),]
-gtex_brain_tpm <- gtex_brain_tpm[rownames(gtex_brain_tpm) %in% gencode_v27_pc$gene_symbol,]
+gtex_brain_tpm <- gtex_brain_tpm[rownames(gtex_brain_tpm) %in% gencode_gtf$gene_name,]
 
-gtex_brain_counts <- readRDS(file.path(data_dir, "gtex", "gtex_brain_counts.rds"))
+gtex_brain_counts <- readRDS(file.path(data_dir, "gtex", "normal_subset_tissues_counts.rds"))
 gtex_brain_counts <- gtex_brain_counts[grep("^HIST", rownames(gtex_brain_counts), invert = T),]
-gtex_brain_counts <- gtex_brain_counts[rownames(gtex_brain_counts) %in% gencode_v27_pc$gene_symbol,]
+gtex_brain_counts <- gtex_brain_counts[rownames(gtex_brain_counts) %in% gencode_gtf$gene_name,]
 
 # Dataset2: HOPE cohort
 hope_cohort_tpm <- readRDS(file.path(data_dir, 'merged_files', 'gene-expression-rsem-tpm-collapsed.rds'))
 hope_cohort_tpm <- hope_cohort_tpm[grep("^HIST", rownames(hope_cohort_tpm), invert = T),]
-hope_cohort_tpm <- hope_cohort_tpm[rownames(hope_cohort_tpm) %in% gencode_v27_pc$gene_symbol,]
+hope_cohort_tpm <- hope_cohort_tpm[rownames(hope_cohort_tpm) %in% gencode_gtf$gene_name,]
 
 hope_cohort_counts <- readRDS(file.path(data_dir, 'merged_files', 'gene-counts-rsem-expected_count-collapsed.rds'))
 hope_cohort_counts <- hope_cohort_counts[grep("^HIST", rownames(hope_cohort_counts), invert = T),]
-hope_cohort_counts <- hope_cohort_counts[rownames(hope_cohort_counts) %in% gencode_v27_pc$gene_symbol,]
+hope_cohort_counts <- hope_cohort_counts[rownames(hope_cohort_counts) %in% gencode_gtf$gene_name,]
 
 # cancer Genes
 # cancer_genes <- readRDS(file.path(data_dir, 'cancer_gene_list.rds'))
 
 # input data
-hope_cohort_tpm_melt <- hope_cohort_tpm %>% rownames_to_column("gene_symbol") %>%  gather('sample', "tpm", -gene_symbol) 
-hope_cohort_counts_melt <- hope_cohort_counts %>% rownames_to_column("gene_symbol") %>% gather('sample', "tpm", -gene_symbol) 
+hope_cohort_tpm_melt <- hope_cohort_tpm %>% 
+  rownames_to_column("gene_symbol") %>%  
+  gather('sample', "tpm", -gene_symbol) 
+hope_cohort_counts_melt <- hope_cohort_counts %>% 
+  rownames_to_column("gene_symbol") %>% 
+  gather('sample', "tpm", -gene_symbol) 
 
 # z-score and return only patient's value (i.e. last column)
 get_zscore <- function(x) {
@@ -84,7 +92,7 @@ res <- plyr::ddply(hope_cohort_tpm_melt,
             .fun = function(x) calc_degs(expData = x, gtexData = gtex_brain_tpm))
 res <- res %>%
   filter(!is.na(diff_expr))
-saveRDS(res, file = 'results/hope_cohort_vs_gtex_brain_degs.rds')
+saveRDS(res, file = file.path("results", "hope_cohort_vs_gtex_brain_degs.rds"))
 
 # ssexpr
 calc_degs_ssexpr <- function(expData_counts, gtexData_counts) {
@@ -112,4 +120,4 @@ calc_degs_ssexpr <- function(expData_counts, gtexData_counts) {
 res <- plyr::ddply(hope_cohort_counts_melt, 
                    .variables = "sample", 
                    .fun = function(x) calc_degs_ssexpr(expData_counts = x, gtexData_counts = gtex_brain_counts))
-saveRDS(res, file = 'results/hope_cohort_vs_gtex_brain_degs_edgeR.rds')
+saveRDS(res, file = file.path("results", "hope_cohort_vs_gtex_brain_degs_edgeR.rds"))
