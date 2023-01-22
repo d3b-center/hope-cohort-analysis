@@ -28,7 +28,7 @@ manifest <- manifest %>%
   dplyr::select(Kids.First.Biospecimen.ID, Sample, Sequencing_Experiment) %>%
   unique()
 
-# reactome pathways 
+# kegg pathways 
 geneset_db <- msigdbr::msigdbr(category = "C2", subcategory = "KEGG")
 geneset_db <- geneset_db[grep("MISMATCH_REPAIR|KEGG_BASE_EXCISION_REPAIR|KEGG_HOMOLOGOUS_RECOMBINATION", geneset_db$gs_name),]
 write.table(unique(geneset_db$human_gene_symbol), file = 'data/mmr_genes.tsv', col.names = F, row.names = F, quote = F)

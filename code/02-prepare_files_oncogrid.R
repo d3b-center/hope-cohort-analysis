@@ -11,11 +11,8 @@ brain_goi_list <- read.delim(file = file.path("data", "brain-goi-list-long.txt")
 # MMR genes
 mmr_genes <- read.delim(file = file.path("data", "mmr_genes.tsv"), header = F)
 
-# kegg mismatch repair
-dna_repair_geneset <- msigdbr::msigdbr(species = "Homo sapiens", category = "C2", subcategory = "CP:KEGG")
-dna_repair_geneset <- dna_repair_geneset %>%
-  filter(gs_name %in% c("KEGG_MISMATCH_REPAIR"))
-driver_genes <- data.frame(V1 = c(brain_goi_list$V1, mmr_genes$V1, dna_repair_geneset$gene_symbol)) %>% unique()
+# combined list
+driver_genes <- data.frame(V1 = c(brain_goi_list$V1, mmr_genes$V1)) %>% unique()
 
 # gencode v39 names for old genes
 driver_genes$V1[driver_genes$V1 == "H3F3A"] <- "H3-3A"
@@ -49,7 +46,6 @@ manifest <- list.files(path = "data/manifest", pattern = "manifest.*.tsv", full.
 manifest <- lapply(manifest, FUN = function(x) readr::read_tsv(x))
 manifest <- data.table::rbindlist(manifest)
 colnames(manifest) <- gsub(" ", "_", colnames(manifest))
-# manifest$experimental_strategy[manifest$experimental_strategy == ""] <- "WGS"
 manifest <- manifest %>%
   filter(Kids_First_Biospecimen_ID %in% c(rna_ids, wgs_ids)) %>%
   mutate(experimental_strategy = ifelse(Kids_First_Biospecimen_ID %in% rna_ids, "RNA-Seq", "WGS")) %>%
@@ -83,10 +79,19 @@ hist$Tumor_Descriptor[hist$Tumor_Descriptor == "recurrent"] <- "Recurrence"
 hist$Age <- as.numeric(hist$Age)/365
 hist$Age <- ifelse(hist$Age > 0 & hist$Age <= 14, "0-14", 
                    ifelse(hist$Age > 14 & hist$Age <= 33.5, "14-33.5", ">33.5"))
+
+# add TMB and MSI-sensor information
+tmb_msi <- read_tsv('results/msisensor-pro/msi_output_merged.tsv') %>%
+  dplyr::select(sample_id, MSI_Percent, TMB)
+# add to histology
+hist <- hist %>%
+  left_join(tmb_msi, by = c("Sample" = "sample_id"))
+
+# add to annot
 annot_info <- hist %>%
   inner_join(annot_info, by = "Sample")
 annot_info <- annot_info %>%
-  dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Sex, Age, Sequencing_Experiment)
+  dplyr::select(MSI_Percent, TMB, Sample, Tumor_Descriptor, Integrated_Diagnosis, Sex, Age, Sequencing_Experiment)
 write.table(annot_info, file = file.path("results", "annotation.txt"), quote = F, sep = "\t", row.names = F)
 
 # 1. get degene info PNOC008 patientss vs GTEx Brain

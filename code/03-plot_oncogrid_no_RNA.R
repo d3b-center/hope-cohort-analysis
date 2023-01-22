@@ -74,7 +74,11 @@ mat <- mat[,rownames(annot_info)]
 annot_info <- annot_info[colnames(mat),]
 
 # annotation 1
+col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
+col_fun_msi = colorRamp2(c(0, max(annot_info$MSI_Percent, na.rm = T)), c("white", "purple3"))
 ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experiment)), col = list(
+  TMB = col_fun_tmb,
+  MSI_Percent = col_fun_msi,
   Sequencing_Experiment = c("WGS" = "red",
                             "RNA-Seq, WGS" = "orange"),
   Tumor_Descriptor = c("Progressive" = "#827397", 
@@ -89,7 +93,7 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experimen
                            "Ependymoma" = "darkgreen",
                            "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2"),
   Sex = c("Female" = "deeppink4",
-             "Male" = "navy"),
+          "Male" = "navy"),
   Age = c("0-14" = "gold",
           "14-33.5" = "purple",
           ">33.5" = "darkgreen")),
@@ -240,8 +244,9 @@ draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_si
 dev.off()
 
 # annotation 1
-ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(Tumor_Descriptor, Integrated_Diagnosis, Age, Sex), 
-                       col = list(
+ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(Tumor_Descriptor, Integrated_Diagnosis, Age, Sex), col = list(
+  TMB = col_fun_tmb,
+  MSI_Percent = col_fun_msi,
   Sequencing_Experiment = c("WGS" = "red",
                             "RNA-Seq, WGS" = "orange"),
   Tumor_Descriptor = c("Progressive" = "#827397", 

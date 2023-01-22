@@ -3,6 +3,7 @@
 suppressPackageStartupMessages({
   library(ComplexHeatmap)
   library(tidyverse)
+  library(circlize)
 })
 
 # matrix
@@ -65,7 +66,11 @@ annot_info <- annot_info %>%
 annot_info <- annot_info[colnames(mat),]
 
 # annotation 1
+col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
+col_fun_msi = colorRamp2(c(0, max(annot_info$MSI_Percent, na.rm = T)), c("white", "purple3"))
 ha = HeatmapAnnotation(df = annot_info , col = list(
+  TMB = col_fun_tmb,
+  MSI_Percent = col_fun_msi,
   Sequencing_Experiment = c("WGS" = "red",
                             "RNA-Seq" = "yellow",
                             "RNA-Seq, WGS" = "orange"),
