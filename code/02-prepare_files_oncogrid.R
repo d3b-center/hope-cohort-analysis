@@ -6,24 +6,13 @@ suppressPackageStartupMessages({
 })
 
 # read driver list from OpenPBTA
-brain_goi_list <- read.delim(file = file.path("data", "brain-goi-list-long.txt"), header = F)
+brain_goi_list <- read.delim(file = file.path("data", "brain-goi-list-long-gencode-v39.txt"), header = F)
 
 # MMR genes
 mmr_genes <- read.delim(file = file.path("data", "mmr_genes.tsv"), header = F)
 
 # combined list
 driver_genes <- data.frame(V1 = c(brain_goi_list$V1, mmr_genes$V1)) %>% unique()
-
-# gencode v39 names for old genes
-driver_genes$V1[driver_genes$V1 == "H3F3A"] <- "H3-3A"
-driver_genes$V1[driver_genes$V1 == "HIST1H3A"] <- "H3-3A"
-driver_genes$V1[driver_genes$V1 == "HIST1H3B"] <- "H3C2"
-driver_genes$V1[driver_genes$V1 == "HIST1H3C"] <- "H3C3"
-driver_genes$V1[driver_genes$V1 == "C11ORF70"] <- "CFAP300"
-driver_genes$V1[driver_genes$V1 == "C11ORF95"] <- "ZFTA"
-driver_genes$V1[driver_genes$V1 == "LRB1B"] <- "LRP1B"
-driver_genes$V1[driver_genes$V1 == "CXORF67"] <- "EZHIP"
-driver_genes$V1[driver_genes$V1 == "UTX"] <- "KDM6A"
 
 # read reference gene lists based on PNOC003
 snv <- read.delim(file.path("data", "snv_genes.tsv"), header = F) %>%
