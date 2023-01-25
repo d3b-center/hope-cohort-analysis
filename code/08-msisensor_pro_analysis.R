@@ -13,14 +13,16 @@ if(!file.exists(fname)){
   df <- do.call(rbind,df)
   colnames(df)[3] <- "Percent"
   df$name <- gsub('.*/', '', lf)
-  manifest <- read_tsv('data/manifest_20221014_120538.tsv')
+  manifest1 <- read_tsv('data/msisensor_pro/manifest_20220927_180139.tsv')
+  manifest2 <- read_tsv('data/msisensor_pro/manifest_20230125_101423.tsv')
+  manifest <- rbind(manifest1, manifest2)
+  manifest <- manifest %>% inner_join(df, by = "name")
   tumor_normal_pair <- read_tsv('data/Tumour_normal_participate.tsv')
-  output_df <- manifest %>%
-    dplyr::select(name, sample_id, `Kids First Biospecimen ID`, gender, sample_type) %>%
-    mutate(name = gsub("_somatic", "", name)) %>%
+  manifest <- manifest %>%
     inner_join(tumor_normal_pair, by = c("Kids First Biospecimen ID" = "Tumour")) %>%
-    inner_join(df, by = c("name")) %>%
-    dplyr::select(-c(name, Normal, participate)) %>%
+    dplyr::select(`Kids First Biospecimen ID`, `Kids First Participant ID`, sample_id, gender, Total_Number_of_Sites, Number_of_Somatic_Sites, Percent) %>%
+    unique()
+  output_df <- manifest %>%
     mutate(Type = ifelse(Percent >= 3.5, "High", "Low")) %>%
     arrange(Percent)
   write_tsv(output_df, file = fname)

@@ -1,12 +1,12 @@
 MSI_Percent	TMB	Sample	Tumor_Descriptor	Integrated_Diagnosis	Sex	Age	Sequencing_Experiment
 0	NA	7316UP-759	Recurrence	Astrocytoma;Oligoastrocytoma	Male	14-33.5	RNA-Seq, WGS
-NA	NA	7316UP-310	Primary	Glioblastoma	Female	14-33.5	RNA-Seq, WGS
+0.11	NA	7316UP-310	Primary	Glioblastoma	Female	14-33.5	RNA-Seq, WGS
 0.15	NA	7316UP-1104	Primary	Astrocytoma	Female	14-33.5	RNA-Seq, WGS
 0.05	NA	7316UP-2035	Primary	Glioblastoma	Female	14-33.5	RNA-Seq, WGS
-NA	NA	7316UP-2058	Primary	Glioblastoma	Male	>33.5	WGS
+0	NA	7316UP-2058	Primary	Glioblastoma	Male	>33.5	WGS
 NA	NA	7316UP-2333	Recurrence	Glioblastoma	Male	>33.5	WGS
-NA	NA	7316UP-1962	Recurrence	Glioblastoma	Male	>33.5	WGS
-NA	NA	7316UP-2403	Recurrence	Glioblastoma	Male	>33.5	WGS
+0	NA	7316UP-1962	Recurrence	Glioblastoma	Male	>33.5	WGS
+0	NA	7316UP-2403	Recurrence	Glioblastoma	Male	>33.5	WGS
 0.03	0.00923467655975788	7316-2092	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-14	RNA-Seq, WGS
 0.05	NA	7316-4215	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-14	RNA-Seq, WGS
 0.04	NA	7316-5928	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-14	RNA-Seq, WGS
@@ -30,7 +30,7 @@ NA	NA	7316-1455	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/I
 NA	NA	7316-1052	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	0-14	RNA-Seq
 0.75	0.0266779545059672	7316-913	Second Malignancy	High-grade glioma/astrocytoma (WHO grade III/IV)	Female	14-33.5	RNA-Seq, WGS
 3.07	NA	7316-4466	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-14	WGS
-NA	NA	7316-4842	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-14	WGS
+0	NA	7316-4842	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	0-14	WGS
 0.04	NA	7316-5267	Initial CNS Tumor	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	14-33.5	RNA-Seq, WGS
 0	0.00136810023107524	7316-89	Progressive	High-grade glioma/astrocytoma (WHO grade III/IV)	Male	14-33.5	RNA-Seq, WGS
 0.01	NA	7316-6283	Initial CNS Tumor	Ependymoma	Male	0-14	RNA-Seq, WGS

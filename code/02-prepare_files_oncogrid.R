@@ -74,7 +74,7 @@ tmb_msi <- read_tsv('results/msisensor-pro/msi_output_merged.tsv') %>%
   dplyr::select(sample_id, MSI_Percent, TMB)
 # add to histology
 hist <- hist %>%
-  left_join(tmb_msi, by = c("Sample" = "sample_id"))
+  left_join(tmb_msi, by = c("Sample" = "sample_id")) %>% distinct(Sample, .keep_all = T)
 
 # add to annot
 annot_info <- hist %>%
