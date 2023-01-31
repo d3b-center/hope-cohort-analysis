@@ -6,20 +6,16 @@ suppressPackageStartupMessages({
 })
 
 # read msisensor pro files
-fname <- 'results/msisensor-pro/hope_cohort_msi_sensor_output.tsv'
+fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_tumor_only_output.tsv'
 if(!file.exists(fname)){
-  lf <- list.files(path = 'data/msisensor_pro/', pattern = 'msisensor_pro', recursive = T, full.names = T)
+  lf <- list.files(path = 'data/msisensor_pro_tumor_only/', pattern = 'msisensor_pro', recursive = T, full.names = T)
   df <- lapply(lf, read_tsv)
   df <- do.call(rbind,df)
   colnames(df)[3] <- "Percent"
   df$name <- gsub('.*/', '', lf)
-  manifest1 <- read_tsv('data/msisensor_pro/manifest_20220927_180139.tsv')
-  manifest2 <- read_tsv('data/msisensor_pro/manifest_20230125_101423.tsv')
-  manifest <- rbind(manifest1, manifest2)
+  manifest <- read_tsv('data/msisensor_pro_tumor_only/manifest_20230131_010544.tsv')
   manifest <- manifest %>% inner_join(df, by = "name")
-  tumor_normal_pair <- read_tsv('data/Tumour_normal_participate.tsv')
   manifest <- manifest %>%
-    inner_join(tumor_normal_pair, by = c("Kids First Biospecimen ID" = "Tumour")) %>%
     dplyr::select(`Kids First Biospecimen ID`, `Kids First Participant ID`, sample_id, gender, Total_Number_of_Sites, Number_of_Somatic_Sites, Percent) %>%
     unique()
   output_df <- manifest %>%
@@ -29,9 +25,6 @@ if(!file.exists(fname)){
 } else {
   output_df <- read_tsv(fname)
 }
-
-# output_df <- output_df %>%
-#   filter(Percent < 1)
 
 # read clinical data from proteomics
 proteomics <- read_tsv('../d3b-miRNA-analysis/analyses/actmir-analysis/input/cluster_data_090722.tsv')
@@ -65,7 +58,7 @@ p <- ggplot(plot_data, aes(x = as.character(proteomics_rdt_cc), y = Percent, col
   ggtitle("% Microsatellite Instability vs. Proteomics Cluster") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = 'results/msisensor-pro/msi_sensor_vs_proteomics_clusters.png', width = 6, height = 6)
+ggsave(filename = 'results/msisensor-pro-tumor-only/msi_sensor_vs_proteomics_clusters.png', width = 6, height = 6)
 
 # developmental clusters
 plot_data <- output_df %>%
@@ -86,7 +79,7 @@ q <- ggplot(plot_data, aes(x = as.character(dtt.cc), y = Percent, color = as.cha
   ggtitle("% Microsatellite Instability vs. Developmental Cluster") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = 'results/msisensor-pro/msi_sensor_vs_dev_clusters.png', width = 6, height = 6)
+ggsave(filename = 'results/msisensor-pro-tumor-only/msi_sensor_vs_dev_clusters.png', width = 6, height = 6)
 
 # age
 plot_data <- output_df %>%
@@ -107,7 +100,7 @@ r <- ggplot(plot_data, aes(x = as.character(age), y = Percent, color = as.charac
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = 'results/msisensor-pro/msi_sensor_vs_age.png', width = 6, height = 6)
+ggsave(filename = 'results/msisensor-pro-tumor-only/msi_sensor_vs_age.png', width = 6, height = 6)
 
 # developmental cluster name
 plot_data <- output_df %>%
@@ -128,7 +121,7 @@ s <- ggplot(plot_data, aes(x = as.character(rdt.name), y = Percent, color = as.c
   ggtitle("% Microsatellite Instability vs. Dev. Cluster Name") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = 'results/msisensor-pro/msi_sensor_vs_dev_cluster_name.png', width = 6, height = 6)
+ggsave(filename = 'results/msisensor-pro-tumor-only/msi_sensor_vs_dev_cluster_name.png', width = 6, height = 6)
 
 # gender
 plot_data <- output_df %>%
@@ -150,7 +143,7 @@ p <- ggplot(plot_data, aes(x = as.character(gender), y = Percent, color = as.cha
   ggtitle("% Microsatellite Instability vs. Gender") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = 'results/msisensor-pro/msi_sensor_vs_gender.png', width = 6, height = 6)
+ggsave(filename = 'results/msisensor-pro-tumor-only/msi_sensor_vs_gender.png', width = 6, height = 6)
 
 # # add cluster from miRNA clustering (shiny)
 # mirna_clusters <- read.csv('data/PBTA_Sample_Clusters.csv', check.names = F)

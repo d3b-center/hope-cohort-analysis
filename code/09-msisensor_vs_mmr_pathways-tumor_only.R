@@ -28,7 +28,7 @@ manifest <- manifest %>%
 # kegg pathways 
 geneset_db <- msigdbr::msigdbr(category = "C2", subcategory = "KEGG")
 geneset_db <- geneset_db[grep("MISMATCH_REPAIR|KEGG_BASE_EXCISION_REPAIR|KEGG_HOMOLOGOUS_RECOMBINATION", geneset_db$gs_name),]
-write.table(unique(geneset_db$human_gene_symbol), file = 'data/mmr_genes.tsv', col.names = F, row.names = F, quote = F)
+# write.table(unique(geneset_db$human_gene_symbol), file = 'data/mmr_genes.tsv', col.names = F, row.names = F, quote = F)
 geneset_db <- base::split(geneset_db$human_gene_symbol, list(geneset_db$gs_name))
 
 # log2
@@ -53,14 +53,13 @@ ssgsea_scores_each <- ssgsea_scores_each %>%
   inner_join(manifest, by = c("Kids_First_Biospecimen_ID" = "Kids First Biospecimen ID"))
 
 # merge with msi
-fname <- 'results/msisensor-pro/hope_cohort_msi_sensor_output.tsv'
+fname <- 'results/msisensor-pro-tumor-only//hope_cohort_msi_sensor_tumor_only_output.tsv'
 output_df <- read_tsv(fname)
 output_df <- ssgsea_scores_each %>%
   inner_join(output_df, by = c("Sample" = "sample_id")) %>%
   dplyr::select(Sample, pathway_name, gsea_score, Percent, Type) %>%
   unique()
-
-pdf(file = "results/msisensor-pro/msi_vs_mmr_pathways.pdf", height = 6, width = 10)
+pdf(file = "results/msisensor-pro-tumor-only/msi_vs_mmr_pathways.pdf", height = 6, width = 10)
 ggplot(output_df, aes(x = Percent, y = gsea_score)) +
   xlab("MSI Percent") + 
   ylab("GSVA score") +
@@ -69,3 +68,5 @@ ggplot(output_df, aes(x = Percent, y = gsea_score)) +
   facet_wrap(~pathway_name, scales = "free") +
   stat_cor(method = "pearson", color = "red")
 dev.off()
+
+
