@@ -28,7 +28,7 @@ manifest <- manifest %>%
 # kegg pathways 
 geneset_db <- msigdbr::msigdbr(category = "C2", subcategory = "KEGG")
 geneset_db <- geneset_db[grep("MISMATCH_REPAIR|KEGG_BASE_EXCISION_REPAIR|KEGG_HOMOLOGOUS_RECOMBINATION", geneset_db$gs_name),]
-write.table(unique(geneset_db$human_gene_symbol), file = 'data/mmr_genes.tsv', col.names = F, row.names = F, quote = F)
+# write.table(unique(geneset_db$human_gene_symbol), file = 'data/mmr_genes.tsv', col.names = F, row.names = F, quote = F)
 geneset_db <- base::split(geneset_db$human_gene_symbol, list(geneset_db$gs_name))
 
 # log2
@@ -64,6 +64,7 @@ pdf(file = "results/msisensor-pro/msi_vs_mmr_pathways.pdf", height = 6, width = 
 ggplot(output_df, aes(x = Percent, y = gsea_score)) +
   xlab("MSI Percent") + 
   ylab("GSVA score") +
+  geom_smooth(se = FALSE) + 
   ggpubr::theme_pubr() +
   geom_point(position = "jitter", pch = 21) +
   facet_wrap(~pathway_name, scales = "free") +

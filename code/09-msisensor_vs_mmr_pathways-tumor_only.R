@@ -53,7 +53,7 @@ ssgsea_scores_each <- ssgsea_scores_each %>%
   inner_join(manifest, by = c("Kids_First_Biospecimen_ID" = "Kids First Biospecimen ID"))
 
 # merge with msi
-fname <- 'results/msisensor-pro-tumor-only//hope_cohort_msi_sensor_tumor_only_output.tsv'
+fname <- 'results/msisensor-pro-tumor-only//hope_cohort_msi_sensor_output.tsv'
 output_df <- read_tsv(fname)
 output_df <- ssgsea_scores_each %>%
   inner_join(output_df, by = c("Sample" = "sample_id")) %>%
@@ -63,6 +63,7 @@ pdf(file = "results/msisensor-pro-tumor-only/msi_vs_mmr_pathways.pdf", height = 
 ggplot(output_df, aes(x = Percent, y = gsea_score)) +
   xlab("MSI Percent") + 
   ylab("GSVA score") +
+  geom_smooth(se = FALSE) + 
   ggpubr::theme_pubr() +
   geom_point(position = "jitter", pch = 21) +
   facet_wrap(~pathway_name, scales = "free") +

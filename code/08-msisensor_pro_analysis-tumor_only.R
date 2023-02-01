@@ -6,7 +6,7 @@ suppressPackageStartupMessages({
 })
 
 # read msisensor pro files
-fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_tumor_only_output.tsv'
+fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_output.tsv'
 if(!file.exists(fname)){
   lf <- list.files(path = 'data/msisensor_pro_tumor_only/', pattern = 'msisensor_pro', recursive = T, full.names = T)
   df <- lapply(lf, read_tsv)

@@ -5,7 +5,7 @@ suppressPackageStartupMessages({
 })
 
 # msisensor pro
-fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_tumor_only_output.tsv'
+fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_output.tsv'
 output_df <- read_tsv(fname)
 output_df <- output_df %>%
   dplyr::select(-c(Type))
@@ -19,8 +19,12 @@ output_df <- output_df %>%
 write_tsv(output_df, file = 'results/msisensor-pro-tumor-only/msisensorpro_vs_pos_controls.tsv')
 
 # plot
-ggplot(output_df, aes(x = "", Percent, color = MMR_SOMATIC)) + 
+output_df$label <- ifelse(output_df$MMR_GERMLINE != "none", output_df$sample_id, "")
+ggplot(output_df, aes(x = "", Percent, color = MMR_SOMATIC, label = label)) + 
   geom_point(pch = 21, size = 4) + 
-  theme_pubr(legend = "right") + ylab("% MSI") + xlab("") +
-  ggtitle("% MSI vs MMR_Somatic") 
+  geom_text(hjust = -0.2, vjust = 0.5) +
+  theme_pubr(legend = "right") + 
+  ylab("% MSI") + 
+  xlab(paste0("Samples: n = ",nrow(output_df))) +
+  ggtitle("% MSI vs MMR_Somatic")
 ggsave(filename = "results/msisensor-pro-tumor-only/msisensorpro_vs_pos_controls.png", height = 6, width = 6)

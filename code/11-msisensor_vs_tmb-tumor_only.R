@@ -5,7 +5,7 @@ suppressPackageStartupMessages({
 })
 
 # msisensor pro
-fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_tumor_only_output.tsv'
+fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_output.tsv'
 output_df <- read_tsv(fname)
 output_df <- output_df %>%
   dplyr::select(-c(Type))
