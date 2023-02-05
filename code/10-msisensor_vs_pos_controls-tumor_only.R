@@ -1,4 +1,5 @@
 # compare somatic MMR status to paper: https://www.biorxiv.org/content/10.1101/2022.08.05.502870v1.supplementary-material
+# issue that discusses this: https://github.com/d3b-center/bixu-tracker/issues/1534
 suppressPackageStartupMessages({
   library(ggplot2)
   library(tidyverse)
