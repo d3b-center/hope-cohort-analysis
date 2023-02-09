@@ -2,6 +2,7 @@
 suppressPackageStartupMessages({
   library(ggplot2)
   library(tidyverse)
+  library(ggpubr)
 })
 
 # msisensor pro
@@ -11,7 +12,7 @@ output_df <- output_df %>%
   dplyr::select(-c(Type))
 
 # get TMB from OT
-dat <- read_tsv('~/Projects/OpenPedCan-analysis/analyses/tmb-calculation/results/snv-mutation-tmb-all.tsv')
+dat <- read_tsv('~/Projects/OpenPedCan-analysis/analyses/tmb-calculation/results/snv-mutation-tmb-coding.tsv')
 output_df <- output_df %>%
   inner_join(dat, by = c("Kids First Biospecimen ID" = "Tumor_Sample_Barcode"))
 

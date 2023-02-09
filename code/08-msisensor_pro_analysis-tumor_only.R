@@ -88,12 +88,13 @@ plot_data <- output_df %>%
   group_by(age) %>%
   mutate(n = n()) %>%
   mutate(age = paste0(age, "\n(n = ",n,")")) 
-r <- ggplot(plot_data, aes(x = as.character(age), y = Percent, color = as.character(age))) +
+plot_data$age <- factor(plot_data$age, levels = c("[0,15]\n(n = 58)", "(15,26]\n(n = 22)", "(26,40]\n(n = 8)"))
+r <- ggplot(plot_data, aes(x = age, y = Percent, color = as.character(age))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
   ggpubr::theme_pubr(base_size = 8) + ylab("") + 
   stat_compare_means(color = "red", 
-                     comparisons = combn(unique(plot_data$age), m = 2, simplify = F)) +
+                     comparisons = combn(levels(plot_data$age), m = 2, simplify = F)) +
   stat_compare_means(color = "blue") +
   xlab("") + 
   ylab("% Microsatellite Instability") +
