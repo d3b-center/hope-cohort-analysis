@@ -4,11 +4,15 @@ suppressPackageStartupMessages({
   library(reshape2)
 })
 
+# output directory
+output_dir <- file.path("results", "correlation_analysis")
+dir.create(output_dir, showWarnings = F, recursive = T)
+
 # matrix
-mat <- read.table(file.path("results", "oncoprint.txt"),  header = TRUE, stringsAsFactors=FALSE, sep = "\t",check.names = FALSE)
+mat <- readr::read_tsv(file = file.path("results", "oncoprint.txt"))
 
 # subset to 95 samples 
-hope_cohort_subset <- read.delim('data/hope_cohort_subset.tsv', header = F)
+hope_cohort_subset <- read.delim(file.path("data", "hope_cohort_subset.tsv"), header = F)
 mat <- mat %>%
   filter(Sample %in% hope_cohort_subset$V1)
 mat <- melt(mat, id.vars = "Sample", variable.name = "gene", value.name = "alteration_type")
@@ -37,7 +41,7 @@ mat <- mat %>%
 cols_to_use <- c("Age", "Sex")
 compute_corr <- function(dat, cols){
   print(unique(dat$gene))
-  stopifnot(nrow(dat) == 63)
+  stopifnot(nrow(dat) == 70)
   for(i in 1:length(cols)){
     if(length(unique(dat$alteration)) > 1){
       kw_test <- broom::tidy(kruskal.test(formula = factor(alteration) ~ factor(get(cols[i])), data = dat))
@@ -65,144 +69,112 @@ genes_of_interest <- c("NF1", "TP53", "IDH1", "ATM", "PDGFRA", "CDKN2A", "TSC2",
 output <- plyr::ddply(.data = mat, 
                           .variables = "gene", 
                           .fun = function(x) compute_corr(x, cols = cols_to_use))
-write.table(output, file = 'results/correlation.tsv', quote = F, row.names = F, sep = "\t")
+output <- output %>%
+  dplyr::arrange(chisq_test_pval) %>%
+  dplyr::mutate(signif = ifelse(chisq_test_pval < 0.05, TRUE, FALSE))
+write.table(output, file = file.path(output_dir, "gene_correlation_with_age_or_sex.tsv"), quote = F, row.names = F, sep = "\t")
 output <- output %>%
   filter(gene %in% genes_of_interest)
 
-# coexistence correlation ATRX and TP53
-mat_atrx_tp53 <- mat %>%
-  filter(gene %in% c("ATRX", "TP53"))
-mat_atrx_tp53 <- dcast(mat_atrx_tp53, Sample + Age + Sex ~ gene, value.var = "alteration")
-mat_atrx_tp53 <- mat_atrx_tp53 %>%
-  mutate(coexistence = ifelse(ATRX == "Present" & TP53 == "Present", "Present", "Absent"))
-chisq_test_atrx_tp53 <- chisq.test(x = mat_atrx_tp53$ATRX, y = mat_atrx_tp53$TP53)
-round(chisq_test_atrx_tp53$p.value, 5) # 0.00015
+# 1) coexistence correlation between 2 genes
+coexistence_analysis <- function(mat, gene1, gene2){
+  dat <- mat %>%
+    filter(gene %in% c(gene1, gene2))
+  dat <- dcast(dat, Sample + Age + Sex ~ gene, value.var = "alteration")
+  dat <- dat %>%
+    mutate(coexistence = ifelse(get(gene1) == "Present" & get(gene2) == "Present", "Present", "Absent"))
+  chisq_test_coexistence <- chisq.test(x = dat[,gene1], y = dat[,gene2])
+  chisq_test_coexistence_age <- chisq.test(x = factor(dat$coexistence), y = factor(dat$Age))
+  chisq_test_coexistence_sex <- chisq.test(x = factor(dat$coexistence), y = factor(dat$Sex))
+  df <- data.frame(Comparison = paste0(gene1, "-", gene2, " Co-existence"),
+                   chisq_pval = round(chisq_test_coexistence$p.value, 5),
+                   chisq_pval_Age = round(chisq_test_coexistence_age$p.value, 2),
+                   chisq_pval_Sex = round(chisq_test_coexistence_sex$p.value, 2))
+  write_tsv(df, file = file.path(output_dir, paste0(gene1, "-", gene2, "-coexistence.tsv")))
+  
+  # stratified by age
+  all_age <- unique(dat$Age)
+  age_total <- data.frame()
+  for(i in 1:length(all_age)){
+    all_age[i]
+    gene1_vals <- dat %>%
+      filter(Age == all_age[i]) %>% 
+      pull(gene1)
+    gene2_vals <- dat %>%
+      filter(Age == all_age[i]) %>% 
+      pull(gene2)
+    if(length(unique(gene1_vals)) > 1 & length(unique(gene2_vals)) > 1){
+      pval <- chisq.test(x = gene1_vals, y = gene2_vals) 
+      pval <- pval$p.value
+    } else {
+      pval <- NA
+    }
+    df <- data.frame(comparison = paste(gene1, "vs", gene2), 
+                     variable = "Age",
+                     value = all_age[i], 
+                     chisq_pval = round(pval, 5))
+    age_total <- rbind(age_total, df)
+  }
+  # write_tsv(age_total, file = file.path(output_dir, paste0(gene1, "-vs-", gene2, "-by-age.tsv")))
+  
+  # stratified by sex
+  all_sex <- unique(dat$Sex)
+  sex_total <- data.frame()
+  for(i in 1:length(all_sex)){
+    all_sex[i]
+    gene1_vals <- dat %>%
+      filter(Sex == all_sex[i]) %>% 
+      pull(gene1)
+    gene2_vals <- dat %>%
+      filter(Sex == all_sex[i]) %>% 
+      pull(gene2)
+    if(length(unique(gene1_vals)) > 1 & length(unique(gene2_vals)) > 1){
+      pval <- chisq.test(x = gene1_vals, y = gene2_vals) 
+      pval <- pval$p.value
+    } else {
+      pval <- NA
+    }
+    df <- data.frame(comparison = paste(gene1, "vs", gene2), 
+                     variable = "Sex",
+                     value = all_sex[i], 
+                     chisq_pval = round(pval, 5))
+    sex_total <- rbind(sex_total, df)
+  }
+  # write_tsv(sex_total, file = file.path(output_dir, paste0(gene1, "-vs-", gene2, "-by-sex.tsv")))
+  
+  # stratified by age and sex
+  dat$Age_Sex <- paste0(dat$Age, "_", dat$Sex)
+  all_age_sex <- unique(dat$Age_Sex)
+  age_sex_total <- data.frame()
+  for(i in 1:length(all_age_sex)){
+    all_age_sex[i]
+    gene1_vals <- dat %>%
+      filter(Age_Sex == all_age_sex[i]) %>% 
+      pull(gene1)
+    gene2_vals <- dat %>%
+      filter(Age_Sex == all_age_sex[i]) %>% 
+      pull(gene2)
+    if(length(unique(gene1_vals)) > 1 & length(unique(gene2_vals)) > 1){
+      pval <- chisq.test(x = gene1_vals, y = gene2_vals) 
+      pval <- pval$p.value
+    } else {
+      pval <- NA
+    }
+    df <- data.frame(comparison = paste(gene1, "vs", gene2), 
+                     variable = "Age + Sex",
+                     value = all_age_sex[i],
+                     # Age = gsub("_.*", "", all_age_sex[i]), 
+                     # Sex = gsub(".*_", "", all_age_sex[i]), 
+                     chisq_pval = round(pval, 5))
+    age_sex_total <- rbind(age_sex_total, df)
+  }
+  # write_tsv(age_sex_total, file = file.path(output_dir, paste0(gene1, "-vs-", gene2, "-by-age-and-sex.tsv")))
+  
+  # combine all results
+  df <- rbind(age_total, sex_total, age_sex_total)
+  write_tsv(df, file = file.path(output_dir, paste0(gene1, "-vs-", gene2, "-by-age-and-sex.tsv")))
+}
 
-# stratified by age and sex
-chisq.test(x = mat_atrx_tp53 %>%
-             filter(Age == "14-33.5") %>% pull(ATRX), 
-           y = mat_atrx_tp53 %>%
-             filter(Age == "14-33.5") %>% pull(TP53)) # 0.007049
-chisq.test(x = mat_atrx_tp53 %>%
-             filter(Age == "0-14") %>% pull(ATRX), 
-           y = mat_atrx_tp53 %>%
-             filter(Age == "0-14") %>% pull(TP53)) # 0.0298
-chisq.test(x = mat_atrx_tp53 %>%
-             filter(Sex == "Male") %>% pull(ATRX), 
-           y = mat_atrx_tp53 %>%
-             filter(Sex == "Male") %>% pull(TP53)) # 0.004222
-chisq.test(x = mat_atrx_tp53 %>%
-             filter(Sex == "Female") %>% pull(ATRX), 
-           y = mat_atrx_tp53 %>%
-             filter(Sex == "Female") %>% pull(TP53)) # 0.06625
-chisq.test(x = mat_atrx_tp53 %>%
-             filter(Age == "0-14", 
-                    Sex == "Female") %>% pull(ATRX), 
-           y = mat_atrx_tp53 %>%
-             filter(Age == "0-14", 
-                    Sex == "Female") %>% pull(TP53)) # 0.4545
-chisq.test(x = mat_atrx_tp53 %>%
-             filter(Age == "0-14", 
-                    Sex == "Male") %>% pull(ATRX), 
-           y = mat_atrx_tp53 %>%
-             filter(Age == "0-14", 
-                    Sex == "Male") %>% pull(TP53)) # 0.1138
-
-# coexistence is correlated with age group or sex 
-chisq_test_atrx_tp53_age <- chisq.test(x = factor(mat_atrx_tp53$coexistence), y = factor(mat_atrx_tp53$Age))
-round(chisq_test_atrx_tp53_age$p.value, 3) # 0.321
-chisq_test_atrx_tp53_sex <- chisq.test(x = factor(mat_atrx_tp53$coexistence), y = factor(mat_atrx_tp53$Sex))
-round(chisq_test_atrx_tp53_sex$p.value, 3) # 0.354
-
-# coexistence correlation H3F3A and TP53
-mat_h3f3a_tp53 <- mat %>%
-  filter(gene %in% c("H3F3A", "TP53"))
-mat_h3f3a_tp53 <- dcast(mat_h3f3a_tp53, Sample + Age + Sex ~ gene, value.var = "alteration")
-mat_h3f3a_tp53 <- mat_h3f3a_tp53 %>%
-  mutate(coexistence = ifelse(H3F3A == "Present" & TP53 == "Present", "Present", "Absent"))
-chisq_test_h3f3a_tp53 <- chisq.test(x = mat_h3f3a_tp53$H3F3A, y = mat_h3f3a_tp53$TP53)
-round(chisq_test_h3f3a_tp53$p.value, 5) # 0.00939
-
-# stratified by age and sex
-chisq.test(x = mat_h3f3a_tp53 %>%
-             filter(Age == "14-33.5") %>% pull(H3F3A), 
-           y = mat_h3f3a_tp53 %>%
-             filter(Age == "14-33.5") %>% pull(TP53)) # 0.3691
-chisq.test(x = mat_h3f3a_tp53 %>%
-             filter(Age == "0-14") %>% pull(H3F3A), 
-           y = mat_h3f3a_tp53 %>%
-             filter(Age == "0-14") %>% pull(TP53)) # 0.02095
-chisq.test(x = mat_h3f3a_tp53 %>%
-             filter(Sex == "Male") %>% pull(H3F3A), 
-           y = mat_h3f3a_tp53 %>%
-             filter(Sex == "Male") %>% pull(TP53)) # 0.5493
-chisq.test(x = mat_h3f3a_tp53 %>%
-             filter(Sex == "Female") %>% pull(H3F3A), 
-           y = mat_h3f3a_tp53 %>%
-             filter(Sex == "Female") %>% pull(TP53)) # 0.004127
-chisq.test(x = mat_h3f3a_tp53 %>%
-             filter(Age == "0-14", 
-                    Sex == "Female") %>% pull(H3F3A), 
-           y = mat_h3f3a_tp53 %>%
-             filter(Age == "0-14", 
-                    Sex == "Female") %>% pull(TP53)) # 0.03131
-chisq.test(x = mat_h3f3a_tp53 %>%
-             filter(Age == "0-14", 
-                    Sex == "Male") %>% pull(H3F3A), 
-           y = mat_h3f3a_tp53 %>%
-             filter(Age == "0-14", 
-                    Sex == "Male") %>% pull(TP53)) # 0.5029
-
-
-# coexistence is correlated with age group or sex 
-chisq_test_h3f3a_tp53_age <- chisq.test(x = factor(mat_h3f3a_tp53$coexistence), y = factor(mat_h3f3a_tp53$Age))
-round(chisq_test_h3f3a_tp53_age$p.value, 3) # 1
-chisq_test_h3f3a_tp53_sex <- chisq.test(x = factor(mat_h3f3a_tp53$coexistence), y = factor(mat_h3f3a_tp53$Sex))
-round(chisq_test_h3f3a_tp53_sex$p.value, 3) # 0.747
-
-# coexistence correlation NF1 and ATRX
-mat_nf1_atrx <- mat %>%
-  filter(gene %in% c("NF1", "ATRX"))
-mat_nf1_atrx <- dcast(mat_nf1_atrx, Sample + Age + Sex ~ gene, value.var = "alteration")
-mat_nf1_atrx <- mat_nf1_atrx %>%
-  mutate(coexistence = ifelse(NF1 == "Present" & ATRX == "Present", "Present", "Absent"))
-chisq_test_nf1_atrx <- chisq.test(x = mat_nf1_atrx$NF1, y = mat_nf1_atrx$ATRX)
-round(chisq_test_nf1_atrx$p.value, 5) # 0.04196
-
-# stratified by age and sex
-chisq.test(x = mat_nf1_atrx %>%
-             filter(Age == "14-33.5") %>% pull(NF1), 
-           y = mat_nf1_atrx %>%
-             filter(Age == "14-33.5") %>% pull(ATRX)) # 1
-chisq.test(x = mat_nf1_atrx %>%
-             filter(Age == "0-14") %>% pull(NF1), 
-           y = mat_nf1_atrx %>%
-             filter(Age == "0-14") %>% pull(ATRX)) # 0.001736
-chisq.test(x = mat_nf1_atrx %>%
-             filter(Sex == "Male") %>% pull(NF1), 
-           y = mat_nf1_atrx %>%
-             filter(Sex == "Male") %>% pull(ATRX)) # 0.4446
-chisq.test(x = mat_nf1_atrx %>%
-             filter(Sex == "Female") %>% pull(NF1), 
-           y = mat_nf1_atrx %>%
-             filter(Sex == "Female") %>% pull(ATRX)) # 0.1127
-chisq.test(x = mat_nf1_atrx %>%
-             filter(Age == "0-14", 
-                    Sex == "Female") %>% pull(NF1), 
-           y = mat_nf1_atrx %>%
-             filter(Age == "0-14", 
-                    Sex == "Female") %>% pull(ATRX)) # 0.01519
-chisq.test(x = mat_nf1_atrx %>%
-             filter(Age == "0-14", 
-                    Sex == "Male") %>% pull(NF1), 
-           y = mat_nf1_atrx %>%
-             filter(Age == "0-14", 
-                    Sex == "Male") %>% pull(ATRX)) # 0.1138
-
-# coexistence is correlated with age group or sex
-chisq_test_nf1_atrx_age <- chisq.test(x = factor(mat_nf1_atrx$coexistence), y = factor(mat_nf1_atrx$Age))
-round(chisq_test_nf1_atrx_age$p.value, 3) # 0.335
-chisq_test_nf1_atrx_sex <- chisq.test(x = factor(mat_nf1_atrx$coexistence), y = factor(mat_nf1_atrx$Sex))
-round(chisq_test_nf1_atrx_sex$p.value, 3) # 0.561
-
-
+coexistence_analysis(mat = mat, gene1 = "ATRX", gene2 = "TP53")
+coexistence_analysis(mat = mat, gene1 = "H3-3A", gene2 = "TP53")
+coexistence_analysis(mat = mat, gene1 = "NF1", gene2 = "ATRX")

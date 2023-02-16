@@ -3,6 +3,7 @@
 suppressPackageStartupMessages({
   library(ComplexHeatmap)
   library(tidyverse)
+  library(circlize)
 })
 
 # matrix
