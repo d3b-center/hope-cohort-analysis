@@ -153,17 +153,3 @@ saveRDS(hope_cohort_cnv, file = file.path("data/merged_files", "cnv_merged.rds")
 # print(length(unique(hope_cohort_cnv$Kids_First_Biospecimen_ID)))
 # saveRDS(hope_cohort_cnv, file = file.path("data", "merged_files", "cnv_merged.rds"))
 
-# merge tumor-only mutations (n = 85)
-# hope_cohort_mutations <- list.files(path = file.path("data", "tumor_only_maf"), pattern = "public", recursive = T, full.names = T)
-# hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) merge_files(x))
-# hope_cohort_mutations <- data.table::rbindlist(hope_cohort_mutations)
-# hope_cohort_mutations$sample_name <- NULL
-# length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
-# saveRDS(hope_cohort_mutations, file = file.path("data", "merged_files", "snv_tumor_only_merged.rds"))
-
-# # merge tumor only cnv (n = 85)
-# hope_cohort_cnv <- list.files(path = file.path("data", "tumor_only_copy_number"), pattern = "*.txt", recursive = TRUE, full.names = T)
-# hope_cohort_cnv <- lapply(hope_cohort_cnv, FUN = function(x) merge_cnv(nm = x))
-# hope_cohort_cnv <- data.table::rbindlist(hope_cohort_cnv)
-# print(length(unique(hope_cohort_cnv$sample_name)))
-# saveRDS(hope_cohort_cnv, file = file.path("data", "merged_files", "cnv_tumor_only_merged.rds"))
