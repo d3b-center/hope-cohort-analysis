@@ -1,11 +1,14 @@
 comparison	variable	value	chisq_pval
-ATRX vs TP53	Age	14-33.5	0.00168
-ATRX vs TP53	Age	0-14	0.03527
-ATRX vs TP53	Age	>33.5	NA
+ATRX vs TP53	Age	(15,26]	0.00491
+ATRX vs TP53	Age	(26,40]	NA
+ATRX vs TP53	Age	[0,15]	0.01739
+ATRX vs TP53	Age	NA	NA
 ATRX vs TP53	Sex	Male	0.0022
 ATRX vs TP53	Sex	Female	0.02428
-ATRX vs TP53	Age + Sex	14-33.5_Male	0.06407
-ATRX vs TP53	Age + Sex	14-33.5_Female	0.04736
-ATRX vs TP53	Age + Sex	0-14_Female	0.55464
-ATRX vs TP53	Age + Sex	0-14_Male	0.09237
-ATRX vs TP53	Age + Sex	>33.5_Male	NA
+ATRX vs TP53	Age + Sex	(15,26]_Male	0.06004
+ATRX vs TP53	Age + Sex	(26,40]_Female	NA
+ATRX vs TP53	Age + Sex	[0,15]_Female	0.26395
+ATRX vs TP53	Age + Sex	[0,15]_Male	0.09237
+ATRX vs TP53	Age + Sex	(15,26]_Female	0.2059
+ATRX vs TP53	Age + Sex	(26,40]_Male	NA
+ATRX vs TP53	Age + Sex	NA_Female	NA

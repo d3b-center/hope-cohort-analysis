@@ -1,11 +1,14 @@
 comparison	variable	value	chisq_pval
-H3-3A vs TP53	Age	14-33.5	0.57112
-H3-3A vs TP53	Age	0-14	0.02669
-H3-3A vs TP53	Age	>33.5	NA
+H3-3A vs TP53	Age	(15,26]	0.62559
+H3-3A vs TP53	Age	(26,40]	NA
+H3-3A vs TP53	Age	[0,15]	0.03281
+H3-3A vs TP53	Age	NA	NA
 H3-3A vs TP53	Sex	Male	0.39876
 H3-3A vs TP53	Sex	Female	0.01778
-H3-3A vs TP53	Age + Sex	14-33.5_Male	1
-H3-3A vs TP53	Age + Sex	14-33.5_Female	0.39075
-H3-3A vs TP53	Age + Sex	0-14_Female	0.05814
-H3-3A vs TP53	Age + Sex	0-14_Male	0.42699
-H3-3A vs TP53	Age + Sex	>33.5_Male	NA
+H3-3A vs TP53	Age + Sex	(15,26]_Male	1
+H3-3A vs TP53	Age + Sex	(26,40]_Female	NA
+H3-3A vs TP53	Age + Sex	[0,15]_Female	0.08053
+H3-3A vs TP53	Age + Sex	[0,15]_Male	0.42699
+H3-3A vs TP53	Age + Sex	(15,26]_Female	0.57161
+H3-3A vs TP53	Age + Sex	(26,40]_Male	NA
+H3-3A vs TP53	Age + Sex	NA_Female	NA

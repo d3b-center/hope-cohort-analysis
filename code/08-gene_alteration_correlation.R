@@ -178,3 +178,5 @@ coexistence_analysis <- function(mat, gene1, gene2){
 coexistence_analysis(mat = mat, gene1 = "ATRX", gene2 = "TP53")
 coexistence_analysis(mat = mat, gene1 = "H3-3A", gene2 = "TP53")
 coexistence_analysis(mat = mat, gene1 = "NF1", gene2 = "ATRX")
+coexistence_analysis(mat = mat, gene1 = "LRP1B", gene2 = "NTRK3")
+

@@ -24,6 +24,5 @@ ggplot(output_df, aes(Percent, tmb)) +
   geom_point() + 
   geom_text_repel(aes(label = Type), na.rm=TRUE, hjust=0, vjust=0, size = 3, color = "red") +
   theme_pubr() + xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs TMB") +
-  geom_smooth() + 
   stat_cor(method = "pearson", label.x = max(output_df$Percent)-2, label.y = max(output_df$tmb))
 ggsave(filename = "results/msisensor-pro-tumor-only/msisensorpro_vs_tmb.png", height = 6, width = 8)
