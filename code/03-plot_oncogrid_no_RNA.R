@@ -95,9 +95,9 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experimen
                            "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2"),
   Sex = c("Female" = "deeppink4",
           "Male" = "navy"),
-  Age = c("0-14" = "gold",
-          "14-33.5" = "purple",
-          ">33.5" = "darkgreen")),
+  Age = c("[0,15]" = "gold",
+          "(15,26]" = "purple",
+          "(26,40]" = "darkgreen")),
   annotation_name_gp = gpar(fontsize = 9),
   gp = gpar(col = "#595959"), simple_anno_size = unit(4, "mm"), annotation_name_side = "left",
   annotation_legend_param = list(
@@ -256,7 +256,7 @@ draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_si
 dev.off()
 
 # annotation 1
-ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(Tumor_Descriptor, Integrated_Diagnosis, Age, Sex), col = list(
+ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(MSI_Percent, TMB, Tumor_Descriptor, Integrated_Diagnosis, Age, Sex), col = list(
   TMB = col_fun_tmb,
   MSI_Percent = col_fun_msi,
   Sequencing_Experiment = c("WGS" = "red",
@@ -272,9 +272,9 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(Tumor_Descriptor, Integ
                            "Glioblastoma" = "orange",
                            "Ependymoma" = "darkgreen",
                            "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2"),
-  Age = c("0-14" = "gold",
-          "14-33.5" = "purple",
-          ">33.5" = "darkgreen"),
+  Age = c("[0,15]" = "gold",
+          "(15,26]" = "purple",
+          "(26,40]" = "darkgreen"),
   Sex = c("Female" = "deeppink4",
           "Male" = "navy")),
   annotation_name_gp = gpar(fontsize = 9),

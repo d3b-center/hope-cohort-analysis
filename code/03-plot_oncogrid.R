@@ -87,9 +87,9 @@ ha = HeatmapAnnotation(df = annot_info , col = list(
                            "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2"),
   Sex = c("Female" = "deeppink4",
              "Male" = "navy"),
-  Age = c("0-14" = "gold",
-          "14-33.5" = "purple",
-          ">33.5" = "darkgreen")),
+  Age = c("[0,15]" = "gold",
+          "(15,26]" = "purple",
+          "(26,40]" = "darkgreen")),
   annotation_name_gp = gpar(fontsize = 9),
   gp = gpar(col = "#595959"), simple_anno_size = unit(4, "mm"), annotation_name_side = "left",
   annotation_legend_param = list(

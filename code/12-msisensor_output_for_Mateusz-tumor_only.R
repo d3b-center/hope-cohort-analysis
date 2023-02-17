@@ -6,7 +6,8 @@ msi_output <- msi_output %>%
   dplyr::rename("MSI_Percent" = "Percent")
 
 # get TMB from OT
-tmb_output <- read_tsv('~/Projects/OpenPedCan-analysis/analyses/tmb-calculation/results/snv-mutation-tmb-coding.tsv')
+# tmb_output <- read_tsv('~/Projects/OpenPedCan-analysis/analyses/tmb-calculation/results/snv-mutation-tmb-coding.tsv')
+tmb_output <- read_tsv('code/tmb-calculation/results/snv-tumor-only-mutation-tmb-coding.tsv')
 tmb_output <- tmb_output %>%
   dplyr::rename("TMB" = "tmb") %>%
   dplyr::select(Tumor_Sample_Barcode, TMB)

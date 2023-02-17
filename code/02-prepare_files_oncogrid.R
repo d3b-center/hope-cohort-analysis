@@ -58,23 +58,29 @@ hist <- hist %>%
   filter(`Sequenced CBTN Specimen Group ID` %in% annot_info$Sample) %>%
   mutate(Sample = `Sequenced CBTN Specimen Group ID`) %>%
   group_by(Sample) %>%
-  mutate(Age = toString(unique(sort(`Age at Specimen Diagnosis`))),
-         Tumor_Descriptor = toString(unique(`Diagnosis Type`)),
+  mutate(Tumor_Descriptor = toString(unique(`Diagnosis Type`)),
          Integrated_Diagnosis = toString(unique(Diagnosis)),
          Sex = toString(unique(Gender))) %>%
-  dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Age, Sex) %>%
+  dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Sex) %>%
   unique()
 hist$Tumor_Descriptor[hist$Tumor_Descriptor == "recurrent"] <- "Recurrence"
-hist$Age <- as.numeric(hist$Age)/365
-hist$Age <- ifelse(hist$Age > 0 & hist$Age <= 14, "0-14", 
-                   ifelse(hist$Age > 14 & hist$Age <= 33.5, "14-33.5", ">33.5"))
 
-# add TMB and MSI-sensor information
+# add Age from Nicole's file
+cluster_data <- read_tsv('data/cluster_data101922.tsv')
+cluster_data <- cluster_data %>%
+  dplyr::select(id, age) 
+hist <- hist %>%
+  left_join(cluster_data, by = c("Sample" = "id")) %>%
+  dplyr::rename("Age" = "age")
+
+# add TMB and MSI-sensor information (TMB from consensus maf file)
 tmb_msi <- read_tsv('results/msisensor-pro/msi_output_merged.tsv') %>%
-  dplyr::select(sample_id, MSI_Percent, TMB)
+  dplyr::select(sample_id, MSI_Percent, TMB) 
+
 # add to histology
 hist <- hist %>%
-  left_join(tmb_msi, by = c("Sample" = "sample_id")) %>% distinct(Sample, .keep_all = T)
+  left_join(tmb_msi, by = c("Sample" = "sample_id")) %>% 
+  distinct(Sample, .keep_all = T)
 
 # add to annot
 annot_info <- hist %>%
