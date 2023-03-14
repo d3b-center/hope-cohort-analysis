@@ -5,14 +5,17 @@ suppressPackageStartupMessages({
 })
 
 # output directory
-output_dir <- file.path("results", "correlation_analysis")
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+data_dir <- file.path(root_dir, "data")
+input_dir <- file.path(root_dir, "results", "oncoplots")
+output_dir <- file.path(root_dir, "results", "correlation_analysis")
 dir.create(output_dir, showWarnings = F, recursive = T)
 
 # matrix
-mat <- readr::read_tsv(file = file.path("results", "oncoprint.txt"))
+mat <- readr::read_tsv(file = file.path(input_dir, "oncoprint.txt"))
 
 # subset to 95 samples 
-hope_cohort_subset <- read.delim(file.path("data", "hope_cohort_subset.tsv"), header = F)
+hope_cohort_subset <- read.delim(file.path(data_dir, "hope_cohort_subset.tsv"), header = F)
 mat <- mat %>%
   filter(Sample %in% hope_cohort_subset$V1)
 mat <- melt(mat, id.vars = "Sample", variable.name = "gene", value.name = "alteration_type")
@@ -29,7 +32,7 @@ mat <- mat %>%
   mutate(alteration = ifelse(alteration_type == "", "Absent", "Present"))
 
 # remove samples that do not have DNA info  
-annot_info <- read.delim(file.path("results", "annotation.txt"), header = TRUE, check.names = TRUE)
+annot_info <- read.delim(file.path(input_dir, "annotation.txt"), header = TRUE, check.names = TRUE)
 annot_info <- annot_info %>%
   filter(Sample %in% mat$Sample, 
          Sequencing_Experiment != "RNA-Seq") 
@@ -41,7 +44,8 @@ mat <- mat %>%
 cols_to_use <- c("Age", "Sex")
 compute_corr <- function(dat, cols){
   print(unique(dat$gene))
-  stopifnot(nrow(dat) == 70)
+  print(nrow(dat))
+  stopifnot(nrow(dat) == 69)
   for(i in 1:length(cols)){
     if(length(unique(dat$alteration)) > 1){
       kw_test <- broom::tidy(kruskal.test(formula = factor(alteration) ~ factor(get(cols[i])), data = dat))
@@ -175,6 +179,7 @@ coexistence_analysis <- function(mat, gene1, gene2){
   write_tsv(df, file = file.path(output_dir, paste0(gene1, "-vs-", gene2, "-by-age-and-sex.tsv")))
 }
 
+# run co-existence analysis
 coexistence_analysis(mat = mat, gene1 = "ATRX", gene2 = "TP53")
 coexistence_analysis(mat = mat, gene1 = "H3-3A", gene2 = "TP53")
 coexistence_analysis(mat = mat, gene1 = "NF1", gene2 = "ATRX")

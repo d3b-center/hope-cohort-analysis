@@ -1,52 +1,56 @@
 # data availability heatmap
 
+# load libraries
 suppressPackageStartupMessages({
   library(reshape2)
   library(ggplot2)
   library(tidyverse) 
 })
 
-# hope cohort subset of 95 samples to plot
-dat <- read.delim('data/hope_cohort_subset.tsv', header = F, col.names = "Sample")
+# output directory
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+data_dir <- file.path(root_dir, "data")
+output_dir <- file.path(root_dir, "results", "data_plots")
+dir.create(output_dir, recursive = T, showWarnings = F)
+
+# updated clinical data from Mateusz
+dat = readr::read_tsv(file.path(data_dir, "hopeonly_clinical_table_011823.tsv"))
 dat <- dat %>%
-  filter(Sample != "7316-4065")
-dat$proteomics <- TRUE
-dat$phosphoproteomics <- TRUE
+  dplyr::select(Sample_ID)
+
+# add proteomics from Nicole's file
+proteomics <- read_tsv('data/cluster_data101922.tsv')
+dat$proteomics <- dat$Sample_ID %in% proteomics$id
+
+# add phosphoproteomics from Nicole's file
+dat$phosphoproteomics <- dat$Sample_ID %in% proteomics$id
 
 # add methylation
-methylation <- read.delim('data/methylation_subset.tsv', header = F)
-methylation <- methylation %>%
-  filter(V1 != "7316-4065")
-dat$methylation <- dat$Sample %in% methylation$V1
+methylation <- read.delim(file.path(data_dir, "methylation_subset.tsv"), header = F)
+dat$methylation <- dat$Sample_ID %in% methylation$V1
 
-# add RNA-seq and WGS info
-annot_info <- read.delim(file.path("results", "annotation.txt"), header = TRUE, check.names = TRUE)
-annot_info <- annot_info %>%
-  filter(Sample != "7316-4065") %>%
-  dplyr::select(Sample, Sequencing_Experiment) %>%
-  mutate(Sequencing_Experiment = strsplit(as.character(Sequencing_Experiment), ", ")) %>% 
-  unnest(Sequencing_Experiment) %>%
-  unique()
-wgs <- annot_info %>%
-  filter(Sequencing_Experiment  == "WGS")
-rnaseq <- annot_info %>%
-  filter(Sequencing_Experiment  == "RNA-Seq")
-dat$WGS <- dat$Sample %in% wgs$Sample
-dat$RNASeq <- dat$Sample %in% rnaseq$Sample
+# add RNA-seq from Cavatica manifest
+rna_metadata = read_tsv(file.path(data_dir, "manifest", "manifest_20230120_101120_rna.tsv"))
+dat$RNASeq <- dat$Sample_ID %in% rna_metadata$sample_id
 
-# wgs only
-wgs_only <- read.delim('data/wgs_tumor_only.tsv', header = F)
-dat$WGS_tumor_only <- dat$Sample %in% wgs_only$V1
+# add WGS from Cavatica manifest
+snv_metadata = read_tsv(file.path(data_dir, "manifest", "manifest_20230120_100627_snv.tsv"))
+cnv_metadata = read_tsv(file.path(data_dir, "manifest", "manifest_20230120_095501_cnv.tsv"))
+dat$WGS <- dat$Sample_ID %in% cnv_metadata$sample_id
+
+# WGS tumor-only from Cavatica manifest
+wgs_tumor_only <- read_tsv(file.path(data_dir, "manifest_tumor_only", "manifest_20230216_162009_snv.tsv"))
+dat$WGS_tumor_only <- dat$Sample_ID %in% wgs_tumor_only$sample_id
 
 # order samples
 sample_order <- dat %>%
-  arrange(proteomics, phosphoproteomics, desc(WGS), desc(WGS_tumor_only), desc(RNASeq), desc(methylation)) %>%
-  pull(Sample)
+  arrange(desc(proteomics), desc(phosphoproteomics), desc(WGS), desc(WGS_tumor_only), desc(RNASeq), desc(methylation)) %>%
+  pull(Sample_ID)
 
 # plot
-dat <- melt(dat, id.vars = "Sample", variable.name = "data_type", value.name = "data_availability")
+dat <- melt(dat, id.vars = "Sample_ID", variable.name = "data_type", value.name = "data_availability")
 dat$data_type <- factor(dat$data_type, levels=c("methylation", "RNASeq", "WGS_tumor_only", "WGS", "phosphoproteomics", "proteomics"))
-dat$Sample <- factor(dat$Sample, levels = sample_order)
+dat$Sample_ID <- factor(dat$Sample_ID, levels = sample_order)
 dat <- dat %>%
   mutate(label = ifelse(data_availability == TRUE, as.character(data_type), FALSE))
 # p <- ggplot(dat, aes(Sample, data_type, fill = label)) +
@@ -64,7 +68,7 @@ dat <- dat %>%
 # ggsave(filename = "results/hope_cohort_data_availability.png", width = 15, height = 3)
 
 # updated version
-q <- ggplot(dat %>% filter(data_type != "WGS_tumor_only"), aes(Sample, data_type, fill = label)) + 
+q <- ggplot(dat %>% filter(data_type != "WGS_tumor_only"), aes(Sample_ID, data_type, fill = label)) + 
   geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
   scale_fill_manual(values = c("FALSE" = "white", 
                                "proteomics" = "#08306B", 
@@ -79,12 +83,14 @@ q <- ggplot(dat %>% filter(data_type != "WGS_tumor_only"), aes(Sample, data_type
 dat_tmp <- dat %>%
   filter(data_type == "WGS_tumor_only") %>%
   mutate(data_type = "WGS", 
-         label = ifelse(label != FALSE | Sample %in% wgs$Sample, "WGS", FALSE))
+         label = ifelse(label != FALSE | Sample_ID %in% snv_metadata$sample_id, "WGS", FALSE))
+
 q <- q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
   theme(
     panel.background = element_rect(fill = "white"),
     plot.margin = margin(2, 1, 1, 1, "cm"))
-ggsave(filename = "results/hope_cohort_data_availability.png", plot = q, width = 14, height = 3)
+q
+ggsave(filename = file.path(output_dir, "hope_cohort_data_availability.pdf"), plot = q, width = 14, height = 3)
 
 # add annotations
 # annot <- readxl::read_xlsx('data/clini_m_030722-for_Komal.xlsx')
@@ -131,44 +137,44 @@ ggsave(filename = "results/hope_cohort_data_availability.png", plot = q, width =
 #         axis.text.y = element_text(size = 8)) + 
 #   xlab("") + ylab("")
 
-# only clinical data
-annot <- readxl::read_xlsx('data/clini_m_030722-for_Komal.xlsx')
-annot <- annot %>%
-  filter(Sample_ID != "7316-4065") %>%
-  dplyr::select(Sample_ID, Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3)
-sample_order <- annot %>%
-  arrange(Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3) %>%
-  pull(Sample_ID)
-annot <- melt(annot, id.vars = "Sample_ID", variable.name = "data_type", value.name = "data_availability")
-annot <- annot %>%
-  dplyr::rename("Sample" = "Sample_ID") %>%
-  mutate(label = data_availability)
-annot$Sample <- factor(annot$Sample, levels = sample_order)
-annot$data_type <- factor(annot$data_type, levels = rev(levels(annot$data_type)))
-only_clinical <- ggplot(annot, aes(Sample, data_type, fill = label)) + 
-  geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
-  scale_fill_manual(values = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
-                               "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
-                               "Astrocytoma" = "brown2", 
-                               "Glioblastoma" = "orange",
-                               "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2",
-                               "Male" = "navy",
-                               "Female" = "deeppink4",
-                               "[0,15]" = "gold",
-                               "(15,40]" = "purple",
-                               "Progressive" = "#827397", 
-                               "Initial CNS Tumor" = "#cee397",
-                               "Recurrence" = "#363062",
-                               "Second Malignancy" = "#005082",
-                               "Treatment naive" = "lightgray",
-                               "Post-treatment" = "gray50",
-                               "Post-mortem" = "black",
-                               "Cortical" = "magenta",
-                               "Other/Multiple locations/NOS" = "pink",
-                               "Midline" = "purple",
-                               "Cerebellar" = "navy")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
-        axis.text.y = element_text(size = 8)) + 
-  xlab("") + ylab("") 
-only_clinical
-ggsave(filename = 'results/hope_cohort_data_availability_clinical.png', plot = only_clinical, width = 15, height = 5)
+# linear representation of clinical data
+# annot <- readxl::read_xlsx('data/clini_m_030722-for_Komal.xlsx')
+# annot <- annot %>%
+#   filter(Sample_ID != "7316-4065") %>%
+#   dplyr::select(Sample_ID, Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3)
+# sample_order <- annot %>%
+#   arrange(Diagnosis_demoted, age.class, Gender, Diagnosis.Type_demoted, Sample.annotation, Tumor.Location.condensed3) %>%
+#   pull(Sample_ID)
+# annot <- melt(annot, id.vars = "Sample_ID", variable.name = "data_type", value.name = "data_availability")
+# annot <- annot %>%
+#   dplyr::rename("Sample" = "Sample_ID") %>%
+#   mutate(label = data_availability)
+# annot$Sample <- factor(annot$Sample, levels = sample_order)
+# annot$data_type <- factor(annot$data_type, levels = rev(levels(annot$data_type)))
+# only_clinical <- ggplot(annot, aes(Sample, data_type, fill = label)) + 
+#   geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
+#   scale_fill_manual(values = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
+#                                "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
+#                                "Astrocytoma" = "brown2", 
+#                                "Glioblastoma" = "orange",
+#                                "Low-grade glioma/astrocytoma (WHO grade I/II)" = "blue2",
+#                                "Male" = "navy",
+#                                "Female" = "deeppink4",
+#                                "[0,15]" = "gold",
+#                                "(15,40]" = "purple",
+#                                "Progressive" = "#827397", 
+#                                "Initial CNS Tumor" = "#cee397",
+#                                "Recurrence" = "#363062",
+#                                "Second Malignancy" = "#005082",
+#                                "Treatment naive" = "lightgray",
+#                                "Post-treatment" = "gray50",
+#                                "Post-mortem" = "black",
+#                                "Cortical" = "magenta",
+#                                "Other/Multiple locations/NOS" = "pink",
+#                                "Midline" = "purple",
+#                                "Cerebellar" = "navy")) +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
+#         axis.text.y = element_text(size = 8)) + 
+#   xlab("") + ylab("") 
+# only_clinical
+# ggsave(filename = 'results/hope_cohort_data_availability_clinical.png', plot = only_clinical, width = 15, height = 5)
