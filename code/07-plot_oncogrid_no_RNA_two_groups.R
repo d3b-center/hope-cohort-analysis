@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
-output_dir <- file.path(root_dir, "results", "oncoplots_three_groups")
+output_dir <- file.path(root_dir, "results", "oncoplots_two_groups")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
 # matrix
@@ -83,7 +83,7 @@ annot_info$Tumor_Descriptor[is.na(annot_info$Tumor_Descriptor)] <- "N/A"
 annot_info$Integrated_Diagnosis[is.na(annot_info$Integrated_Diagnosis)] <- "N/A"
 annot_info$Sex[is.na(annot_info$Sex)] <- "N/A"
 annot_info$Age[is.na(annot_info$Age)] <- "N/A"
-annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,26]", "(26,40]", "N/A"))
+annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,40]"))
 ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experiment)), col = list(
   TMB = col_fun_tmb,
   MSI_Percent = col_fun_msi,
@@ -107,9 +107,7 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experimen
           "Male" = "navy",
           "N/A" = "gray"),
   Age = c("[0,15]" = "gold",
-          "(15,26]" = "purple",
-          "(26,40]" = "darkgreen",
-          "N/A" = "gray")),
+          "(15,40]" = "purple")),
   annotation_name_gp = gpar(fontsize = 9),
   gp = gpar(col = "#595959"), simple_anno_size = unit(4, "mm"), annotation_name_side = "left",
   annotation_legend_param = list(
@@ -287,9 +285,7 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(MSI_Percent, TMB, Tumor
                            "Diffuse Midline Glioma" = "blue2",
                            "N/A" = "gray"),
   Age = c("[0,15]" = "gold",
-          "(15,26]" = "purple",
-          "(26,40]" = "darkgreen",
-          "N/A" = "gray"),
+          "(15,40]" = "purple"),
   Sex = c("Female" = "deeppink4",
           "Male" = "navy",
           "N/A" = "gray")),

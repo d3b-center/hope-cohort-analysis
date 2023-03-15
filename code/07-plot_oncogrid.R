@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
-output_dir <- file.path(root_dir, "results", "oncoplots")
+output_dir <- file.path(root_dir, "results", "oncoplots_three_groups")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
 # matrix
@@ -60,7 +60,9 @@ alter_fun = list(
     grid.rect(x, y, w-unit(0.3, "mm"), h*0.66, gp = gpar(fill = "#AB47BC", col = NA))
   }
 )
-col = c("GAI" = "#ff4d4d", "LOS" = "#0D47A1" , "MIS" = "#77b300", "FUS" = "#AB47BC","NOS" ="#80bfff", "FSD" = "#1a53ff", "FSI" ="#8D6E63", "NOT" = "#9966ff","SPS" = "#E69F00","IFD" = "#827717","OVE" = "#dbc6eb","UNE" = "#709fb0")
+col = c("GAI" = "#ff4d4d", "LOS" = "#0D47A1", 
+        "FUS" = "#AB47BC",
+        "MIS" = "#77b300", "NOS" ="#80bfff", "FSD" = "#1a53ff", "FSI" ="#8D6E63", "NOT" = "#9966ff","SPS" = "#E69F00","IFD" = "#827717","OVE" = "#dbc6eb","UNE" = "#709fb0")
 
 # read annotation and TMB info
 annot_info <- read.delim(file.path(output_dir, "annotation.txt"), header = TRUE, check.names = TRUE)
@@ -80,7 +82,7 @@ annot_info$Tumor_Descriptor[is.na(annot_info$Tumor_Descriptor)] <- "N/A"
 annot_info$Integrated_Diagnosis[is.na(annot_info$Integrated_Diagnosis)] <- "N/A"
 annot_info$Sex[is.na(annot_info$Sex)] <- "N/A"
 annot_info$Age[is.na(annot_info$Age)] <- "N/A"
-annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,26]", "(26,40]", "N/A"))
+annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
 ha = HeatmapAnnotation(df = annot_info , col = list(
   TMB = col_fun_tmb,
   MSI_Percent = col_fun_msi,
@@ -132,10 +134,9 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                row_split = amp,
                remove_empty_rows = TRUE,
                heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
-                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
-                                           labels = c("Copy gain", "Copy loss", "Missense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Expression","Under Expression")
+                                           at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-
 
 pdf(file = file.path(output_dir, "oncoplot.pdf"), width = 22, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
@@ -157,8 +158,8 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                row_split = amp,
                remove_empty_rows = TRUE,
                heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
-                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
-                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
+                                           at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
 pdf(file = file.path(output_dir, "oncoplot_orderby_sex.pdf"), width = 22, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
@@ -179,8 +180,8 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                row_split = amp,
                remove_empty_rows = TRUE,
                heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
-                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
-                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
+                                           at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
 pdf(file = file.path(output_dir, "oncoplot_orderby_H3F3A.pdf"), width = 22, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
@@ -208,8 +209,8 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                row_split = amp,
                remove_empty_rows = TRUE,
                heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
-                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
-                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
+                                           at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
 pdf(file = file.path(output_dir, "oncoplot_orderby_sex_H3F3A_status.pdf"), width = 22, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
@@ -231,8 +232,8 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                row_split = amp,
                remove_empty_rows = TRUE,
                heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
-                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
-                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
+                                           at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
 pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age.pdf"), width = 22, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
@@ -259,8 +260,8 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                row_split = amp,
                remove_empty_rows = TRUE,
                heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
-                                           at = c("GAI","LOS","MIS","FUS","NOS","FSD","FSI","SPS","IFD","OVE","UNE"),
-                                           labels = c("Copy gain", "Copy loss", "Misense","Gene Fusion","Nonsense","Frame_Shift_Del","Frame_Shift_Ins","Splice site","In_Frame_Del","Over Experssion","Under Expression")
+                                           at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
+                                           labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
 pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age_H3F3A_status.pdf"), width = 22, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")

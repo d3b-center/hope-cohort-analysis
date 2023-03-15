@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
-output_dir <- file.path(root_dir, "results", "oncoplots_three_groups")
+output_dir <- file.path(root_dir, "results", "oncoplots_two_groups")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
 # read driver list from OpenPBTA
@@ -68,11 +68,10 @@ hist <- hist %>%
                 "Sample" = "Sample_ID")
 
 # get Age from Nicole's file
-cluster_data <- read_tsv(file.path(data_dir, "cluster_data101922.tsv"))
+cluster_data <- readxl::read_xlsx(file.path(data_dir, "clini_m_030722-for_Komal.xlsx"))
 hist <- hist %>%
-  inner_join(cluster_data %>%
-              dplyr::select(id, age), by = c("Sample" = "id")) %>%
-  dplyr::rename("Age" = "age")
+  inner_join(cluster_data %>% dplyr::select(age.class, id), by = c("Sample" = "id")) %>%
+  dplyr::rename("Age" = "age.class")
 
 # hist1 <- readxl::read_xlsx('data/CPTAC Cohort 2 (100) Clinical Data Manifest 2021-06-14-corr.xlsx', sheet = 2) # upenn
 # hist2 <- readxl::read_xlsx('data/CPTAC Cohort 2 (100) Clinical Data Manifest 2021-06-14-corr.xlsx', sheet = 3) # cbtn
