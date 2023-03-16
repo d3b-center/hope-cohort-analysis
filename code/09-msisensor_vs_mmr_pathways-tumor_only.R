@@ -3,6 +3,7 @@
 suppressPackageStartupMessages({
   library(msigdbr)
   library(tidyverse)
+  library(ggpubr)
 })
 
 # set working directory

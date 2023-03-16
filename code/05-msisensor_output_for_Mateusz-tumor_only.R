@@ -1,4 +1,8 @@
-# msisensor pro
+# msisensor pro summary output file for Mateusz
+suppressPackageStartupMessages({
+  library(tidyverse)
+})
+
 fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_output.tsv'
 msi_output <- read_tsv(fname)
 msi_output <- msi_output %>%
@@ -14,14 +18,10 @@ tmb_output <- tmb_output %>%
 msi_output <- msi_output %>%
   left_join(tmb_output, by = c("Kids First Biospecimen ID" = "Tumor_Sample_Barcode"))
 
-# add positive controls from JL paper
-# positive controls
-pos_controls <- readxl::read_xlsx('data/media-4.xlsx')
+# add ALT status from Mateusz
+pos_controls <- read_tsv('data/hope_cohort_alt_status.txt')
 pos_controls <- pos_controls %>%
-  dplyr::select(`SAMPLE ID`, MMR_SOMATIC, MMR_GERMLINE) %>%
-  dplyr::rename("sample_id" = "SAMPLE ID",
-                "MMR_Somatic" = "MMR_SOMATIC",
-                "MMR_Germline" = "MMR_GERMLINE")
+  dplyr::select(sample_id, ALT_status) 
 msi_output <- msi_output %>%
   left_join(pos_controls, by = "sample_id")
 
