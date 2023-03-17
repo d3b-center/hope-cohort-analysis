@@ -18,6 +18,10 @@ dir.create(output_dir, recursive = T, showWarnings = F)
 # updated clinical data from Mateusz
 annot = readr::read_tsv(file.path(data_dir, "hopeonly_clinical_table_011823.tsv"))
 annot$WHO.Grade[annot$WHO.Grade == "1-2?"] <- NA
+annot$diagnosis_type[annot$diagnosis_type == "Recurrent"] = "Recurrence"
+annot$diagnosis_type[annot$diagnosis_type == "recurrent"] = "Recurrence"
+annot$diagnosis_type[annot$diagnosis_type == "Recurrent, residual"] = "Recurrence"
+annot$diagnosis_type[annot$diagnosis_type == "Primary"] = "Initial CNS Tumor"
 
 # get Age from Nicole's file
 age_info <- readxl::read_xlsx(file.path(data_dir, "clini_m_030722-for_Komal.xlsx"))
@@ -27,15 +31,16 @@ annot <- annot %>%
 annot$Age <- factor(annot$Age, levels = c("[0,15]", "(15,40]"))
 
 annot <- annot %>%
-  dplyr::select(Sample_ID, WHO.Grade, Age, Gender, diagnosis_type_simple, sample_annotation, Tumor.Location.condensed) %>%
-  dplyr::rename("Diagnosis Type" = "diagnosis_type_simple",
+  dplyr::select(Sample_ID, Age, Gender, WHO.Grade, diagnosis_type, sample_annotation, Tumor.Location.condensed) %>%
+  dplyr::rename("Diagnosis Type" = "diagnosis_type",
                 "Annotation" = "sample_annotation",
                 "Tumor Location" = "Tumor.Location.condensed",
                 "WHO Grade" = "WHO.Grade") %>%
   column_to_rownames('Sample_ID') %>%
-  arrange(`WHO Grade`, Age, Gender, `Diagnosis Type`, Annotation, `Tumor Location`)
+  arrange(Age, Gender, `WHO Grade`, `Diagnosis Type`, Annotation, `Tumor Location`)
 annot$`WHO Grade`[is.na(annot$`WHO Grade`)] <- "NA"
-split <- factor(annot$`WHO Grade`, levels = c("3", "4", "NA"))
+# split <- factor(annot$`WHO Grade`, levels = c("3", "4", "NA"))
+split <- factor(annot$Age, levels = c("[0,15]", "(15,40]"))
 col_fun1 <- list("3" = "#ffac59",
                  "4" = "#ff5959",
                  "NA" = "lightgray",
@@ -43,8 +48,10 @@ col_fun1 <- list("3" = "#ffac59",
                  "Female" = "deeppink4",
                  "[0,15]" = "gold",
                  "(15,40]" = "purple",
-                 "Primary" = "#cee397",
-                 "Recurrent" = "#363062",
+                 "Initial CNS Tumor" = "#cee397",
+                 "Progressive" = "#827397",
+                 "Recurrence" = "#363062",
+                 "Second Malignancy" = "#005082",
                  "Treatment naive" = "lightgray",
                  "Post-treatment" = "gray50",
                  "Post-mortem" = "black",
@@ -78,8 +85,8 @@ lgd_age = Legend(title = "Age",
                  at = c("[0,15]", "(15,40]"), 
                  legend_gp = gpar(fill = c("gold", "purple")))
 lgd_dtype = Legend(title = "Diagnosis_type",
-                   at = c("Primary", "Recurrent"),
-                   legend_gp = gpar(fill = c("#cee397", "#363062")))
+                   at = c("Initial CNS Tumor", "Progressive", "Recurrence", "Second Malignancy") ,
+                   legend_gp = gpar(fill = c("#cee397", "#827397", "#363062", "#005082")))
 lgd_annot = Legend(title = "Annotation",
                    at = c("Treatment naive", "Post-treatment", "Post-mortem"),
                    legend_gp = gpar(fill = c("lightgray", "gray50", "black")))
@@ -88,11 +95,11 @@ lgd_tumor_location = Legend(title = "Tumor Location",
                             legend_gp = gpar(fill = c("magenta", "pink", "purple", "navy")))
 h = dev.size()[2]
 circle_size = unit(1, "snpc")
-lgd_list = packLegend(lgd_grade, lgd_age, lgd_gender, max_height = unit(0.9*h, "inch"), direction = "horizontal")
+lgd_list = packLegend(lgd_age, lgd_gender, lgd_grade, max_height = unit(0.9*h, "inch"), direction = "horizontal")
 lgd_list2 = packLegend(lgd_dtype, lgd_annot, max_height = unit(0.9*h, "inch"), direction = "horizontal")
 lgd_list3 = packLegend(lgd_tumor_location, max_height = unit(0.9*h, "inch"), direction = "horizontal")
 draw(lgd_list, x = unit(120, "mm"), y = unit(150, "mm")) 
-draw(lgd_list2, x = unit(120, "mm"), y = unit(120, "mm")) 
+draw(lgd_list2, x = unit(124, "mm"), y = unit(122, "mm")) 
 draw(lgd_list3, x = unit(115, "mm"), y = unit(95, "mm")) 
 circos.clear()
 dev.off()
@@ -111,15 +118,16 @@ annot <- annot %>%
 annot$Age <- factor(annot$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
 
 annot <- annot %>%
-  dplyr::select(Sample_ID, WHO.Grade, Age, Gender, diagnosis_type_simple, sample_annotation, Tumor.Location.condensed) %>%
-  dplyr::rename("Diagnosis Type" = "diagnosis_type_simple",
+  dplyr::select(Sample_ID, Age, Gender, WHO.Grade, diagnosis_type, sample_annotation, Tumor.Location.condensed) %>%
+  dplyr::rename("Diagnosis Type" = "diagnosis_type",
                 "Annotation" = "sample_annotation",
                 "Tumor Location" = "Tumor.Location.condensed",
                 "WHO Grade" = "WHO.Grade") %>%
   column_to_rownames('Sample_ID') %>%
-  arrange(`WHO Grade`, Age, Gender, `Diagnosis Type`, Annotation, `Tumor Location`)
+  arrange(Age, Gender, `WHO Grade`, `Diagnosis Type`, Annotation, `Tumor Location`)
 annot$`WHO Grade`[is.na(annot$`WHO Grade`)] <- "NA"
-split <- factor(annot$`WHO Grade`, levels = c("3", "4", "NA"))
+# split <- factor(annot$`WHO Grade`, levels = c("3", "4", "NA"))
+split <- factor(annot$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
 col_fun1 <- list("3" = "#ffac59",
                  "4" = "#ff5959",
                  "NA" = "lightgray",
@@ -128,8 +136,10 @@ col_fun1 <- list("3" = "#ffac59",
                  "[0,15]" = "gold",
                  "(15,26]" = "purple",
                  "(26,40]" = "darkgreen",
-                 "Primary" = "#cee397",
-                 "Recurrent" = "#363062",
+                 "Initial CNS Tumor" = "#cee397",
+                 "Progressive" = "#827397",
+                 "Recurrence" = "#363062",
+                 "Second Malignancy" = "#005082",
                  "Treatment naive" = "lightgray",
                  "Post-treatment" = "gray50",
                  "Post-mortem" = "black",
@@ -163,8 +173,8 @@ lgd_age = Legend(title = "Age",
                  at = c("[0,15]", "(15,26]", "(26,40]"), 
                  legend_gp = gpar(fill = c("gold", "purple", "darkgreen")))
 lgd_dtype = Legend(title = "Diagnosis_type",
-                   at = c("Primary", "Recurrent"),
-                   legend_gp = gpar(fill = c("#cee397", "#363062")))
+                   at = c("Initial CNS Tumor", "Progressive", "Recurrence", "Second Malignancy") ,
+                   legend_gp = gpar(fill = c("#cee397", "#827397", "#363062", "#005082")))
 lgd_annot = Legend(title = "Annotation",
                    at = c("Treatment naive", "Post-treatment", "Post-mortem"),
                    legend_gp = gpar(fill = c("lightgray", "gray50", "black")))
@@ -173,11 +183,11 @@ lgd_tumor_location = Legend(title = "Tumor Location",
                             legend_gp = gpar(fill = c("magenta", "pink", "purple", "navy")))
 h = dev.size()[2]
 circle_size = unit(1, "snpc")
-lgd_list = packLegend(lgd_grade, lgd_age, lgd_gender, max_height = unit(0.9*h, "inch"), direction = "horizontal")
+lgd_list = packLegend(lgd_age, lgd_gender, lgd_grade, max_height = unit(0.9*h, "inch"), direction = "horizontal")
 lgd_list2 = packLegend(lgd_dtype, lgd_annot, max_height = unit(0.9*h, "inch"), direction = "horizontal")
 lgd_list3 = packLegend(lgd_tumor_location, max_height = unit(0.9*h, "inch"), direction = "horizontal")
 draw(lgd_list, x = unit(120, "mm"), y = unit(150, "mm")) 
-draw(lgd_list2, x = unit(120, "mm"), y = unit(120, "mm")) 
+draw(lgd_list2, x = unit(124, "mm"), y = unit(122, "mm")) 
 draw(lgd_list3, x = unit(115, "mm"), y = unit(95, "mm")) 
 circos.clear()
 dev.off()

@@ -60,9 +60,14 @@ annot_info <- manifest %>%
 
 # get clinical variables from Mateusz's file
 hist <- readr::read_tsv(file.path(data_dir, "hopeonly_clinical_table_011823.tsv"))
+hist$diagnosis_type[hist$diagnosis_type == "Recurrent"] = "Recurrence"
+hist$diagnosis_type[hist$diagnosis_type == "recurrent"] = "Recurrence"
+hist$diagnosis_type[hist$diagnosis_type == "Recurrent, residual"] = "Recurrence"
+hist$diagnosis_type[hist$diagnosis_type == "Primary"] = "Initial CNS Tumor"
+
 hist <- hist %>%
-  dplyr::select(Sample_ID, diagnosis, diagnosis_type_simple, Gender) %>%
-  dplyr::rename("Tumor_Descriptor" = "diagnosis_type_simple",
+  dplyr::select(Sample_ID, diagnosis, diagnosis_type, Gender) %>%
+  dplyr::rename("Tumor_Descriptor" = "diagnosis_type",
                 "Integrated_Diagnosis" = "diagnosis",
                 "Sex" = "Gender",
                 "Sample" = "Sample_ID")

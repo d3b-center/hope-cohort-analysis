@@ -37,6 +37,9 @@ dat$Methylation <- dat$Sample_ID %in% methylation$V1
 # add RNA-seq from Cavatica manifest
 rna_metadata = read_tsv(file.path(data_dir, "manifest", "manifest_20230120_101120_rna.tsv"))
 dat$RNAseq <- dat$Sample_ID %in% rna_metadata$sample_id
+# this list was given by Mateusz to keep as half-blocks
+half_blocks <- c("7316UP-1962", "7316UP-2058", "7316UP-2333", "7316UP-2403", "7316-4842", "7316-4844")
+dat$RNAseq_todo <- dat$Sample_ID %in% half_blocks
 
 # add WGS from Cavatica manifest
 snv_metadata = read_tsv(file.path(data_dir, "manifest", "manifest_20230120_100627_snv.tsv"))
@@ -60,10 +63,7 @@ dat$Single_Cell_RNAseq_10x_todo <- dat$Sample_ID %in% (single_cell_rnaseq_10x %>
 # add Smart-Seq2 single cell RNAseq (this is from cavatica project)
 single_cell_rnaseq_smartseq2 <- readxl::read_xlsx("data/single_cell_smartseq_manifest.xlsx")
 single_cell_rnaseq_smartseq2$Name <- gsub("Sample_|-P[1-9]$", "", single_cell_rnaseq_smartseq2$Name)
-# this list was given by Mateusz to keep as half-blocks
-half_blocks <- c("7316UP-1962", "7316UP-2058", "7316UP-2333", "7316UP-2403", "7316-4842", "7316-4844")
-dat$Single_Cell_RNAseq_SmartSeq2 <- dat$Sample_ID %in% setdiff(single_cell_rnaseq_smartseq2$Name, half_blocks)
-dat$Single_Cell_RNAseq_SmartSeq2_todo <- dat$Sample_ID %in% half_blocks
+dat$Single_Cell_RNAseq_SmartSeq2 <- dat$Sample_ID %in% single_cell_rnaseq_smartseq2$Name
 
 # order samples
 sample_order <- dat %>%
@@ -72,9 +72,9 @@ sample_order <- dat %>%
           desc(WGS), 
           desc(WGS_tumor_only), 
           desc(RNAseq), 
+          desc(RNAseq_todo),
           desc(Methylation),
           desc(Single_Cell_RNAseq_SmartSeq2),
-          desc(Single_Cell_RNAseq_SmartSeq2_todo),
           desc(Single_Cell_RNAseq_10x),
           desc(Single_Cell_RNAseq_10x_todo)) %>%
   pull(Sample_ID)
@@ -82,8 +82,8 @@ sample_order <- dat %>%
 # plot
 dat <- melt(dat, id.vars = "Sample_ID", variable.name = "data_type", value.name = "data_availability")
 dat$data_type <- factor(dat$data_type, levels=c("Single_Cell_RNAseq_10x_todo", "Single_Cell_RNAseq_10x",
-                                                "Single_Cell_RNAseq_SmartSeq2_todo", "Single_Cell_RNAseq_SmartSeq2",
-                                                "Methylation", "RNAseq", "WGS_tumor_only", "WGS", 
+                                                "Single_Cell_RNAseq_SmartSeq2",
+                                                "Methylation", "RNAseq_todo", "RNAseq", "WGS_tumor_only", "WGS", 
                                                 "Phosphoproteomics", "Proteomics"))
 dat$Sample_ID <- factor(dat$Sample_ID, levels = sample_order)
 dat <- dat %>%
@@ -104,8 +104,8 @@ dat <- dat %>%
 
 # updated version
 q <- ggplot(dat %>% filter(!data_type %in% c("WGS_tumor_only", 
-                                             "Single_Cell_RNAseq_10x_todo", 
-                                             "Single_Cell_RNAseq_SmartSeq2_todo")), 
+                                             "RNAseq_todo",
+                                             "Single_Cell_RNAseq_10x_todo")), 
             aes(Sample_ID, data_type, fill = label)) + 
   geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
   scale_fill_manual(values = c("FALSE" = "white", 
@@ -141,11 +141,11 @@ q <- q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
     panel.background = element_rect(fill = "white"),
     plot.margin = margin(2, 1, 1, 1, "cm"))
 
-# add single-cell smartseq (half-blocks)
+# add RNA-seq (half-blocks)
 dat_tmp <- dat %>%
-  filter(data_type == "Single_Cell_RNAseq_SmartSeq2_todo") %>%
-  mutate(data_type = "Single_Cell_RNAseq_SmartSeq2", 
-         label = ifelse(label != FALSE | Sample_ID %in% single_cell_rnaseq_smartseq2$Name, "Single_Cell_RNAseq_SmartSeq2", FALSE))
+  filter(data_type == "RNAseq_todo") %>%
+  mutate(data_type = "RNAseq", 
+         label = ifelse(label != FALSE | Sample_ID %in% rna_metadata$sample_id, "RNAseq", FALSE))
 q <- q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
   theme(
     panel.background = element_rect(fill = "white"),
