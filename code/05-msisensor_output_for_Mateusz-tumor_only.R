@@ -3,6 +3,10 @@ suppressPackageStartupMessages({
   library(tidyverse)
 })
 
+# output directory
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+data_dir <- file.path(root_dir, "data")
+
 fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_output.tsv'
 msi_output <- read_tsv(fname)
 msi_output <- msi_output %>%
@@ -31,9 +35,16 @@ proteomics <- proteomics %>%
   dplyr::select(id, rdt.cc) 
 dev_clusters <- read_tsv('data/cluster_data101922.tsv')
 dev_clusters <- dev_clusters %>%
-  dplyr::select(id, dtt.cc, age, rdt.name) 
+  dplyr::select(id, dtt.cc, age, rdt.name) %>%
+  dplyr::rename("age_three_groups" = "age") # three age groups
 cluster_meta <- proteomics %>%
   inner_join(dev_clusters)
 msi_output <- msi_output %>%
   left_join(cluster_meta, by = c("sample_id" = "id")) 
+
+# add two age groups
+age_info <- readxl::read_xlsx(file.path(data_dir, "clini_m_030722-for_Komal.xlsx"))
+msi_output <- msi_output %>%
+  inner_join(age_info %>% dplyr::select(age.class, id), by = c("sample_id" = "id")) %>%
+  dplyr::rename("age_two_groups" = "age.class")
 write_tsv(msi_output, file = "results/msisensor-pro-tumor-only/msi_output_merged_tumor_only.tsv")

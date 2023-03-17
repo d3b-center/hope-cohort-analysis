@@ -1,0 +1,3 @@
+Analysis_Type	age_two_group_pvalue	age_three_group_pvalue	gender_pvalue	rdt_cc_pvalue	rdt_name_pvalue	msi_pvalue	tmb_pvalue
+Tumor-Normal	0.163	0.165	0.577	0.37	0.222	0.268	0.46
+Tumor-only	0.212	0.296	0.639	0.405	0.313	0.498	0.446
