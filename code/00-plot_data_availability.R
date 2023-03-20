@@ -14,7 +14,7 @@ output_dir <- file.path(root_dir, "results", "data_plots")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
 # updated clinical data from Mateusz
-dat = readr::read_tsv(file.path(data_dir, "hopeonly_clinical_table_011823.tsv"))
+dat <- readr::read_tsv(file.path(data_dir, "hopeonly_clinical_table_011823.tsv"))
 dat <- dat %>%
   dplyr::select(Sample_ID) %>%
   filter(Sample_ID != "7316-3625")
@@ -36,10 +36,9 @@ dat$Methylation <- dat$Sample_ID %in% methylation$V1
 
 # add RNA-seq from Cavatica manifest
 rna_metadata = read_tsv(file.path(data_dir, "manifest", "manifest_20230120_101120_rna.tsv"))
-dat$RNAseq <- dat$Sample_ID %in% rna_metadata$sample_id
-# this list was given by Mateusz to keep as half-blocks
+# additional samples given by mateusz
 half_blocks <- c("7316UP-1962", "7316UP-2058", "7316UP-2333", "7316UP-2403", "7316-4842", "7316-4844")
-dat$RNAseq_todo <- dat$Sample_ID %in% half_blocks
+dat$RNAseq <- dat$Sample_ID %in% c(rna_metadata$sample_id, half_blocks)
 
 # add WGS from Cavatica manifest
 snv_metadata = read_tsv(file.path(data_dir, "manifest", "manifest_20230120_100627_snv.tsv"))
@@ -57,8 +56,7 @@ single_cell_rnaseq_10x <- single_cell_rnaseq_10x %>%
   filter(`10X` == "Yes",
          !is.na(`Subject ID`)) %>%
   dplyr::mutate(Type = ifelse(grepl("-A-|-B-|-C-", Sample), "Full", "Half"))
-dat$Single_Cell_RNAseq_10x <- dat$Sample_ID %in% (single_cell_rnaseq_10x %>% filter(Type == "Full") %>% pull(`BioSTOR ID`))
-dat$Single_Cell_RNAseq_10x_todo <- dat$Sample_ID %in% (single_cell_rnaseq_10x %>% filter(Type == "Half") %>% pull(`BioSTOR ID`))
+dat$Single_Cell_RNAseq_10x <- dat$Sample_ID %in% single_cell_rnaseq_10x$`BioSTOR ID`
 
 # add Smart-Seq2 single cell RNAseq (this is from cavatica project)
 single_cell_rnaseq_smartseq2 <- readxl::read_xlsx("data/single_cell_smartseq_manifest.xlsx")
@@ -72,18 +70,16 @@ sample_order <- dat %>%
           desc(WGS), 
           desc(WGS_tumor_only), 
           desc(RNAseq), 
-          desc(RNAseq_todo),
           desc(Methylation),
           desc(Single_Cell_RNAseq_SmartSeq2),
-          desc(Single_Cell_RNAseq_10x),
-          desc(Single_Cell_RNAseq_10x_todo)) %>%
+          desc(Single_Cell_RNAseq_10x)) %>%
   pull(Sample_ID)
 
 # plot
 dat <- melt(dat, id.vars = "Sample_ID", variable.name = "data_type", value.name = "data_availability")
-dat$data_type <- factor(dat$data_type, levels=c("Single_Cell_RNAseq_10x_todo", "Single_Cell_RNAseq_10x",
+dat$data_type <- factor(dat$data_type, levels=c("Single_Cell_RNAseq_10x",
                                                 "Single_Cell_RNAseq_SmartSeq2",
-                                                "Methylation", "RNAseq_todo", "RNAseq", "WGS_tumor_only", "WGS", 
+                                                "Methylation", "RNAseq", "WGS_tumor_only", "WGS", 
                                                 "Phosphoproteomics", "Proteomics"))
 dat$Sample_ID <- factor(dat$Sample_ID, levels = sample_order)
 dat <- dat %>%
@@ -103,9 +99,7 @@ dat <- dat %>%
 # ggsave(filename = "results/hope_cohort_data_availability.png", width = 15, height = 3)
 
 # updated version
-q <- ggplot(dat %>% filter(!data_type %in% c("WGS_tumor_only", 
-                                             "RNAseq_todo",
-                                             "Single_Cell_RNAseq_10x_todo")), 
+q <- ggplot(dat %>% filter(!data_type %in% c("WGS_tumor_only")), 
             aes(Sample_ID, data_type, fill = label)) + 
   geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
   scale_fill_manual(values = c("FALSE" = "white", 
@@ -126,26 +120,6 @@ dat_tmp <- dat %>%
   filter(data_type == "WGS_tumor_only") %>%
   mutate(data_type = "WGS", 
          label = ifelse(label != FALSE | Sample_ID %in% snv_metadata$sample_id, "WGS", FALSE))
-q <- q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
-  theme(
-    panel.background = element_rect(fill = "white"),
-    plot.margin = margin(2, 1, 1, 1, "cm"))
-
-# add single-cell 10x (half-blocks)
-dat_tmp <- dat %>%
-  filter(data_type == "Single_Cell_RNAseq_10x_todo") %>%
-  mutate(data_type = "Single_Cell_RNAseq_10x", 
-         label = ifelse(label != FALSE | Sample_ID %in% single_cell_rnaseq_10x$`BioSTOR ID`, "Single_Cell_RNAseq_10x", FALSE))
-q <- q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
-  theme(
-    panel.background = element_rect(fill = "white"),
-    plot.margin = margin(2, 1, 1, 1, "cm"))
-
-# add RNA-seq (half-blocks)
-dat_tmp <- dat %>%
-  filter(data_type == "RNAseq_todo") %>%
-  mutate(data_type = "RNAseq", 
-         label = ifelse(label != FALSE | Sample_ID %in% rna_metadata$sample_id, "RNAseq", FALSE))
 q <- q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
   theme(
     panel.background = element_rect(fill = "white"),
