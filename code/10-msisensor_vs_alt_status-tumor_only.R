@@ -13,7 +13,7 @@ output_df <- read_tsv(fname)
 # boxplot
 output_df <- output_df %>%
   filter(!is.na(ALT_status))
-ggplot(output_df, aes(x = ALT_status, MSI_Percent, color = ALT_status)) +
+ggplot(output_df, aes(x = factor(ALT_status), y = MSI_Percent, color = ALT_status)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
