@@ -1,20 +1,20 @@
-# summarize MSI sensor analysis
-Rscript code/02-msisensor_pro_analysis-tumor_only.R
-Rscript code/02-msisensor_pro_analysis.R
-Rscript code/03-msisensor_pro_analysis-combined.R
+# merge MSI sensor files into a single file
+Rscript code/02-merge_msi_paired.R
+Rscript code/02-merge_msi_tumor_only.R
 
-# scatter plot MSI vs TMB
-Rscript code/04-msisensor_vs_tmb-tumor_only.R
-Rscript code/04-msisensor_vs_tmb.R
+# compare MSI paired vs tumor-only analysis
+Rscript code/03-msi_paired_vs_tumor_only.R
 
-# output file for Mateusz
-Rscript code/05-msisensor_output_for_Mateusz-tumor_only.R
-Rscript code/05-msisensor_output_for_Mateusz.R
+# merged output file for all downstream analyses
+Rscript code/04-msi_paired_merged_output.R
+Rscript code/04-msi_tumor_only_merged_output.R
+
+# summary files with correlation of MSI with other variables
+Rscript code/05-msi_paired_summary.R
+Rscript code/05-msi_tumor_only_summary.R
 
 # MSI sensor vs MMR pathways
-Rscript code/09-msisensor_vs_mmr_pathways-tumor_only.R
-Rscript code/09-msisensor_vs_mmr_pathways.R
+Rscript code/09-msi_vs_mmr_pathways.R
 
-# MSI sensor vs ALT status
-Rscript code/10-msisensor_vs_alt_status-tumor_only.R
-Rscript code/10-msisensor_vs_alt_status.R
+# compare ALT status with other variables
+Rscript code/10-correlation_alt_vs_vars.R
