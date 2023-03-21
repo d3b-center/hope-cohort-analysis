@@ -13,7 +13,7 @@ output_dir <- file.path(root_dir, "results", "oncoplots_two_groups")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
 # matrix
-mat = read.table(file.path(output_dir, "oncoprint.txt"),  header = TRUE, stringsAsFactors=FALSE, sep = "\t",check.names = FALSE)
+mat = read.table(file.path("results", "oncoprint.txt"),  header = TRUE, stringsAsFactors=FALSE, sep = "\t",check.names = FALSE)
 mat[is.na(mat)] = ""
 rownames(mat) = mat[, 1]
 mat = mat[, -1]
@@ -65,8 +65,10 @@ col = c("GAI" = "#ff4d4d", "LOS" = "#0D47A1",
         "MIS" = "#77b300", "NOS" ="#80bfff", "FSD" = "#1a53ff", "FSI" ="#8D6E63", "NOT" = "#9966ff","SPS" = "#E69F00","IFD" = "#827717","OVE" = "#dbc6eb","UNE" = "#709fb0")
 
 # read annotation and TMB info
-annot_info <- read.delim(file.path(output_dir, "annotation.txt"), header = TRUE, check.names = TRUE)
+annot_info <- read.delim(file.path("results", "annotation.txt"), header = TRUE, check.names = TRUE)
 annot_info <- annot_info %>%
+  dplyr::select(-c(age_three_groups)) %>%
+  dplyr::rename("Age" = "age_two_groups") %>%
   filter(Sample %in% colnames(mat)) %>%
   remove_rownames() %>%
   column_to_rownames('Sample') %>%

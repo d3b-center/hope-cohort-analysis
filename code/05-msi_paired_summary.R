@@ -1,73 +1,41 @@
-# script to summarise msi-sensor pro output
+# msi sensor pro vs tmb scores 
 suppressPackageStartupMessages({
-  library(tidyverse)
   library(ggplot2)
+  library(tidyverse)
   library(ggpubr)
   library(ggrepel)
 })
 
 # output directories
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-data_dir <- file.path(root_dir, "data")
-input_dir <- file.path(data_dir, "msisensor_pro")
-results_dir <- file.path(root_dir, "results", "msisensor-pro")
-dir.create(results_dir, showWarnings = F, recursive = T)
+results_dir <- file.path(root_dir, "results" , "msisensor-pro")
+dir.create(results_dir, recursive = T, showWarnings = F)
 
-# read msisensor pro files
-lf <- list.files(path = input_dir, pattern = 'msisensor_pro', recursive = T, full.names = T)
-df <- lapply(lf, read_tsv)
-df <- do.call(rbind,df)
-colnames(df)[3] <- "Percent"
-df$name <- gsub('.*/', '', lf)
-manifest1 <- read_tsv(file.path(input_dir, "manifest_20220927_180139.tsv"))
-manifest2 <- read_tsv(file.path(input_dir, "manifest_20230125_101423.tsv"))
-manifest <- rbind(manifest1, manifest2)
-manifest <- manifest %>% inner_join(df, by = "name")
-
-# updated clinical data from Mateusz
-annot <- readr::read_tsv(file.path(data_dir, "hopeonly_clinical_table_011823.tsv"))
-manifest <- manifest %>%
-  filter(sample_id %in% annot$Sample_ID)
-
-tumor_normal_pair <- read_tsv('data/Tumour_normal_participate.tsv')
-manifest <- manifest %>%
-  inner_join(tumor_normal_pair, by = c("Kids First Biospecimen ID" = "Tumour")) %>%
-  dplyr::select(`Kids First Biospecimen ID`, `Kids First Participant ID`, sample_id, gender, Total_Number_of_Sites, Number_of_Somatic_Sites, Percent) %>%
-  unique()
-output_df <- manifest %>%
-  mutate(Type = ifelse(Percent >= 3.5, "High", "Low")) %>%
-  arrange(Percent)
-fname <- file.path(results_dir, "hope_cohort_msi_sensor_output.tsv")
-write_tsv(output_df, file = fname)
-
-# output_df <- output_df %>%
-#   filter(Percent < 1)
-
-# read clinical data from proteomics
-proteomics <- read_tsv('../d3b-miRNA-analysis/analyses/actmir-analysis/input/cluster_data_090722.tsv')
-proteomics <- proteomics %>%
-  dplyr::select(id, rdt.cc) %>%
-  dplyr::rename("proteomics_rdt_cc" = "rdt.cc")
-dev_clusters <- read_tsv('data/cluster_data101922.tsv')
-dev_clusters <- dev_clusters %>%
-  dplyr::select(id, dtt.cc, age, rdt.name) 
-cluster_meta <- proteomics %>%
-  inner_join(dev_clusters)
-output_df <- output_df %>%
-  left_join(cluster_meta, by = c("sample_id" = "id")) 
+# MSI output (n = 69)
+output_df <- read_tsv(file.path(results_dir, "msi_output_merged.tsv"))
 
 # modify type
 output_df <- output_df %>%
   dplyr::mutate(Type = ifelse(Type == "High", sample_id, ""))
 
-# proteomics clusters
+# 1) MSI vs TMB
+ggplot(output_df, aes(MSI_Percent, TMB)) + 
+  geom_point() + 
+  geom_text_repel(aes(label = Type), na.rm=TRUE, hjust=0, vjust=0, size = 3, color = "red") +
+  theme_pubr() + 
+  xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs TMB") +
+  stat_cor(method = "pearson")
+ggsave(filename = file.path(results_dir, "msisensorpro_vs_tmb.png"), height = 6, width = 8)
+
+# 2) proteomics clusters
 plot_data <- output_df %>%
+  dplyr::rename("proteomics_rdt_cc" = "rdt.cc") %>%
   filter(!is.na(proteomics_rdt_cc)) %>%
   mutate(proteomics_rdt_cc = as.character(proteomics_rdt_cc)) %>%
   group_by(proteomics_rdt_cc) %>%
   mutate(n = n()) %>%
   mutate(proteomics_rdt_cc = paste0(proteomics_rdt_cc, "\n(n = ",n,")")) 
-p <- ggplot(plot_data, aes(x = as.character(proteomics_rdt_cc), y = Percent, color = as.character(proteomics_rdt_cc))) +
+p <- ggplot(plot_data, aes(x = as.character(proteomics_rdt_cc), y = MSI_Percent, color = as.character(proteomics_rdt_cc))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm=TRUE, hjust=0, vjust=0, size = 2, color = "black") +
@@ -83,14 +51,14 @@ p <- ggplot(plot_data, aes(x = as.character(proteomics_rdt_cc), y = Percent, col
   theme(legend.position = "none") 
 ggsave(filename = file.path(results_dir, "msi_sensor_vs_proteomics_clusters.png"), width = 6, height = 6)
 
-# developmental clusters
+# 3) developmental clusters
 plot_data <- output_df %>%
   filter(!is.na(dtt.cc)) %>%
   mutate(dtt.cc = as.character(dtt.cc)) %>%
   group_by(dtt.cc) %>%
   mutate(n = n()) %>%
   mutate(dtt.cc = paste0(dtt.cc, "\n(n = ",n,")")) 
-q <- ggplot(plot_data, aes(x = as.character(dtt.cc), y = Percent, color = as.character(dtt.cc))) +
+q <- ggplot(plot_data, aes(x = as.character(dtt.cc), y = MSI_Percent, color = as.character(dtt.cc))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm=TRUE, hjust=0, vjust=0, size = 2, color = "black") +
@@ -106,15 +74,15 @@ q <- ggplot(plot_data, aes(x = as.character(dtt.cc), y = Percent, color = as.cha
   theme(legend.position = "none") 
 ggsave(filename = file.path(results_dir, "msi_sensor_vs_dev_clusters.png"), width = 6, height = 6)
 
-# age
+# 4) age (three groups)
 plot_data <- output_df %>%
-  filter(!is.na(age)) %>%
-  mutate(age = as.character(age)) %>%
-  group_by(age) %>%
+  filter(!is.na(age_three_groups)) %>%
+  mutate(age_three_groups = as.character(age_three_groups)) %>%
+  group_by(age_three_groups) %>%
   mutate(n = n()) %>%
-  mutate(age = paste0(age, "\n(n = ",n,")")) 
-plot_data$age <- factor(plot_data$age, levels = c("[0,15]\n(n = 43)", "(15,26]\n(n = 20)", "(26,40]\n(n = 7)"))
-r <- ggplot(plot_data, aes(x = age, y = Percent, color = as.character(age))) +
+  mutate(age_three_groups = paste0(age_three_groups, "\n(n = ",n,")")) 
+plot_data$age_three_groups <- factor(plot_data$age_three_groups, levels = c("[0,15]\n(n = 43)", "(15,26]\n(n = 20)", "(26,40]\n(n = 6)"))
+r <- ggplot(plot_data, aes(x = age_three_groups, y = MSI_Percent, color = as.character(age_three_groups))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm=TRUE, hjust=0, vjust=0, size = 2, color = "black") +
@@ -128,16 +96,40 @@ r <- ggplot(plot_data, aes(x = age, y = Percent, color = as.character(age))) +
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = file.path(results_dir, "msi_sensor_vs_age.png"), width = 6, height = 6)
+ggsave(filename = file.path(results_dir, "msi_sensor_vs_age_three_groups.png"), width = 6, height = 6)
 
-# developmental cluster name
+# 5) age (two groups)
+plot_data <- output_df %>%
+  filter(!is.na(age_two_groups)) %>%
+  mutate(age_two_groups = as.character(age_two_groups)) %>%
+  group_by(age_two_groups) %>%
+  mutate(n = n()) %>%
+  mutate(age_two_groups = paste0(age_two_groups, "\n(n = ",n,")")) 
+plot_data$age_two_groups <- factor(plot_data$age_two_groups, levels = c("[0,15]\n(n = 43)", "(15,40]\n(n = 26)"))
+r <- ggplot(plot_data, aes(x = age_two_groups, y = MSI_Percent, color = as.character(age_two_groups))) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
+  geom_text_repel(aes(label = Type), na.rm=TRUE, hjust=0, vjust=0, size = 2, color = "black") +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", 
+                     label = "p.format",
+                     ref.group = ".all.",
+                     size = 4) +
+  xlab("") + 
+  ylab("% Microsatellite Instability") +
+  ggtitle("% Microsatellite Instability vs. Age") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none") 
+ggsave(filename = file.path(results_dir, "msi_sensor_vs_age_two_groups.png"), width = 6, height = 6)
+
+# 6) developmental cluster name
 plot_data <- output_df %>%
   filter(!is.na(rdt.name)) %>%
   mutate(rdt.name = as.character(rdt.name)) %>%
   group_by(rdt.name) %>%
   mutate(n = n()) %>%
   mutate(rdt.name = paste0(rdt.name, "\n(n = ",n,")")) 
-s <- ggplot(plot_data, aes(x = as.character(rdt.name), y = Percent, color = as.character(rdt.name))) +
+s <- ggplot(plot_data, aes(x = as.character(rdt.name), y = MSI_Percent, color = as.character(rdt.name))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm=TRUE, hjust=0, vjust=0, size = 2, color = "black") +
@@ -153,7 +145,7 @@ s <- ggplot(plot_data, aes(x = as.character(rdt.name), y = Percent, color = as.c
   theme(legend.position = "none") 
 ggsave(filename = file.path(results_dir, "msi_sensor_vs_dev_cluster_name.png"), width = 8, height = 6)
 
-# gender
+# 7) gender
 plot_data <- output_df %>%
   filter(!is.na(gender),
          !gender %in% c("Not Reported")) %>%
@@ -161,7 +153,7 @@ plot_data <- output_df %>%
   group_by(gender) %>%
   mutate(n = n()) %>%
   mutate(gender = paste0(gender, "\n(n = ",n,")")) 
-p <- ggplot(plot_data, aes(x = as.character(gender), y = Percent, color = as.character(gender))) +
+p <- ggplot(plot_data, aes(x = as.character(gender), y = MSI_Percent, color = as.character(gender))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm=TRUE, hjust=0, vjust=0, size = 2, color = "black") +
@@ -173,6 +165,21 @@ p <- ggplot(plot_data, aes(x = as.character(gender), y = Percent, color = as.cha
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
 ggsave(filename = file.path(results_dir, "msi_sensor_vs_gender.png"), width = 6, height = 6)
+
+# 8) ALT 
+output_df <- output_df %>%
+  filter(!is.na(ALT_status))
+p <- ggplot(output_df, aes(x = ALT_status, MSI_Percent, color = ALT_status)) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", size = 4) +
+  xlab("") + 
+  ylab("% Microsatellite Instability") +
+  ggtitle("% Microsatellite Instability vs. ALT Status") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none") 
+ggsave(plot = p, filename = file.path(results_dir, "msisensorpro_vs_alt_status.png"), height = 6, width = 6)
 
 # # add cluster from miRNA clustering (shiny)
 # mirna_clusters <- read.csv('data/PBTA_Sample_Clusters.csv', check.names = F)

@@ -1,5 +1,4 @@
-# 1. KEGG_MISMATCH_REPAIR GSVA
-# script to get pathways of interest
+# script to find correlation between MSI and MMR pathways from KEGG
 suppressPackageStartupMessages({
   library(msigdbr)
   library(tidyverse)
@@ -53,19 +52,33 @@ ssgsea_scores_each <- ssgsea_scores_each %>%
 ssgsea_scores_each <- ssgsea_scores_each %>%
   inner_join(manifest, by = c("Kids_First_Biospecimen_ID" = "Kids First Biospecimen ID"))
 
-# merge with msi
-fname <- 'results/msisensor-pro/hope_cohort_msi_sensor_output.tsv'
-output_df <- read_tsv(fname)
+# 1) merge with MSI (tumor only)
+output_df <- read_tsv(file.path("results", "msisensor-pro-tumor-only", "hope_cohort_msi_sensor_output.tsv"))
+output_df <- ssgsea_scores_each %>%
+  inner_join(output_df, by = c("Sample" = "sample_id")) %>%
+  dplyr::select(Sample, pathway_name, gsea_score, Percent, Type) %>%
+  unique()
+pdf(file = file.path("results", "msisensor-pro-tumor-only", "msi_vs_mmr_pathways.pdf"), height = 6, width = 10)
+ggplot(output_df, aes(x = Percent, y = gsea_score)) +
+  xlab("MSI Percent") + 
+  ylab("GSVA score") +
+  ggpubr::theme_pubr() +
+  geom_point(position = "jitter", pch = 21) +
+  facet_wrap(~pathway_name, scales = "free") +
+  stat_cor(method = "pearson", color = "red")
+dev.off()
+
+# 2) merge with MSI (paired)
+output_df <- read_tsv(file.path("results", "msisensor-pro", "hope_cohort_msi_sensor_output.tsv"))
 output_df <- ssgsea_scores_each %>%
   inner_join(output_df, by = c("Sample" = "sample_id")) %>%
   dplyr::select(Sample, pathway_name, gsea_score, Percent, Type) %>%
   unique()
 
-pdf(file = "results/msisensor-pro/msi_vs_mmr_pathways.pdf", height = 6, width = 10)
+pdf(file = file.path("results", "msisensor-pro", "msi_vs_mmr_pathways.pdf"), height = 6, width = 10)
 ggplot(output_df, aes(x = Percent, y = gsea_score)) +
   xlab("MSI Percent") + 
   ylab("GSVA score") +
-  geom_smooth(se = FALSE) + 
   ggpubr::theme_pubr() +
   geom_point(position = "jitter", pch = 21) +
   facet_wrap(~pathway_name, scales = "free") +

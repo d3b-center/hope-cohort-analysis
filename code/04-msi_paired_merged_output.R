@@ -7,21 +7,31 @@ suppressPackageStartupMessages({
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
 
-# get TMB from OT
-# tmb_output <- read_tsv('~/Projects/OpenPedCan-analysis/analyses/tmb-calculation/results/snv-mutation-tmb-coding.tsv')
-tmb_output <- read_tsv('code/tmb-calculation/results/snv-tumor-only-mutation-tmb-coding.tsv')
+# hope cohort manifest
+hope_manifest <- read_tsv('data/hopeonly_clinical_table_011823.tsv')
+
+# MSI output (n = 69)
+fname <- 'results/msisensor-pro/hope_cohort_msi_sensor_output.tsv'
+msi_output <- read_tsv(fname)
+msi_output <- msi_output %>%
+  filter(sample_id %in% hope_manifest$Sample_ID) %>%
+  dplyr::rename("MSI_Percent" = "Percent")
+
+# TMB output
+tmb_output <- read_tsv('code/tmb-calculation/results/snv-mutation-tmb-coding.tsv')
 tmb_output <- tmb_output %>%
   dplyr::rename("TMB" = "tmb") %>%
   dplyr::select(Tumor_Sample_Barcode, TMB)
 
-# get MSI output
-fname <- 'results/msisensor-pro-tumor-only/hope_cohort_msi_sensor_output.tsv'
-msi_output <- read_tsv(fname)
+# add sample_id to TMB
+hist_df = read_tsv(file = "data/manifest_tumor_only/manifest_20230216_162009_snv.tsv")
+hist_df = hist_df %>%
+  filter(sample_id %in% hope_manifest$Sample_ID)
+tmb_output = hist_df %>% 
+  dplyr::select(`Kids First Biospecimen ID`, sample_id) %>%
+  inner_join(tmb_output, by = c("Kids First Biospecimen ID" = "Tumor_Sample_Barcode"))
 msi_output <- msi_output %>%
-  dplyr::select(-c(Type)) %>%
-  dplyr::rename("MSI_Percent" = "Percent")
-msi_output <- msi_output %>%
-  right_join(tmb_output, by = c("Kids First Biospecimen ID" = "Tumor_Sample_Barcode"))
+  left_join(tmb_output, by = "sample_id")
 
 # add ALT status from Mateusz
 pos_controls <- read_tsv('data/hope_cohort_alt_status.txt')
@@ -48,4 +58,4 @@ age_info <- readxl::read_xlsx(file.path(data_dir, "clini_m_030722-for_Komal.xlsx
 msi_output <- msi_output %>%
   left_join(age_info %>% dplyr::select(age.class, id), by = c("sample_id" = "id")) %>%
   dplyr::rename("age_two_groups" = "age.class")
-write_tsv(msi_output, file = "results/msisensor-pro-tumor-only/msi_output_merged_tumor_only.tsv")
+write_tsv(msi_output, file = "results/msisensor-pro/msi_output_merged.tsv")

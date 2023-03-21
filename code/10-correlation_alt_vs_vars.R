@@ -1,4 +1,4 @@
-# script to correlation ALT status to clinical variables
+# script to correlate ALT status to clinical variables like
 # protein clusters, age, sex and MSI and TMB
 suppressPackageStartupMessages({
   library(tidyverse)
@@ -50,7 +50,7 @@ compute_corr <- function(x){
 
 # 1) tumor-normal-paired
 # read combined file
-alt_status <- read_tsv(file.path("results/msisensor-pro/msi_output_merged.tsv"))
+alt_status <- read_tsv(file.path("results", "msisensor-pro", "msi_output_merged.tsv"))
 alt_status <- alt_status %>%
   filter(!is.na(ALT_status))
 df <- compute_corr(x = alt_status)
@@ -58,7 +58,7 @@ rownames(df) <- "Tumor-Normal"
 
 # 2) tumor-only 
 # read combined file
-alt_status_tumor_only <- read_tsv(file.path("results/msisensor-pro-tumor-only/msi_output_merged_tumor_only.tsv"))
+alt_status_tumor_only <- read_tsv(file.path("results", "msisensor-pro-tumor-only", "msi_output_merged_tumor_only.tsv"))
 alt_status_tumor_only <- alt_status_tumor_only %>%
   filter(!is.na(ALT_status))
 df_tumor_only <- compute_corr(x = alt_status_tumor_only)

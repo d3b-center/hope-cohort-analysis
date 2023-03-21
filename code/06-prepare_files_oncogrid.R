@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
-output_dir <- file.path(root_dir, "results", "oncoplots_three_groups")
+output_dir <- file.path(root_dir, "results")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
 # read driver list from OpenPBTA
@@ -40,6 +40,7 @@ rna_ids <- file.path(data_dir, "merged_files", "gene-expression-rsem-tpm-collaps
 
 # histology
 manifest <- list.files(path = file.path(data_dir, "manifest"), pattern = "manifest.*.tsv", full.names = T)
+manifest <- grep("msi", manifest, invert = T, value = T)
 manifest <- lapply(manifest, FUN = function(x) readr::read_tsv(x))
 manifest <- data.table::rbindlist(manifest)
 colnames(manifest) <- gsub(" ", "_", colnames(manifest))
@@ -72,52 +73,23 @@ hist <- hist %>%
                 "Sex" = "Gender",
                 "Sample" = "Sample_ID")
 
-# get Age from Nicole's file
-cluster_data <- read_tsv(file.path(data_dir, "cluster_data101922.tsv"))
-hist <- hist %>%
-  inner_join(cluster_data %>%
-              dplyr::select(id, age), by = c("Sample" = "id")) %>%
-  dplyr::rename("Age" = "age")
-
-# hist1 <- readxl::read_xlsx('data/CPTAC Cohort 2 (100) Clinical Data Manifest 2021-06-14-corr.xlsx', sheet = 2) # upenn
-# hist2 <- readxl::read_xlsx('data/CPTAC Cohort 2 (100) Clinical Data Manifest 2021-06-14-corr.xlsx', sheet = 3) # cbtn
-# hist <- rbind(hist1, hist2)
-# hist <- hist %>%
-#   filter(`Sequenced CBTN Specimen Group ID` %in% annot_info$Sample) %>%
-#   mutate(Sample = `Sequenced CBTN Specimen Group ID`) %>%
-#   group_by(Sample) %>%
-#   mutate(Tumor_Descriptor = toString(unique(`Diagnosis Type`)),
-#          Integrated_Diagnosis = toString(unique(Diagnosis)),
-#          Sex = toString(unique(Gender))) %>%
-#   dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Sex) %>%
-#   unique()
-# hist$Tumor_Descriptor[hist$Tumor_Descriptor == "recurrent"] <- "Recurrence"
-
-# add Age from Nicole's file
-# cluster_data <- read_tsv('data/cluster_data101922.tsv')
-# cluster_data <- cluster_data %>%
-#   dplyr::select(id, age) 
-# hist <- hist %>%
-#   left_join(cluster_data, by = c("Sample" = "id")) %>%
-#   dplyr::rename("Age" = "age")
-
-# add TMB and MSI-sensor information (TMB from consensus maf file)
-tmb_msi <- read_tsv('results/msisensor-pro/msi_output_merged.tsv') %>%
-  dplyr::select(sample_id, MSI_Percent, TMB) 
+# add TMB, MSI-sensor and Age information from merged output
+merged_output <- read_tsv('results/msisensor-pro/msi_output_merged.tsv') %>%
+  dplyr::select(sample_id, MSI_Percent, TMB, age_two_groups, age_three_groups) 
 
 # add to histology
 hist <- hist %>%
-  left_join(tmb_msi, by = c("Sample" = "sample_id")) %>% 
+  inner_join(merged_output, by = c("Sample" = "sample_id")) %>% 
   distinct(Sample, .keep_all = T)
 
 # add to annot
 annot_info <- hist %>%
   inner_join(annot_info, by = "Sample")
 annot_info <- annot_info %>%
-  dplyr::select(MSI_Percent, TMB, Sample, Tumor_Descriptor, Integrated_Diagnosis, Sex, Age, Sequencing_Experiment)
+  dplyr::select(MSI_Percent, TMB, Sample, Tumor_Descriptor, Integrated_Diagnosis, Sex, age_two_groups, age_three_groups, Sequencing_Experiment)
 write.table(annot_info, file = file.path(output_dir, "annotation.txt"), quote = F, sep = "\t", row.names = F)
 
-# 1. get degene info PNOC008 patientss vs GTEx Brain
+# 1. get degene info PNOC008 patients vs GTEx Brain
 genes_df <- readRDS(file.path("results/hope_cohort_vs_gtex_brain_degs_edgeR.rds"))
 deg_genes <- genes_df %>%
   dplyr::mutate(label = ifelse(diff_expr == "up", "OVE", "UNE"),
