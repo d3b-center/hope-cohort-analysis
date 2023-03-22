@@ -138,7 +138,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
 
-pdf(file = file.path(output_dir, "oncoplot.pdf"), width = 22, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot.pdf"), width = 15, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -161,7 +161,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex.pdf"), width = 22, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex.pdf"), width = 15, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -183,7 +183,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_H3F3A.pdf"), width = 22, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_H3F3A.pdf"), width = 15, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -212,7 +212,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex_H3F3A_status.pdf"), width = 22, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex_H3F3A_status.pdf"), width = 15, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -235,7 +235,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age.pdf"), width = 22, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age.pdf"), width = 15, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -263,6 +263,6 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age_H3F3A_status.pdf"), width = 22, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age_H3F3A_status.pdf"), width = 15, height = 27) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
