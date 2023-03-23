@@ -1,0 +1,3 @@
+Analysis_Type	tel_content_vs_msi_corr	tel_content_vs_msi_pvalue	tel_content_vs_tmb_corr	tel_content_vs_tmb_pvalue	age_two_group_pvalue	age_three_group_pvalue	gender_pvalue	rdt_cc_pvalue	rdt_name_pvalue	msi_pvalue	tmb_pvalue
+Tumor-Normal	0.12880067809972856	0.30268640070655223	0.10346909098244636	0.41209459397821535	0.163	0.165	0.492	0.37	0.222	0.001	0.01
+Tumor-only	0.075501449076581	0.543689336638896	0.031422515979722294	0.8037613324779231	0.212	0.296	0.551	0.405	0.313	0.759	0.162

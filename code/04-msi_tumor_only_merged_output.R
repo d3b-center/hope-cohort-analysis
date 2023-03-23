@@ -39,7 +39,7 @@ msi_output <- msi_output %>%
 # add ALT status from Mateusz
 pos_controls <- read_tsv('data/hope_cohort_alt_status.txt')
 pos_controls <- pos_controls %>%
-  dplyr::select(sample_id, ALT_status) 
+  dplyr::select(sample_id, t_n_telomere_content, ALT_status) 
 msi_output <- msi_output %>%
   left_join(pos_controls, by = "sample_id")
 
