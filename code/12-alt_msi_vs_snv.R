@@ -29,14 +29,16 @@ mat <- melt(as.matrix(mat), value.name = "mutation", varnames = c("sample_id", "
 mat <- mat %>%
   dplyr::mutate(type = ifelse(grepl("MIS|NOS|FSD|FSI|IFD|SPS", mutation), 1, 0))
 mat <- dcast(mat, sample_id~gene, value.var = "type")
+# mat[rowSums(mat) > 0,] %>% dim()
 
 # ALT status, telomere content and MSI percent correlation with the binary matrix
 # read combined file for paired MSI output (n = 69)
-msi_output <- read_tsv(file.path("results", "msisensor-pro", "hope_cohort_msi_sensor_output.tsv"))
+merged_output <- read_tsv(file.path("results", "msisensor-pro", "msi_output_merged.tsv"))
 
-# combine the file with oncoprint matrix (n = 69)
+# combine the file with oncoprint matrix (n = 68)
 output_df <- mat %>%
-  inner_join(merged_file, by = "sample_id")
+  filter(sample_id != "7316-2810") %>% # this sample does not have any SNV data so remove it
+  inner_join(merged_output, by = "sample_id")
 output_df$ALT_status <- ifelse(output_df$ALT_status == "ALT+", 1, ifelse(output_df$ALT_status == "ALT-", 0, NA))
 vars <- c("t_n_telomere_content", "ALT_status", "MSI_Percent")
 final_df <- data.frame()
