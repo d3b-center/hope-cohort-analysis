@@ -50,6 +50,8 @@ for(j in 1:length(vars)){
     final_df <- rbind(final_df, df1)
   }
 }
+final_df <- final_df %>%
+  mutate(Significant = ifelse(corr_pvalue < 0.05, TRUE, FALSE))
 write_tsv(final_df, file = file.path(output_dir, "alt_msi_correlation_with_snv.tsv"))
 
 # BRAF and TP53 mutations are mutually exclusive?
