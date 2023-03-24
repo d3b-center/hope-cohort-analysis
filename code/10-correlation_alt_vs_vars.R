@@ -106,6 +106,12 @@ alt_status_tumor_only <- alt_status_tumor_only %>%
 df_tumor_only <- compute_corr(x = alt_status_tumor_only)
 rownames(df_tumor_only) <- "Tumor-only"
 
+p <- ggplot(alt_status_tumor_only, aes(x = t_n_telomere_content, y = TMB)) +
+  ggpubr::theme_pubr() +
+  geom_point(position = "jitter", pch = 21) +
+  ggpubr::stat_cor(method = "pearson", color = "red")
+ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_tmb_tumor_only.png"))
+
 # write output
 rbind(df, df_tumor_only) %>%
   rownames_to_column("Analysis_Type") %>%
