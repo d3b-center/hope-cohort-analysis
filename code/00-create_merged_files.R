@@ -10,6 +10,7 @@ suppressPackageStartupMessages({
 # source('~/Projects/d3b-patient-report-analysis/code/utils/filter_cnv.R')
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
+output_dir <- file.path(data_dir, "merged_files")
 
 # load reference
 chr_map <- read.delim(file.path(root_dir, "../OMPARE", "data", "mart_export_genechr_mapping.txt"), stringsAsFactors = F, check.names = F)
@@ -29,7 +30,7 @@ hist <- manifest %>%
   unique()
 
 # TPM
-fname <- file.path(data_dir, "merged_files", "gene-expression-rsem-tpm-collapsed.rds")
+fname <- file.path(output_dir, "gene-expression-rsem-tpm-collapsed.rds")
 if(!file.exists(fname)){
   # merge
   cmd <- paste('Rscript', '~/Projects/Utils/merge_rsem.R', 
@@ -46,8 +47,8 @@ if(!file.exists(fname)){
                '--outfile', 'data/merged_files/gene-expression-rsem-tpm-collapsed.rds')
   system(cmd)
   
-  # add BS id to TPM (n = 82)
-  fname <- file.path("data", "merged_files", "gene-expression-rsem-tpm-collapsed.rds")
+  # add BS id to TPM (n = 90)
+  fname <- file.path(output_dir, "gene-expression-rsem-tpm-collapsed.rds")
   tpm <- readRDS(fname)
   rna_hist <- hist %>%
     mutate(file_name = gsub(".rsem.genes.results.gz", "", file_name)) %>%
@@ -60,7 +61,7 @@ if(!file.exists(fname)){
 }
 
 # expected counts
-fname <- file.path("data", "merged_files", "gene-counts-rsem-expected_count-collapsed.rds")
+fname <- file.path(output_dir, "gene-counts-rsem-expected_count-collapsed.rds")
 if(!file.exists(fname)){
   # merge
   cmd <- paste('Rscript', '~/Projects/Utils/merge_rsem.R', 
@@ -77,8 +78,8 @@ if(!file.exists(fname)){
                '--outfile', 'data/merged_files/gene-counts-rsem-expected_count-collapsed.rds')
   system(cmd)
   
-  # add BS id to expected counts (n = 82)
-  fname <- file.path("data", "merged_files", "gene-counts-rsem-expected_count-collapsed.rds")
+  # add BS id to expected counts (n = 90)
+  fname <- file.path(output_dir, "gene-counts-rsem-expected_count-collapsed.rds")
   exp_count <- readRDS(fname)
   rna_hist <- hist %>%
     mutate(file_name = gsub(".rsem.genes.results.gz", "", file_name)) %>%
@@ -90,23 +91,23 @@ if(!file.exists(fname)){
   saveRDS(exp_count, file = fname)
 }
 
-# merge fusions (n = 82)
+# merge fusions (n = 90)
 hope_cohort_fusions <- list.files(path = file.path("data", "gene_fusions"), pattern = "*annoFuse_filter.tsv", recursive = TRUE, full.names = T)
 hope_cohort_fusions <- lapply(hope_cohort_fusions, FUN = function(x) readr::read_tsv(x))
 hope_cohort_fusions <- plyr::rbind.fill(hope_cohort_fusions)
 hope_cohort_fusions <- hope_cohort_fusions %>%
   dplyr::rename("Kids_First_Biospecimen_ID" = "Sample")
 length(unique(hope_cohort_fusions$Kids_First_Biospecimen_ID))
-saveRDS(hope_cohort_fusions, file = file.path("data", "merged_files", "fusions_merged.rds"))
+saveRDS(hope_cohort_fusions, file = file.path(output_dir, "fusions_merged.rds"))
 
-# merge mutations (n = 72)
+# merge mutations (n = 74)
 hope_cohort_mutations <- list.files(path = file.path("data", "consenus_maf"), recursive = T, full.names = T)
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::read_tsv(x, skip = 1))
 hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
 hope_cohort_mutations <- hope_cohort_mutations %>%
   dplyr::rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode")
 length(unique(hope_cohort_mutations$Kids_First_Biospecimen_ID))
-saveRDS(hope_cohort_mutations, file = file.path("data", "merged_files", "snv_merged.rds"))
+saveRDS(hope_cohort_mutations, file = file.path(output_dir, "snv_merged.rds"))
 
 # function to merge cnv
 merge_cnv <- function(nm){
@@ -134,12 +135,26 @@ merge_cnv <- function(nm){
   }
 }
 
-# merge cnv (n = 72)
-hope_cohort_cnv <- list.files(path = 'data/copy_number', pattern = "*.txt", recursive = TRUE, full.names = T)
+# merge cnv (n = 74)
+hope_cohort_cnv <- list.files(path = "data/copy_number", pattern = "*.txt", recursive = TRUE, full.names = T)
 hope_cohort_cnv <- lapply(hope_cohort_cnv, FUN = function(x) merge_cnv(nm = x))
 hope_cohort_cnv <- data.table::rbindlist(hope_cohort_cnv)
 print(length(unique(hope_cohort_cnv$Kids_First_Biospecimen_ID)))
-saveRDS(hope_cohort_cnv, file = file.path("data/merged_files", "cnv_merged.rds"))
+saveRDS(hope_cohort_cnv, file = file.path(output_dir, "cnv_merged.rds"))
+
+# merge msi (n = 86)
+lf <- list.files(path = "data/msisensor_pro/", pattern = 'msisensor_pro', recursive = T, full.names = T)
+hope_cohort_msi <- lapply(lf, read_tsv)
+hope_cohort_msi <- do.call(rbind, hope_cohort_msi)
+colnames(hope_cohort_msi)[3] <- "Percent"
+hope_cohort_msi$name <- gsub('.*/', '', lf)
+
+# add identifiers 
+hope_cohort_msi <- hope_cohort_msi %>%
+  inner_join(hist %>% dplyr::select(-c(name)), by = c("name" = "file_name")) %>%
+  dplyr::select(case_id, sample_id, Total_Number_of_Sites, Number_of_Somatic_Sites, Percent)
+hope_cohort_msi <- unique(hope_cohort_msi)
+saveRDS(hope_cohort_msi, file = file.path(output_dir, "msi_merged.rds"))
 
 # merge cnv (n = 72)
 # hope_cohort_cnv <- list.files(path = file.path("data", "copy_number"), pattern = "*.cns", recursive = TRUE, full.names = T)
@@ -152,4 +167,3 @@ saveRDS(hope_cohort_cnv, file = file.path("data/merged_files", "cnv_merged.rds")
 #   dplyr::select(-c(file_name)) 
 # print(length(unique(hope_cohort_cnv$Kids_First_Biospecimen_ID)))
 # saveRDS(hope_cohort_cnv, file = file.path("data", "merged_files", "cnv_merged.rds"))
-

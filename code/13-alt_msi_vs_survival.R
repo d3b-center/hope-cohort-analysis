@@ -24,11 +24,13 @@ clin_df <- clin_df %>%
 # add to ALT and MSI output
 surv_data <- merged_output %>%
   inner_join(clin_df, by = c("sample_id" = "Sample_ID"))
-surv_data$ALT_status <- factor(surv_data$ALT_status, levels = c("ALT+", "ALT-"))
 
 # survival curves stratified by ALT status 
+surv_data$ALT_status <- factor(surv_data$ALT_status, levels = c("ALT+", "ALT-"))
 fit <- survival::survfit(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = surv_data)
-pvalue <- round(survdiff(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = surv_data)$p, 3)
+diff <- survdiff(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = surv_data)
+pvalue <- round(pchisq(diff$chisq, length(diff$n)-1, lower.tail = FALSE), 3)
+
 pdf(file = file.path(output_dir, "alt_vs_survival.pdf"), height = 8, width = 10, onefile = FALSE)
 p <- ggsurvplot(fit, 
                 title = "ALT Status vs Survival",

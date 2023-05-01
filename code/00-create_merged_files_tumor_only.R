@@ -31,8 +31,9 @@ hist <- manifest %>%
 hope_cohort_mutations <- list.files(path = file.path("data", "mutect_maf_tumor_only"), pattern = "public", recursive = T, full.names = T)
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::read_tsv(x, skip = 1))
 hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
-hope_cohort_mutations$sample_name <- NULL
-length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
+hope_cohort_mutations <- hope_cohort_mutations %>%
+  dplyr::rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode")
+length(unique(hope_cohort_mutations$Kids_First_Biospecimen_ID))
 saveRDS(hope_cohort_mutations, file = file.path("data", "merged_files", "snv_merged_tumor_only.rds"))
 
 # function to merge cnv
@@ -62,8 +63,24 @@ merge_cnv <- function(nm){
 }
 
 # merge tumor only cnv (n = 85)
-hope_cohort_cnv <- list.files(path = file.path("data", "tumor_only_copy_number"), pattern = "*.txt", recursive = TRUE, full.names = T)
+hope_cohort_cnv <- list.files(path = file.path("data", "copy_number_tumor_only"), pattern = "*.txt", recursive = TRUE, full.names = T)
 hope_cohort_cnv <- lapply(hope_cohort_cnv, FUN = function(x) merge_cnv(nm = x))
 hope_cohort_cnv <- data.table::rbindlist(hope_cohort_cnv)
-print(length(unique(hope_cohort_cnv$sample_name)))
-saveRDS(hope_cohort_cnv, file = file.path("data", "merged_files", "cnv_tumor_only_merged.rds"))
+print(length(unique(hope_cohort_cnv$Kids_First_Biospecimen_ID)))
+saveRDS(hope_cohort_cnv, file = file.path("data", "merged_files", "cnv_merged_tumor_only.rds"))
+
+# merge msi (n = 93)
+lf <- list.files(path = "data/msisensor_pro_tumor_only", pattern = 'msisensor_pro', recursive = T, full.names = T)
+hope_cohort_msi <- lapply(lf, read_tsv)
+hope_cohort_msi <- do.call(rbind, hope_cohort_msi)
+colnames(hope_cohort_msi)[3] <- "Percent"
+hope_cohort_msi$name <- gsub('.*/', '', lf)
+
+# add sample_id 
+hist$case_id[hist$name == "25bb3e6c-40cd-420a-a080-8bf49f1157a0_tumor_only_msisensor_pro"] <- "C1063212"
+hist$sample_id[hist$name == "25bb3e6c-40cd-420a-a080-8bf49f1157a0_tumor_only_msisensor_pro"] <- "7316-3636"
+hope_cohort_msi <- hope_cohort_msi %>%
+  inner_join(hist %>% dplyr::select(-c(name)), by = c("name" = "file_name")) %>%
+  dplyr::select(case_id, sample_id, Total_Number_of_Sites, Number_of_Somatic_Sites, Percent)
+hope_cohort_msi <- unique(hope_cohort_msi)
+saveRDS(hope_cohort_msi, file = file.path(output_dir, "msi_merged.rds"))
