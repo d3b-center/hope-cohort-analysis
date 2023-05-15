@@ -1,9 +1,0 @@
-comparison	variable	value	chisq_pval
-LRP1B vs NTRK3	Age	(15,40]	1
-LRP1B vs NTRK3	Age	[0,15]	0.00764
-LRP1B vs NTRK3	Sex	Male	1
-LRP1B vs NTRK3	Sex	Female	0.01016
-LRP1B vs NTRK3	Age + Sex	(15,40]_Male	NA
-LRP1B vs NTRK3	Age + Sex	(15,40]_Female	1
-LRP1B vs NTRK3	Age + Sex	[0,15]_Female	0.01041
-LRP1B vs NTRK3	Age + Sex	[0,15]_Male	1

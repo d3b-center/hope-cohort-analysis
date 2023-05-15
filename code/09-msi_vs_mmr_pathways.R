@@ -9,26 +9,32 @@ suppressPackageStartupMessages({
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
 results_dir <- file.path(root_dir, "results")
-input_dir <- file.path(root_dir, "data")
+
+# gencode reference (v39)
+gencode_gtf <- rtracklayer::import(con = file.path(data_dir, "gencode.v39.primary_assembly.annotation.gtf.gz"))
+gencode_gtf <- as.data.frame(gencode_gtf)
+gencode_gtf <- gencode_gtf %>%
+  dplyr::select(gene_id, gene_name, gene_type) %>%
+  filter(gene_type == "protein_coding") %>%
+  unique()
 
 # tpm_dat
-tpm_dat <- file.path(input_dir, "merged_files/gene-expression-rsem-tpm-collapsed.rds")
-tpm_dat <- readRDS(tpm_dat)
-rna_ids <- unique(colnames(tpm_dat))
+tpm_dat <- file.path(data_dir, "merged_files", "gene-expression-rsem-tpm-collapsed.rds") %>%
+  readRDS()
+tpm_dat <- tpm_dat[rownames(tpm_dat) %in% gencode_gtf$gene_name,]
 
-# histology file
-manifest <- readr::read_tsv(file = 'data/manifest/manifest_20230120_101120_rna.tsv')
+# master histology file
+hist_df <- file.path(data_dir, "master_histology_hope_cohort.tsv") %>% read_tsv()
+manifest <- list.files(path = "data/manifest/", pattern = "rna", full.names = T) %>%
+  read_tsv()
 manifest <- manifest %>%
-  filter(`Kids First Biospecimen ID` %in% c(rna_ids)) %>%
-  dplyr::mutate(Sample = sample_id,
-                Sequencing_Experiment = experimental_strategy) %>%
-  dplyr::select(`Kids First Biospecimen ID`, Sample, Sequencing_Experiment) %>%
-  unique()
+  filter(sample_id %in% hist_df$Sample_ID) 
+tpm_dat <- tpm_dat %>%
+  dplyr::select(manifest$`Kids First Biospecimen ID`)
 
 # kegg pathways 
 geneset_db <- msigdbr::msigdbr(category = "C2", subcategory = "KEGG")
 geneset_db <- geneset_db[grep("MISMATCH_REPAIR|KEGG_BASE_EXCISION_REPAIR|KEGG_HOMOLOGOUS_RECOMBINATION", geneset_db$gs_name),]
-# write.table(unique(geneset_db$human_gene_symbol), file = 'data/mmr_genes.tsv', col.names = F, row.names = F, quote = F)
 geneset_db <- base::split(geneset_db$human_gene_symbol, list(geneset_db$gs_name))
 
 # log2
@@ -51,15 +57,17 @@ ssgsea_scores_each <- ssgsea_scores_each %>%
 # merge with sample ids
 ssgsea_scores_each <- ssgsea_scores_each %>%
   inner_join(manifest, by = c("Kids_First_Biospecimen_ID" = "Kids First Biospecimen ID"))
+ssgsea_scores_each <- ssgsea_scores_each %>%
+  dplyr::select(Kids_First_Biospecimen_ID, pathway_name, gsea_score, sample_id)
+
+# add MSI (paired and tumor-only)
+ssgsea_scores_each <- ssgsea_scores_each %>%
+  inner_join(hist_df %>%
+  dplyr::select(Sample_ID, msi_paired, msi_tumor_only), by = c("sample_id" = "Sample_ID"))
 
 # 1) merge with MSI (tumor only)
-output_df <- read_tsv(file.path("results", "msisensor-pro-tumor-only", "hope_cohort_msi_sensor_output.tsv"))
-output_df <- ssgsea_scores_each %>%
-  inner_join(output_df, by = c("Sample" = "sample_id")) %>%
-  dplyr::select(Sample, pathway_name, gsea_score, Percent, Type) %>%
-  unique()
-pdf(file = file.path("results", "msisensor-pro-tumor-only", "msi_vs_mmr_pathways.pdf"), height = 6, width = 10)
-ggplot(output_df, aes(x = Percent, y = gsea_score)) +
+pdf(file = file.path("results", "msisensor-pro-tumor-only", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
+ggplot(ssgsea_scores_each, aes(x = msi_tumor_only, y = gsea_score)) +
   xlab("MSI Percent") + 
   ylab("GSVA score") +
   ggpubr::theme_pubr() +
@@ -69,14 +77,8 @@ ggplot(output_df, aes(x = Percent, y = gsea_score)) +
 dev.off()
 
 # 2) merge with MSI (paired)
-output_df <- read_tsv(file.path("results", "msisensor-pro", "hope_cohort_msi_sensor_output.tsv"))
-output_df <- ssgsea_scores_each %>%
-  inner_join(output_df, by = c("Sample" = "sample_id")) %>%
-  dplyr::select(Sample, pathway_name, gsea_score, Percent, Type) %>%
-  unique()
-
-pdf(file = file.path("results", "msisensor-pro", "msi_vs_mmr_pathways.pdf"), height = 6, width = 10)
-ggplot(output_df, aes(x = Percent, y = gsea_score)) +
+pdf(file = file.path("results", "msisensor-pro-paired", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
+ggplot(ssgsea_scores_each, aes(x = msi_paired, y = gsea_score)) +
   xlab("MSI Percent") + 
   ylab("GSVA score") +
   ggpubr::theme_pubr() +

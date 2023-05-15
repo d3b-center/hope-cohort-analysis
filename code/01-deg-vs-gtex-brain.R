@@ -9,9 +9,9 @@ root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
 
 # source function
-source(file.path(root_dir, "utils", "ss_diffexpr.R"))
+source(file.path(root_dir, "utils", "noiseq_ss_diffexpr.R"))
 
-# gencode reference
+# gencode reference (v39)
 gencode_gtf <- rtracklayer::import(con = "data/gencode.v39.primary_assembly.annotation.gtf.gz")
 gencode_gtf <- as.data.frame(gencode_gtf)
 gencode_gtf <- gencode_gtf %>%
@@ -19,105 +19,44 @@ gencode_gtf <- gencode_gtf %>%
   filter(gene_type == "protein_coding") %>%
   unique()
 
-# Dataset1: GTex Brain
-gtex_brain_tpm <- readRDS(file.path(data_dir, "gtex", "normal_subset_tissues_tpm.rds"))
-gtex_brain_tpm <- gtex_brain_tpm[grep("^HIST", rownames(gtex_brain_tpm), invert = T),]
-gtex_brain_tpm <- gtex_brain_tpm[rownames(gtex_brain_tpm) %in% gencode_gtf$gene_name,]
+# pull GTEx Brain samples from OT (v12)
+hist_df <- read_tsv(file.path(data_dir, "histologies.tsv"))
+hist_df <- hist_df %>%
+  filter(cohort == "GTEx", gtex_group == "Brain")
 
-gtex_brain_counts <- readRDS(file.path(data_dir, "gtex", "normal_subset_tissues_counts.rds"))
+# Dataset 1: GTEx Brain counts
+gtex_brain_counts <- readRDS(file.path(data_dir, "gene-counts-rsem-expected_count-collapsed.rds"))
+gtex_brain_counts <- gtex_brain_counts %>%
+  dplyr::select(hist_df$Kids_First_Biospecimen_ID)
 gtex_brain_counts <- gtex_brain_counts[grep("^HIST", rownames(gtex_brain_counts), invert = T),]
 gtex_brain_counts <- gtex_brain_counts[rownames(gtex_brain_counts) %in% gencode_gtf$gene_name,]
 
-# Dataset2: HOPE cohort
-hope_cohort_tpm <- readRDS(file.path(data_dir, 'merged_files', 'gene-expression-rsem-tpm-collapsed.rds'))
-hope_cohort_tpm <- hope_cohort_tpm[grep("^HIST", rownames(hope_cohort_tpm), invert = T),]
-hope_cohort_tpm <- hope_cohort_tpm[rownames(hope_cohort_tpm) %in% gencode_gtf$gene_name,]
-
+# Dataset2: HOPE cohort counts
 hope_cohort_counts <- readRDS(file.path(data_dir, 'merged_files', 'gene-counts-rsem-expected_count-collapsed.rds'))
 hope_cohort_counts <- hope_cohort_counts[grep("^HIST", rownames(hope_cohort_counts), invert = T),]
 hope_cohort_counts <- hope_cohort_counts[rownames(hope_cohort_counts) %in% gencode_gtf$gene_name,]
 
-# cancer Genes
-# cancer_genes <- readRDS(file.path(data_dir, 'cancer_gene_list.rds'))
+# manifest of HOPE cohort
+hope_sample_info <- read_tsv(file.path(data_dir, "histologies.tsv"))
+hope_sample_info <- hope_sample_info %>%
+  filter(Kids_First_Biospecimen_ID %in% colnames(hope_cohort_counts))
 
-# input data
-hope_cohort_tpm_melt <- hope_cohort_tpm %>% 
-  rownames_to_column("gene_symbol") %>%  
-  gather('sample', "tpm", -gene_symbol) 
-hope_cohort_counts_melt <- hope_cohort_counts %>% 
-  rownames_to_column("gene_symbol") %>% 
-  gather('sample', "tpm", -gene_symbol) 
-
-# z-score and return only patient's value (i.e. last column)
-get_zscore <- function(x) {
-  x <- log2(x+1)
-  out <- (x-mean(x))/sd(x)
-  return(out[length(out)])
+output_df <- data.frame()
+for(i in 1:ncol(hope_cohort_counts)){
+  # extract counts for patient of interest
+  patient_of_interest <- colnames(hope_cohort_counts)[i]
+  poi_counts <- hope_cohort_counts %>%
+    dplyr::select(patient_of_interest)
+  poi_sample_info <- hope_sample_info %>%
+    filter(Kids_First_Biospecimen_ID %in% patient_of_interest)
+  tmp <- run_rnaseq_analysis_noiseq(poi_counts = poi_counts, 
+                                          poi_sample_info = poi_sample_info,
+                                          ref_counts = gtex_brain_counts, 
+                                          ref_sample_info = hist_df,
+                                          sample_name = patient_of_interest)
+  # bind to final output
+  output_df <- rbind(output_df, tmp)
 }
 
-
-calc_degs <- function(expData, gtexData) {
-  
-  sample_of_interest <- unique(expData$sample)
-  print(sample_of_interest)
-  
-  # Merge GTEx and Patient data on common genes
-  intGenesTmp <- intersect(rownames(gtexData), expData$gene_symbol)
-  mergeDF <- gtexData %>%
-    rownames_to_column("gene_symbol") %>%
-    inner_join(expData %>%
-                 dplyr::select(-c(sample)), by = "gene_symbol") %>%
-    column_to_rownames("gene_symbol")
-  colnames(mergeDF)[ncol(mergeDF)] <- sample_of_interest 
-  
-  # Filter in Patient: TPM > 10
-  mergeDF <- mergeDF[mergeDF[,sample_of_interest] > 10,] 
-  
-  # z-score
-  output <- apply(mergeDF, FUN = get_zscore, MARGIN = 1) 
-  
-  # full data
-  # combine tpm and z-score for sample of interest
-  genes_df <- data.frame(z_score = output, tpm = mergeDF[names(output),sample_of_interest], sample = sample_of_interest)
-  thresh <- 1.5
-  genes_df <- genes_df %>%
-    mutate(diff_expr = ifelse(z_score < (-1*thresh), "down", 
-                              ifelse(z_score > thresh, "up", NA))) %>%
-    rownames_to_column("gene_symbol")
-  return(genes_df)
-}
-
-res <- plyr::ddply(hope_cohort_tpm_melt, 
-            .variables = "sample", 
-            .fun = function(x) calc_degs(expData = x, gtexData = gtex_brain_tpm))
-res <- res %>%
-  filter(!is.na(diff_expr))
-saveRDS(res, file = file.path("results", "hope_cohort_vs_gtex_brain_degs.rds"))
-
-# ssexpr
-calc_degs_ssexpr <- function(expData_counts, gtexData_counts) {
-  
-  sample_of_interest <- unique(expData_counts$sample)
-  print(sample_of_interest)
-  
-  # Merge GTEx and Patient data on common genes
-  intGenesTmp <- intersect(rownames(gtexData_counts), expData_counts$gene_symbol)
-  mergeDF_counts <- gtexData_counts %>%
-    rownames_to_column("gene_symbol") %>%
-    inner_join(expData_counts %>%
-                 dplyr::select(-c(sample)), by = "gene_symbol") %>%
-    column_to_rownames("gene_symbol")
-  colnames(mergeDF_counts)[ncol(mergeDF_counts)] <- "sample_of_interest" 
-  
-  # apply single sample differential expression
-  genes_df <- ss_diffexpr(expr = mergeDF_counts, norm_method = "tmm", housekeeping_genes = NULL)
-  genes_df$sample <- sample_of_interest
-  genes_df <- genes_df %>%
-    rownames_to_column("gene_symbol")
-  return(genes_df)
-}
-
-res <- plyr::ddply(hope_cohort_counts_melt, 
-                   .variables = "sample", 
-                   .fun = function(x) calc_degs_ssexpr(expData_counts = x, gtexData_counts = gtex_brain_counts))
-saveRDS(res, file = file.path("results", "hope_cohort_vs_gtex_brain_degs_edgeR.rds"))
+# save output
+saveRDS(output_df, file = file.path("results", "hope_cohort_vs_gtex_brain_degs.rds"))

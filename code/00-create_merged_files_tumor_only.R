@@ -10,6 +10,7 @@ suppressPackageStartupMessages({
 # source('~/Projects/d3b-patient-report-analysis/code/utils/filter_cnv.R')
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
+output_dir <- file.path(root_dir, "data", "merged_files")
 
 # load reference
 chr_map <- read.delim(file.path(root_dir, "../OMPARE", "data", "mart_export_genechr_mapping.txt"), stringsAsFactors = F, check.names = F)
@@ -27,7 +28,7 @@ hist <- manifest %>%
   mutate(file_name = gsub('.*/', '', name)) %>%
   unique()
 
-# merge tumor-only mutations (n = 92)
+# merge tumor-only mutations (n = 93)
 hope_cohort_mutations <- list.files(path = file.path("data", "mutect_maf_tumor_only"), pattern = "public", recursive = T, full.names = T)
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::read_tsv(x, skip = 1))
 hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
@@ -62,7 +63,7 @@ merge_cnv <- function(nm){
   }
 }
 
-# merge tumor only cnv (n = 85)
+# merge tumor only cnv (n = 93)
 hope_cohort_cnv <- list.files(path = file.path("data", "copy_number_tumor_only"), pattern = "*.txt", recursive = TRUE, full.names = T)
 hope_cohort_cnv <- lapply(hope_cohort_cnv, FUN = function(x) merge_cnv(nm = x))
 hope_cohort_cnv <- data.table::rbindlist(hope_cohort_cnv)
@@ -77,10 +78,10 @@ colnames(hope_cohort_msi)[3] <- "Percent"
 hope_cohort_msi$name <- gsub('.*/', '', lf)
 
 # add sample_id 
-hist$case_id[hist$name == "25bb3e6c-40cd-420a-a080-8bf49f1157a0_tumor_only_msisensor_pro"] <- "C1063212"
-hist$sample_id[hist$name == "25bb3e6c-40cd-420a-a080-8bf49f1157a0_tumor_only_msisensor_pro"] <- "7316-3636"
+# hist$case_id[hist$name == "25bb3e6c-40cd-420a-a080-8bf49f1157a0_tumor_only_msisensor_pro"] <- "C1063212"
+# hist$sample_id[hist$name == "25bb3e6c-40cd-420a-a080-8bf49f1157a0_tumor_only_msisensor_pro"] <- "7316-3636"
 hope_cohort_msi <- hope_cohort_msi %>%
   inner_join(hist %>% dplyr::select(-c(name)), by = c("name" = "file_name")) %>%
   dplyr::select(case_id, sample_id, Total_Number_of_Sites, Number_of_Somatic_Sites, Percent)
 hope_cohort_msi <- unique(hope_cohort_msi)
-saveRDS(hope_cohort_msi, file = file.path(output_dir, "msi_merged.rds"))
+saveRDS(hope_cohort_msi, file = file.path(output_dir, "msi_merged_tumor_only.rds"))

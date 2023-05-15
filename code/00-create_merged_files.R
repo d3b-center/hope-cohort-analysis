@@ -100,7 +100,7 @@ hope_cohort_fusions <- hope_cohort_fusions %>%
 length(unique(hope_cohort_fusions$Kids_First_Biospecimen_ID))
 saveRDS(hope_cohort_fusions, file = file.path(output_dir, "fusions_merged.rds"))
 
-# merge mutations (n = 74)
+# merge mutations (n = 75)
 hope_cohort_mutations <- list.files(path = file.path("data", "consenus_maf"), recursive = T, full.names = T)
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::read_tsv(x, skip = 1))
 hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
@@ -135,14 +135,14 @@ merge_cnv <- function(nm){
   }
 }
 
-# merge cnv (n = 74)
+# merge cnv (n = 75)
 hope_cohort_cnv <- list.files(path = "data/copy_number", pattern = "*.txt", recursive = TRUE, full.names = T)
 hope_cohort_cnv <- lapply(hope_cohort_cnv, FUN = function(x) merge_cnv(nm = x))
 hope_cohort_cnv <- data.table::rbindlist(hope_cohort_cnv)
 print(length(unique(hope_cohort_cnv$Kids_First_Biospecimen_ID)))
 saveRDS(hope_cohort_cnv, file = file.path(output_dir, "cnv_merged.rds"))
 
-# merge msi (n = 86)
+# merge msi (n = 75)
 lf <- list.files(path = "data/msisensor_pro/", pattern = 'msisensor_pro', recursive = T, full.names = T)
 hope_cohort_msi <- lapply(lf, read_tsv)
 hope_cohort_msi <- do.call(rbind, hope_cohort_msi)

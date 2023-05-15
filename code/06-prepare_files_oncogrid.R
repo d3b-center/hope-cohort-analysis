@@ -3,6 +3,7 @@
 suppressPackageStartupMessages({
   library(tidyverse)
   library(dplyr)
+  library(msigdbr)
 })
 
 # output directory
@@ -11,14 +12,16 @@ data_dir <- file.path(root_dir, "data")
 output_dir <- file.path(root_dir, "results")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
-# read driver list from OpenPBTA
-brain_goi_list <- read.delim(file = file.path(data_dir, "brain-goi-list-long-gencode-v39.txt"), header = F)
+# read driver list from OT
+brain_goi_list <- read.delim(file = file.path(data_dir, "hgat_goi_list.tsv"), header = T)
 
 # MMR genes
-mmr_genes <- read.delim(file = file.path(data_dir, "mmr_genes.tsv"), header = F)
+geneset_db <- msigdbr::msigdbr(category = "C2", subcategory = "KEGG")
+geneset_db <- geneset_db[grep("MISMATCH_REPAIR|KEGG_BASE_EXCISION_REPAIR|KEGG_HOMOLOGOUS_RECOMBINATION", geneset_db$gs_name),]
+mmr_genes <- unique(geneset_db$human_gene_symbol)
 
 # combined list
-driver_genes <- data.frame(V1 = c(brain_goi_list$V1, mmr_genes$V1)) %>% unique()
+driver_genes <- data.frame(V1 = c(brain_goi_list$HGAT, mmr_genes)) %>% unique()
 
 # read reference gene lists based on PNOC003
 snv <- read.delim(file.path(data_dir, "snv_genes.tsv"), header = F) %>%
@@ -38,95 +41,76 @@ rna_ids <- file.path(data_dir, "merged_files", "gene-expression-rsem-tpm-collaps
   readRDS() %>%
   colnames()
 
-# histology
+# read master histology
+hist_df <- read_tsv("data/master_histology_hope_cohort.tsv")
+
+# format diagnosis type 
+hist_df$diagnosis_type[hist_df$diagnosis_type == "Recurrent"] = "Recurrence"
+hist_df$diagnosis_type[hist_df$diagnosis_type == "recurrent"] = "Recurrence"
+hist_df$diagnosis_type[hist_df$diagnosis_type == "Recurrent, residual"] = "Recurrence"
+hist_df$diagnosis_type[hist_df$diagnosis_type == "Primary"] = "Initial CNS Tumor"
+
+# pull sequencing experiment information from cavatica manifests
 manifest <- list.files(path = file.path(data_dir, "manifest"), pattern = "manifest.*.tsv", full.names = T)
-manifest <- grep("msi", manifest, invert = T, value = T)
+manifest <- grep("msi|cram|fusion", manifest, invert = T, value = T)
 manifest <- lapply(manifest, FUN = function(x) readr::read_tsv(x))
 manifest <- data.table::rbindlist(manifest)
 colnames(manifest) <- gsub(" ", "_", colnames(manifest))
 manifest <- manifest %>%
-  filter(Kids_First_Biospecimen_ID %in% c(rna_ids, wgs_ids)) %>%
+  filter(Kids_First_Biospecimen_ID %in% c(rna_ids, wgs_ids),
+         sample_id %in% hist_df$Sample_ID) %>%
   mutate(experimental_strategy = ifelse(Kids_First_Biospecimen_ID %in% rna_ids, "RNA-Seq", "WGS")) %>%
-  dplyr::mutate(Sample = sample_id,
+  dplyr::mutate(Sample_ID = sample_id,
                 Sequencing_Experiment = experimental_strategy) %>%
-  dplyr::select(Kids_First_Biospecimen_ID, Sample, Sequencing_Experiment) %>%
+  dplyr::select(Kids_First_Biospecimen_ID, Sample_ID, Sequencing_Experiment) %>%
   unique()
 
 # annotation with sample and experimental strategy
-annot_info <- manifest %>%
+seq_info <- manifest %>%
   dplyr::select(-c(Kids_First_Biospecimen_ID)) %>%
-  group_by(Sample) %>%
+  group_by(Sample_ID) %>%
   mutate(Sequencing_Experiment = toString(sort(Sequencing_Experiment))) %>%
+  filter(Sample_ID %in% hist_df$Sample_ID) %>%
   unique()
 
-# get clinical variables from Mateusz's file
-hist <- readr::read_tsv(file.path(data_dir, "hopeonly_clinical_table_011823.tsv"))
-hist$diagnosis_type[hist$diagnosis_type == "Recurrent"] = "Recurrence"
-hist$diagnosis_type[hist$diagnosis_type == "recurrent"] = "Recurrence"
-hist$diagnosis_type[hist$diagnosis_type == "Recurrent, residual"] = "Recurrence"
-hist$diagnosis_type[hist$diagnosis_type == "Primary"] = "Initial CNS Tumor"
-
-hist <- hist %>%
-  dplyr::select(Sample_ID, diagnosis, diagnosis_type, Gender) %>%
+# select columns of interest
+annot_info <- hist_df %>%
+  left_join(seq_info, by = "Sample_ID") %>%
   dplyr::rename("Tumor_Descriptor" = "diagnosis_type",
                 "Integrated_Diagnosis" = "diagnosis",
                 "Sex" = "Gender",
-                "Sample" = "Sample_ID")
+                "Sample" = "Sample_ID",
+                "MSI" = "msi_paired",
+                "TMB" = "TMB_paired",
+                "Age_Two_Groups" = "age_two_groups",
+                "Age_Three_Groups" = "age_three_groups") %>%
+  dplyr::select(Sample, Tumor_Descriptor, Integrated_Diagnosis, Sex, Sequencing_Experiment, MSI, TMB, Age_Two_Groups, Age_Three_Groups)
 
-# add TMB, MSI-sensor and Age information from merged output
-merged_output <- read_tsv('results/msisensor-pro/msi_output_merged.tsv') %>%
-  dplyr::select(sample_id, MSI_Percent, TMB, age_two_groups, age_three_groups) 
-
-# add to histology
-hist <- hist %>%
-  inner_join(merged_output, by = c("Sample" = "sample_id")) %>% 
-  distinct(Sample, .keep_all = T)
-
-# add to annot
-annot_info <- hist %>%
-  inner_join(annot_info, by = "Sample")
-annot_info <- annot_info %>%
-  dplyr::select(MSI_Percent, TMB, Sample, Tumor_Descriptor, Integrated_Diagnosis, Sex, age_two_groups, age_three_groups, Sequencing_Experiment)
+# save annotation file
 write.table(annot_info, file = file.path(output_dir, "annotation.txt"), quote = F, sep = "\t", row.names = F)
 
-# 1. get degene info PNOC008 patients vs GTEx Brain
-genes_df <- readRDS(file.path("results/hope_cohort_vs_gtex_brain_degs_edgeR.rds"))
+# 1. get degene info vs GTEx Brain
+genes_df <- readRDS(file.path("results/hope_cohort_vs_gtex_brain_degs.rds"))
 deg_genes <- genes_df %>%
-  dplyr::mutate(label = ifelse(diff_expr == "up", "OVE", "UNE"),
-         Gene_name = gene_symbol,
-         sample_name = sample) %>%
+  dplyr::mutate(label = ifelse(diff_expr == "up", "OVE", "UNE")) %>%
+  dplyr::rename("Gene_name" = "genes") %>%
   filter(Gene_name %in% deg$V1) %>%
-  inner_join(manifest, by = c("sample_name" = "Kids_First_Biospecimen_ID")) %>%
-  dplyr::select(Sample, Gene_name, label) %>%
+  inner_join(manifest, by = c("sample" = "Kids_First_Biospecimen_ID")) %>%
+  dplyr::select(Sample_ID, Gene_name, label) %>%
   unique()
 
 # 2. get cnv info
 cnv_genes <- readRDS(file.path("data/merged_files/cnv_merged.rds"))
-# tumor_only_cnv_genes <- readRDS(file.path("data/merged_files/cnv_tumor_only_merged.rds"))
-# cnv_genes <- plyr::rbind.fill(cnv_genes, tumor_only_cnv_genes)
 cnv_genes <- cnv_genes %>%
   dplyr::mutate(label = ifelse(status == "Gain", "GAI", "LOS")) %>%
   filter(hgnc_symbol %in% cnv$V1) %>%
-  dplyr::mutate(Gene_name = hgnc_symbol) %>%
-  inner_join(manifest, by = c("Kids_First_Biospecimen_ID")) %>%
-  dplyr::select(Sample, Gene_name, label) %>%
+  dplyr::rename("Gene_name" = "hgnc_symbol") %>%
+  inner_join(manifest, by = "Kids_First_Biospecimen_ID") %>%
+  dplyr::select(Sample_ID, Gene_name, label) %>%
   unique()
 
 # 3. get snv info
 mut_genes <- readRDS(file.path("data/merged_files/snv_merged.rds"))
-# tumor_only_mut_genes <- readRDS(file.path("data/merged_files/snv_tumor_only_merged.rds"))
-# mut_genes <- plyr::rbind.fill(mut_genes, tumor_only_mut_genes)
-
-# # check if the wgs tumor-only match the snv calls
-# wgs_only <- read.delim('data/wgs_tumor_only.tsv', header = F)
-# wgs_only_samples <- manifest %>% 
-#   filter(Sample %in% wgs_only$V1)
-# mut_genes_tumor_only <- mut_genes %>%
-#   filter(Kids_First_Biospecimen_ID %in% wgs_only_samples$Kids_First_Biospecimen_ID) %>%
-#   nrow()
-# if(mut_genes_tumor_only == 0){
-#   print("WGS tumor only has no SNV data")
-# }
 
 # filter to variant classification of interest
 mut_genes <- mut_genes %>%
@@ -138,10 +122,9 @@ mut_genes <- mut_genes %>%
                                   Variant_Classification %in% "In_Frame_Del" ~ "IFD",
                                   Variant_Classification %in% "Splice_Site" ~ "SPS")) %>%
   filter(Hugo_Symbol %in% snv$V1) %>%
-  mutate(Gene_name = Hugo_Symbol,
-         sample_name = Kids_First_Biospecimen_ID) %>%
-  inner_join(manifest, by = c("sample_name" = "Kids_First_Biospecimen_ID")) %>%
-  dplyr::select(Sample, Gene_name, label) %>%
+  dplyr::rename("Gene_name" = "Hugo_Symbol") %>%
+  inner_join(manifest, by = "Kids_First_Biospecimen_ID") %>%
+  dplyr::select(Sample_ID, Gene_name, label) %>%
   unique()
 
 # 4. get fusion info
@@ -155,7 +138,7 @@ fus_genes <- fus_genes %>%
   dplyr::mutate(label = "FUS") %>%
   filter(Gene_name %in% fusion$V1) %>%
   inner_join(manifest, by = c("Kids_First_Biospecimen_ID")) %>%
-  dplyr::select(Sample, Gene_name, label) %>%
+  dplyr::select(Sample_ID, Gene_name, label) %>%
   unique()
 
 # combine fus + snv
@@ -166,19 +149,19 @@ cnv_deg <- rbind(cnv_genes, deg_genes)
 
 # uniquify rows
 snv_fus <- snv_fus %>%
-  group_by(Sample, Gene_name) %>%
+  group_by(Sample_ID, Gene_name) %>%
   dplyr::summarise(label = paste0(label, collapse = ';'))
 cnv_deg <- cnv_deg %>%
-  group_by(Sample, Gene_name) %>%
+  group_by(Sample_ID, Gene_name) %>%
   dplyr::summarise(label = paste0(label, collapse = ';'))
 
 # convert to matrix
 snv_fus <- snv_fus %>%
   spread(key = Gene_name, value = 'label') %>%
-  column_to_rownames('Sample')
+  column_to_rownames('Sample_ID')
 cnv_deg <- cnv_deg %>%
   spread(key = Gene_name, value = 'label') %>%
-  column_to_rownames('Sample')
+  column_to_rownames('Sample_ID')
 
 # add an * to common genes 
 colnames(cnv_deg) <- ifelse(colnames(cnv_deg) %in% colnames(snv_fus), paste0(colnames(cnv_deg),'*'), colnames(cnv_deg))
@@ -188,4 +171,11 @@ oncogrid_mat <- snv_fus %>%
   rownames_to_column('Sample') %>%
   full_join(cnv_deg %>%
               rownames_to_column('Sample'), by = "Sample")
+
+print("Samples missing from oncogrid:")
+print(setdiff(hist_df$Sample_ID, oncogrid_mat$Sample))
+
+# save output matrix
+oncogrid_mat <- oncogrid_mat %>%
+  filter(Sample %in% annot_info$Sample)
 write.table(oncogrid_mat, file = file.path(output_dir, "oncoprint.txt"), quote = F, sep = "\t", row.names = F)

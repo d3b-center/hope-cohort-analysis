@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
-output_dir <- file.path(root_dir, "results", "oncoplots_three_groups")
+output_dir <- file.path(root_dir, "results", "oncoplots")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
 # matrix
@@ -67,8 +67,6 @@ col = c("GAI" = "#ff4d4d", "LOS" = "#0D47A1",
 # read annotation and TMB info
 annot_info <- read.delim(file.path("results", "annotation.txt"), header = TRUE, check.names = TRUE)
 annot_info <- annot_info %>%
-  dplyr::select(-c(age_two_groups)) %>%
-  dplyr::rename("Age" = "age_three_groups") %>%
   filter(Sample %in% colnames(mat)) %>%
   remove_rownames() %>%
   column_to_rownames('Sample') %>%
@@ -79,15 +77,17 @@ annot_info <- annot_info[samples_to_use,]
 
 # annotation 1
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
-col_fun_msi = colorRamp2(c(0, max(annot_info$MSI_Percent, na.rm = T)), c("white", "purple3"))
+col_fun_msi = colorRamp2(c(0, max(annot_info$MSI, na.rm = T)), c("white", "purple3"))
 annot_info$Tumor_Descriptor[is.na(annot_info$Tumor_Descriptor)] <- "N/A"
 annot_info$Integrated_Diagnosis[is.na(annot_info$Integrated_Diagnosis)] <- "N/A"
 annot_info$Sex[is.na(annot_info$Sex)] <- "N/A"
-annot_info$Age[is.na(annot_info$Age)] <- "N/A"
-annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
+annot_info$Age_Two_Groups[is.na(annot_info$Age_Two_Groups)] <- "N/A"
+annot_info$Age_Two_Groups <- factor(annot_info$Age_Two_Groups, levels = c("[0,15]", "(15,40]", "N/A"))
+annot_info$Age_Three_Groups[is.na(annot_info$Age_Three_Groups)] <- "N/A"
+annot_info$Age_Three_Groups <- factor(annot_info$Age_Three_Groups, levels = c("[0,15]", "(15,26]", "(26,40]", "N/A"))
 ha = HeatmapAnnotation(df = annot_info , col = list(
   TMB = col_fun_tmb,
-  MSI_Percent = col_fun_msi,
+  MSI = col_fun_msi,
   Sequencing_Experiment = c("WGS" = "red",
                             "RNA-Seq" = "yellow",
                             "RNA-Seq, WGS" = "orange",
@@ -107,10 +107,13 @@ ha = HeatmapAnnotation(df = annot_info , col = list(
   Sex = c("Female" = "deeppink4",
           "Male" = "navy",
           "N/A" = "gray"),
-  Age = c("[0,15]" = "gold",
-          "(15,26]" = "purple",
-          "(26,40]" = "darkgreen",
-          "N/A" = "gray")),
+  Age_Two_Groups = c("[0,15]" = "gold",
+                     "(15,40]" = "purple",
+                     "N/A" = "gray"),
+  Age_Three_Groups = c("[0,15]" = "gold",
+                       "(15,26]" = "purple",
+                       "(26,40]" = "darkgreen",
+                       "N/A" = "gray")),
   annotation_name_gp = gpar(fontsize = 9),
   gp = gpar(col = "#595959"), simple_anno_size = unit(4, "mm"), annotation_name_side = "left",
   annotation_legend_param = list(
@@ -218,7 +221,7 @@ dev.off()
 
 # column order by sex + age
 sex_age_ordered <- annot_info %>% 
-  dplyr::arrange(Sex, Age)
+  arrange(Sex, Age_Two_Groups, Age_Three_Groups)
 ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                alter_fun = alter_fun, col = col, show_column_names = TRUE, 
                column_names_gp = gpar(fontsize = 9),
@@ -245,7 +248,7 @@ tmp <- reshape2::melt(mat) %>%
 tmp <- annot_info %>% 
   rownames_to_column("sample_id") %>%
   inner_join(tmp, by = c("sample_id" = "Var2")) %>%
-  arrange(Sex, Age, desc(value)) %>%
+  arrange(Sex, Age_Two_Groups, Age_Three_Groups, desc(value)) %>%
   column_to_rownames("sample_id")
 ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                alter_fun = alter_fun, col = col, show_column_names = TRUE, 

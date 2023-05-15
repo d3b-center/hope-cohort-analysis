@@ -1,5 +1,5 @@
 # script to correlate ALT status to clinical variables like
-# protein clusters, age, sex and MSI and TMB
+# protein clusters, Age (2 and 3 groups), Gender, MSI and TMB
 suppressPackageStartupMessages({
   library(tidyverse)
   library(ggplot2)
@@ -32,7 +32,7 @@ compute_corr <- function(x){
   age_three_group_pvalue <- round(age_three_group_pvalue, digits = 3)
   
   # Sex
-  gender_pvalue <- chisq.test(x = factor(x$ALT_status), y = factor(x$gender))$p.value
+  gender_pvalue <- chisq.test(x = factor(x$ALT_status), y = factor(x$Gender))$p.value
   gender_pvalue <- round(gender_pvalue, digits = 3)
   
   # Protein cluster
@@ -64,80 +64,111 @@ compute_corr <- function(x){
   return(output_df)
 }
 
-# 1) tumor-normal-paired
-# read combined file
-alt_status <- read_tsv(file.path("results", "msisensor-pro", "msi_output_merged.tsv"))
-alt_status <- alt_status %>%
-  filter(!is.na(ALT_status))
+# master histology file
+hist_df <- read_tsv(file = file.path(data_dir, "master_histology_hope_cohort.tsv"))
+
+# 1) tumor-normal-paired comparisons
+alt_status <- hist_df %>%
+  filter(!is.na(msi_paired)) %>%
+  dplyr::rename("TMB" = "TMB_paired",
+                "MSI_Percent" = "msi_paired")
 df <- compute_corr(x = alt_status)
 rownames(df) <- "Tumor-Normal"
+write_tsv(x = df, file = file.path(output_dir, "alt_correlations_paired.tsv"))
 
 # ALT telomere vs MSI scatter plot
 p <- ggplot(alt_status, aes(x = t_n_telomere_content, y = MSI_Percent)) +
   ggpubr::theme_pubr() +
   geom_point(position = "jitter", pch = 21) +
   ggpubr::stat_cor(method = "pearson", color = "red")
-ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_msi.png"))
+ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_msi_paired.png"))
 
-p <- ggplot(alt_status, aes(x = ALT_status, y = MSI_Percent, color = ALT_status)) +
+# ALT status vs MSI boxplot
+alt_status <- alt_status %>%
+  group_by(ALT_status) %>%
+  mutate(n = n(),
+         ALT_status_label = paste0(ALT_status, "\n(n = ", n, ")"))
+p <- ggplot(alt_status, aes(x = ALT_status_label, y = MSI_Percent, color = ALT_status_label)) +
   ggpubr::theme_pubr() +
   stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +  geom_point() +
-  ggpubr::stat_compare_means(color = "red") + theme(legend.position = "none")
-ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_msi.png"))
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +  
+  geom_point() +
+  ggpubr::stat_compare_means(color = "black", ref.group = ".all.", label = "p.format") + 
+  ggpubr::stat_compare_means(color = "red", label.y = 10) +
+  theme(legend.position = "none") + xlab("")
+p
+ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_msi_paired.png"))
 
 # ALT telomere vs TMB scatter plot
 p <- ggplot(alt_status, aes(x = t_n_telomere_content, y = TMB)) +
   ggpubr::theme_pubr() +
   geom_point(position = "jitter", pch = 21) +
   ggpubr::stat_cor(method = "pearson", color = "red")
-ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_tmb.png"))
+ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_tmb_paired.png"))
 
-p <- ggplot(alt_status, aes(x = ALT_status, y = TMB, color = ALT_status)) +
+# ALT status vs TMB boxplot
+p <- ggplot(alt_status, aes(x = ALT_status_label, y = TMB, color = ALT_status_label)) +
   ggpubr::theme_pubr() +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +  geom_point() +
-  ggpubr::stat_compare_means(color = "red") + theme(legend.position = "none")
-ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_tmb.png"))
+  ggpubr::stat_compare_means(color = "black", ref.group = ".all.", label = "p.format") + 
+  ggpubr::stat_compare_means(color = "red", label.y = 15) +
+  theme(legend.position = "none") + 
+  xlab("")
+p
+ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_tmb_paired.png"))
 
 # 2) tumor-only 
-# read combined file
-alt_status_tumor_only <- read_tsv(file.path("results", "msisensor-pro-tumor-only", "msi_output_merged_tumor_only.tsv"))
-alt_status_tumor_only <- alt_status_tumor_only %>%
-  filter(!is.na(ALT_status))
-df_tumor_only <- compute_corr(x = alt_status_tumor_only)
-rownames(df_tumor_only) <- "Tumor-only"
-
-# ALT telomere vs MSI scatter plot
-p <- ggplot(alt_status_tumor_only, aes(x = t_n_telomere_content, y = MSI_Percent)) +
-  ggpubr::theme_pubr() +
-  geom_point(position = "jitter", pch = 21) +
-  ggpubr::stat_cor(method = "pearson", color = "red")
-ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_msi_tumor_only.png"))
-
-p <- ggplot(alt_status_tumor_only, aes(x = ALT_status, y = MSI_Percent, color = ALT_status)) +
-  ggpubr::theme_pubr() +
-  stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +  geom_point() +
-  ggpubr::stat_compare_means(color = "red") + theme(legend.position = "none")
-ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_msi_tumor_only.png"))
-
-# ALT telomere vs TMB scatter plot
-p <- ggplot(alt_status_tumor_only, aes(x = t_n_telomere_content, y = TMB)) +
-  ggpubr::theme_pubr() +
-  geom_point(position = "jitter", pch = 21) +
-  ggpubr::stat_cor(method = "pearson", color = "red")
-ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_tmb_tumor_only.png"))
-
-p <- ggplot(alt_status_tumor_only, aes(x = ALT_status, y = TMB, color = ALT_status)) +
-  ggpubr::theme_pubr() +
-  stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +  geom_point() +
-  ggpubr::stat_compare_means(color = "red") + theme(legend.position = "none")
-ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_tmb_tumor_only.png"))
-
-# write output
-rbind(df, df_tumor_only) %>%
-  rownames_to_column("Analysis_Type") %>%
-  write_tsv(file = file.path(output_dir, "alt_correlations.tsv"))
+# alt_status_tumor_only <- hist_df %>%
+#   filter(!is.na(msi_tumor_only)) %>%
+#   dplyr::rename("TMB" = "TMB_tumor_only",
+#                 "MSI_Percent" = "msi_tumor_only")
+# df_tumor_only <- compute_corr(x = alt_status_tumor_only)
+# rownames(df_tumor_only) <- "Tumor-only"
+# 
+# # ALT telomere vs MSI scatter plot
+# p <- ggplot(alt_status_tumor_only, aes(x = t_n_telomere_content, y = MSI_Percent)) +
+#   ggpubr::theme_pubr() +
+#   geom_point(position = "jitter", pch = 21) +
+#   ggpubr::stat_cor(method = "pearson", color = "red")
+# ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_msi_tumor_only.png"))
+# 
+# # ALT status vs MSI boxplot
+# alt_status_tumor_only <- alt_status_tumor_only %>%
+#   group_by(ALT_status) %>%
+#   mutate(n = n(),
+#          ALT_status_label = paste0(ALT_status, "\n(n = ", n, ")"))
+# p <- ggplot(alt_status_tumor_only, aes(x = ALT_status_label, y = MSI_Percent, color = ALT_status_label)) +
+#   ggpubr::theme_pubr() +
+#   stat_boxplot(geom ='errorbar', width = 0.2) +
+#   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +  geom_point() +
+#   ggpubr::stat_compare_means(color = "black", ref.group = ".all.", label = "p.format") + 
+#   ggpubr::stat_compare_means(color = "red", label.y = 15) +
+#   xlab("") +
+#   theme(legend.position = "none")
+# ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_msi_tumor_only.png"))
+# 
+# # ALT telomere vs TMB scatter plot
+# p <- ggplot(alt_status_tumor_only, aes(x = t_n_telomere_content, y = TMB)) +
+#   ggpubr::theme_pubr() +
+#   geom_point(position = "jitter", pch = 21) +
+#   ggpubr::stat_cor(method = "pearson", color = "red")
+# ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_tmb_tumor_only.png"))
+# 
+# # ALT status vs TMB boxplot
+# p <- ggplot(alt_status_tumor_only, aes(x = ALT_status_label, y = TMB, color = ALT_status_label)) +
+#   ggpubr::theme_pubr() +
+#   stat_boxplot(geom ='errorbar', width = 0.2) +
+#   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +  geom_point() +
+#   ggpubr::stat_compare_means(color = "black", ref.group = ".all.", label = "p.format") + 
+#   ggpubr::stat_compare_means(color = "red", label.y = 15) +
+#   xlab("") +
+#   theme(legend.position = "none")
+# p
+# ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_tmb_tumor_only.png"))
+# 
+# # write output
+# rbind(df, df_tumor_only) %>%
+#   rownames_to_column("Analysis_Type") %>%
+#   write_tsv(file = file.path(output_dir, "alt_correlations.tsv"))
 
