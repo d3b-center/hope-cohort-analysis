@@ -1,4 +1,7 @@
 # Script to create master histology for HOPE cohort
+suppressPackageStartupMessages({
+  library(tidyverse)
+})
 
 # input directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
@@ -44,9 +47,10 @@ annot <- annot %>%
   left_join(msi_tumor_only, by = c("Sample_ID" = "sample_id"))
 
 # add ALT status
-alt_status <- read_tsv(file.path(data_dir, "hope_cohort_alt_status.txt"))
+alt_status <- read_tsv(file.path(data_dir, "hope_cohort_alt_status.txt")) 
 alt_status <- alt_status %>%
-  dplyr::select(sample_id, t_n_telomere_content, ALT_status) 
+  filter(sample_id %in% annot$Sample_ID) %>%
+  dplyr::select(sample_id, t_n_telomere_content, ALT_status) # (n = 68)
 annot <- annot %>%
   left_join(alt_status, by = c("Sample_ID" = "sample_id"))
 
