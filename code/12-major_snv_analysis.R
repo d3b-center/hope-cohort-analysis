@@ -13,9 +13,27 @@ output_dir <- file.path(root_dir, "results", "major_snv")
 dir.create(output_dir, showWarnings = F, recursive = T)
 
 # list of major SNV >= 6% mutation
-major_snv <- c("TP53", "H3-3A", "NF1", "ATRX", "BRAF", "IDH1", "PDGFRA",
-               "TSC2", "ATM", "BCOR", "PIK3CA", "ARID1A", "MSH6", "CIC", "PTPN11", 
-               "SETD2", "SMARCA4")
+major_snv <- read.delim(text = "TP53
+NF1
+H3−3A
+ATRX
+BRAF
+PDGFRA
+PIK3CA
+TSC2
+IDH1
+TDG
+ATM
+BCOR
+PIK3C2G
+RAD54B
+ARID1A
+CDKN2A
+CIC
+EGFR
+MSH3
+MSH6", header = F)
+major_snv <- major_snv$V1
 
 # read oncoprint matrix
 mat = read.table(file.path("results", "oncoprint.txt"),  header = TRUE, stringsAsFactors=FALSE, sep = "\t",check.names = FALSE)
