@@ -3,6 +3,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(tidyverse)
   library(ggpubr)
+  library(ggrepel)
 })
 
 # output directories
@@ -80,7 +81,7 @@ plot_data <- output_df %>%
   group_by(age_three_groups) %>%
   mutate(n = n()) %>%
   mutate(age_three_groups = paste0(age_three_groups, "\n(n = ",n,")")) 
-plot_data$age_three_groups <- factor(plot_data$age_three_groups, levels = c("[0,15]\n(n = 44)", "(15,26]\n(n = 20)", "(26,40]\n(n = 8)"))
+plot_data$age_three_groups <- factor(plot_data$age_three_groups, levels = c("[0,15]\n(n = 45)", "(15,26]\n(n = 20)", "(26,40]\n(n = 8)"))
 r <- ggplot(plot_data, aes(x = age_three_groups, y = msi_paired, color = as.character(age_three_groups))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
@@ -103,7 +104,7 @@ plot_data <- output_df %>%
   group_by(age_two_groups) %>%
   mutate(n = n()) %>%
   mutate(age_two_groups = paste0(age_two_groups, "\n(n = ",n,")")) 
-plot_data$age_two_groups <- factor(plot_data$age_two_groups, levels = c("[0,15]\n(n = 44)", "(15,40]\n(n = 28)"))
+plot_data$age_two_groups <- factor(plot_data$age_two_groups, levels = c("[0,15]\n(n = 45)", "(15,40]\n(n = 28)"))
 r <- ggplot(plot_data, aes(x = age_two_groups, y = msi_paired, color = as.character(age_two_groups))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +

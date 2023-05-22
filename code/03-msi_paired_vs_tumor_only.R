@@ -22,7 +22,7 @@ pdf(file = "results/msisensor-pro-combined/tumor_only_vs_paired_analysis.pdf", w
 p <- ggplot(annot, aes(x = msi_paired, y = msi_tumor_only)) +
   geom_point(pch = 21, size = 4) +
   ggpubr::theme_pubr(base_size = 10, legend = "bottom") + 
-  ggtitle(paste0("Paired vs Tumor-only analysis (n = ", length(unique_ids) , ")")) +
+  ggtitle(paste0("Paired vs Tumor-only analysis (n = ", nrow(annot) , ")")) +
   stat_cor(method = "pearson") + ylab("MSI (tumor-only)") + xlab("MSI (paired)")
 print(p)
 dev.off()

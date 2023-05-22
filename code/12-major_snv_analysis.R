@@ -32,28 +32,36 @@ mat <- dcast(mat, sample_id~gene, value.var = "type")
 # mat[rowSums(mat) > 0,] %>% dim()
 
 # ALT status, telomere content and MSI percent correlation with the binary matrix
-# read combined file for paired MSI output (n = 69)
-merged_output <- read_tsv(file.path("results", "msisensor-pro", "msi_output_merged.tsv"))
+# read combined file for paired MSI output (n = 73)
+merged_output <- read_tsv(file.path("data", "master_histology_hope_cohort.tsv"))
+merged_output <- merged_output %>%
+  filter(!is.na(msi_paired)) %>%
+  dplyr::rename("sample_id" = "Sample_ID")
 
 # combine the file with oncoprint matrix (n = 68)
 output_df <- mat %>%
-  filter(sample_id != "7316-2810") %>% # this sample does not have any SNV data so remove it
+  # filter(sample_id != "7316-2810") %>% # this sample does not have any SNV data so remove it
   inner_join(merged_output, by = "sample_id")
 output_df$ALT_status <- ifelse(output_df$ALT_status == "ALT+", 1, ifelse(output_df$ALT_status == "ALT-", 0, NA))
-vars <- c("t_n_telomere_content", "ALT_status", "MSI_Percent")
+vars <- c("t_n_telomere_content", "ALT_status", "msi_paired")
 final_df <- data.frame()
 for(j in 1:length(vars)){
   for(i in 1:length(major_snv)){
     var_val <- vars[j]
     col_val <- major_snv[i]
-    pval <- cor.test(output_df[,var_val], output_df[,col_val])$p.value
-    estimate <- cor.test(output_df[,var_val], output_df[,col_val])$estimate
-    df1 <- data.frame(variable1 = var_val, variable2 = col_val, corr_pvalue = pval, corr_value = estimate)
-    final_df <- rbind(final_df, df1)
+    if(length(which(colnames(output_df) == col_val)) == 0){
+      print("Not present")
+    } else {
+      pval <- cor.test(output_df[,var_val], output_df[,col_val])$p.value
+      estimate <- cor.test(output_df[,var_val], output_df[,col_val])$estimate
+      df1 <- data.frame(variable1 = var_val, variable2 = col_val, corr_pvalue = pval, corr_value = estimate)
+      final_df <- rbind(final_df, df1)
+    }
   }
 }
 final_df <- final_df %>%
-  mutate(Significant = ifelse(corr_pvalue < 0.05, TRUE, FALSE))
+  mutate(Significant = ifelse(corr_pvalue < 0.05, TRUE, FALSE)) %>%
+  arrange(desc(Significant))
 write_tsv(final_df, file = file.path(output_dir, "alt_msi_correlation_with_snv.tsv"))
 
 # BRAF and TP53 mutations are mutually exclusive?

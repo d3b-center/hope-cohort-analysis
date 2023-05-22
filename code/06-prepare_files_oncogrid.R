@@ -174,6 +174,7 @@ oncogrid_mat <- snv_fus %>%
 
 print("Samples missing from oncogrid:")
 print(setdiff(hist_df$Sample_ID, oncogrid_mat$Sample))
+# "7316-1455"  "7316-942"   "7316-24"    "7316-255"   "7316-1889"  "7316-212"   "7316UP-904"
 
 # save output matrix
 oncogrid_mat <- oncogrid_mat %>%

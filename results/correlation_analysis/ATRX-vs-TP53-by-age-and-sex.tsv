@@ -1,18 +1,18 @@
 comparison	variable	value	chisq_pval
 ATRX vs TP53	Age (Two Groups)	(15,40]	0.00202
-ATRX vs TP53	Age (Two Groups)	[0,15]	0.01262
+ATRX vs TP53	Age (Two Groups)	[0,15]	0.01041
 ATRX vs TP53	Age (Three Groups)	(15,26]	0.00491
 ATRX vs TP53	Age (Three Groups)	(26,40]	NA
-ATRX vs TP53	Age (Three Groups)	[0,15]	0.01262
-ATRX vs TP53	Sex	Male	0.0018600000000000001
+ATRX vs TP53	Age (Three Groups)	[0,15]	0.01041
+ATRX vs TP53	Sex	Male	0.00142
 ATRX vs TP53	Sex	Female	0.02428
 ATRX vs TP53	Age (Two Groups) + Sex	(15,40]_Male	0.0353
 ATRX vs TP53	Age (Two Groups) + Sex	(15,40]_Female	0.12051
 ATRX vs TP53	Age (Two Groups) + Sex	[0,15]_Female	0.26395
-ATRX vs TP53	Age (Two Groups) + Sex	[0,15]_Male	0.07004
+ATRX vs TP53	Age (Two Groups) + Sex	[0,15]_Male	0.05583
 ATRX vs TP53	Age (Three Groups) + Sex	(15,26]_Male	0.06004
 ATRX vs TP53	Age (Three Groups) + Sex	(26,40]_Female	NA
 ATRX vs TP53	Age (Three Groups) + Sex	[0,15]_Female	0.26395
-ATRX vs TP53	Age (Three Groups) + Sex	[0,15]_Male	0.07004
+ATRX vs TP53	Age (Three Groups) + Sex	[0,15]_Male	0.05583
 ATRX vs TP53	Age (Three Groups) + Sex	(15,26]_Female	0.2059
 ATRX vs TP53	Age (Three Groups) + Sex	(26,40]_Male	NA
