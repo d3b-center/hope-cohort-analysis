@@ -50,13 +50,60 @@ merged_output$ALT_status <- relevel(merged_output$ALT_status, ref = "ALT-")
 merged_output$MSI_status <- relevel(merged_output$MSI_status, ref = "MSI-low")
 res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + ALT_status, data = merged_output)
 # survminer::ggforest(res.cox, data = as.data.table(merged_output))
-pdf(file = file.path(output_dir, "alt_status_vs_survival.pdf"), width = 8, height = 6)
+pdf(file = file.path(output_dir, "alt_status_vs_survival_multivariate.pdf"), width = 8, height = 6)
 plotForest(model = res.cox)
+dev.off()
+
+# kaplan meier
+pdf(file = file.path(output_dir, "alt_vs_survival_km.pdf"), height = 8, width = 10, onefile = FALSE)
+fit <- survival::survfit(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = merged_output)
+sdf <- survival::survdiff(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = merged_output)
+pvalue <- round(1 - pchisq(sdf$chisq, length(sdf$n) - 1), 3)
+p <- ggsurvplot(fit, 
+                title = "ALT Status vs Survival",
+                data = merged_output, 
+                font.x = c(20, face = "bold"),
+                font.tickslab = c(20),
+                font.y = c(20, face = "bold"),
+                font.legend = c(20, "bold"),
+                pval = FALSE, 
+                pval.method = FALSE,
+                ggtheme = theme_minimal(),
+                linetype = "strata",
+                legend = "bottom")  +
+  guides(colour = guide_legend(ncol = 2)) 
+p <- p$plot +
+  annotate("text", x = 12000, y = 0.75, label = paste0("Log-rank\nP-value: ", pvalue), cex=6, col="black", vjust=0, hjust = 1.1, fontface=1)
+print(p)
 dev.off()
 
 # survival curves stratified by molecular subtype + MSI (High > 3.5 and Low) 
 res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + MSI_status, data = merged_output)
 # survminer::ggforest(res.cox, data = as.data.table(merged_output))
-pdf(file = file.path(output_dir, "msi_status_vs_survival.pdf"), width = 8, height = 6)
+pdf(file = file.path(output_dir, "msi_status_vs_survival_multivariate.pdf"), width = 8, height = 6)
 plotForest(model = res.cox)
 dev.off()
+
+# kaplan meier
+pdf(file = file.path(output_dir, "msi_status_vs_survival_km.pdf"), height = 8, width = 10, onefile = FALSE)
+fit <- survival::survfit(Surv(as.numeric(OS_days), OS_status) ~ MSI_status, data = merged_output)
+sdf <- survival::survdiff(Surv(as.numeric(OS_days), OS_status) ~ MSI_status, data = merged_output)
+pvalue <- round(1 - pchisq(sdf$chisq, length(sdf$n) - 1), 3)
+p <- ggsurvplot(fit, 
+                title = "MSI Status vs Survival",
+                data = merged_output, 
+                font.x = c(20, face = "bold"),
+                font.tickslab = c(20),
+                font.y = c(20, face = "bold"),
+                font.legend = c(20, "bold"),
+                pval = FALSE, 
+                pval.method = FALSE,
+                ggtheme = theme_minimal(),
+                linetype = "strata",
+                legend = "bottom")  +
+  guides(colour = guide_legend(ncol = 2)) 
+p <- p$plot +
+  annotate("text", x = 12000, y = 0.75, label = paste0("Log-rank\nP-value: ", pvalue), cex=6, col="black", vjust=0, hjust = 1.1, fontface=1)
+print(p)
+dev.off()
+

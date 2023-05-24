@@ -47,10 +47,10 @@ annot <- annot %>%
   left_join(msi_tumor_only, by = c("Sample_ID" = "sample_id"))
 
 # add ALT status
-alt_status <- read_tsv(file.path(data_dir, "hope_cohort_alt_status.txt")) 
+alt_status <- read_tsv(file.path(data_dir, "alt_status_aya_hgg.tsv")) 
 alt_status <- alt_status %>%
   filter(sample_id %in% annot$Sample_ID) %>%
-  dplyr::select(sample_id, t_n_telomere_content, ALT_status) # (n = 68)
+  dplyr::select(sample_id, t_n_telomere_content, ALT_status) # (n = 71)
 annot <- annot %>%
   left_join(alt_status, by = c("Sample_ID" = "sample_id"))
 
