@@ -54,6 +54,12 @@ pdf(file = file.path(output_dir, "alt_status_vs_survival_multivariate.pdf"), wid
 plotForest(model = res.cox)
 dev.off()
 
+# molecular subtype and telomere content 
+res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + t_n_telomere_content, data = merged_output)
+pdf(file = file.path(output_dir, "t_n_telomere_content_vs_survival_multivariate.pdf"), width = 8, height = 6)
+plotForest(model = res.cox)
+dev.off()
+
 # kaplan meier
 pdf(file = file.path(output_dir, "alt_vs_survival_km.pdf"), height = 8, width = 10, onefile = FALSE)
 fit <- survival::survfit(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = merged_output)
