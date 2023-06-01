@@ -7,10 +7,11 @@ suppressPackageStartupMessages({
 
 # input directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-data_dir <- file.path(root_dir, "data")
+input_dir <- file.path(root_dir, "results")
+output_dir <- file.path(input_dir, "msisensor-pro-combined")
 
 # master histology
-annot <- read_tsv(file = file.path(data_dir, "master_histology_hope_cohort.tsv"))
+annot <- read_tsv(file = file.path(input_dir, "master_histology_hope_cohort.tsv"))
 
 # combined barplot of common sample ids
 annot <- annot %>%
@@ -18,7 +19,7 @@ annot <- annot %>%
   filter(!is.na(msi_tumor_only), !is.na(msi_paired))
 
 # scatter plot
-pdf(file = "results/msisensor-pro-combined/tumor_only_vs_paired_analysis.pdf", width = 8, height = 6)
+pdf(file = file.path(output_dir, "tumor_only_vs_paired_analysis.pdf"), width = 8, height = 6)
 p <- ggplot(annot, aes(x = msi_paired, y = msi_tumor_only)) +
   geom_point(pch = 21, size = 4) +
   ggpubr::theme_pubr(base_size = 10, legend = "bottom") + 

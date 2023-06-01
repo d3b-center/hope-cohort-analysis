@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-data_dir <- file.path(root_dir, "data")
+input_dir <- file.path(root_dir, "results")
 output_dir <- file.path(root_dir, "results", "alt_correlations")
 dir.create(output_dir, showWarnings = F, recursive = T)
 
@@ -65,7 +65,7 @@ compute_corr <- function(x){
 }
 
 # master histology file
-hist_df <- read_tsv(file = file.path(data_dir, "master_histology_hope_cohort.tsv"))
+hist_df <- read_tsv(file = file.path(input_dir, "master_histology_hope_cohort.tsv"))
 
 # 1) tumor-normal-paired comparisons
 alt_status <- hist_df %>%

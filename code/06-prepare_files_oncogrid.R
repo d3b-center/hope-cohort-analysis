@@ -42,7 +42,7 @@ rna_ids <- file.path(data_dir, "merged_files", "gene-expression-rsem-tpm-collaps
   colnames()
 
 # read master histology
-hist_df <- read_tsv("data/master_histology_hope_cohort.tsv")
+hist_df <- read_tsv(file.path(output_dir, "master_histology_hope_cohort.tsv"))
 
 # format diagnosis type 
 hist_df$diagnosis_type[hist_df$diagnosis_type == "Recurrent"] = "Recurrence"
@@ -90,7 +90,7 @@ annot_info <- hist_df %>%
 write.table(annot_info, file = file.path(output_dir, "annotation.txt"), quote = F, sep = "\t", row.names = F)
 
 # 1. get degene info vs GTEx Brain
-genes_df <- readRDS(file.path("results/hope_cohort_vs_gtex_brain_degs.rds"))
+genes_df <- readRDS(file.path(output_dir, "hope_cohort_vs_gtex_brain_degs.rds"))
 deg_genes <- genes_df %>%
   dplyr::mutate(label = ifelse(diff_expr == "up", "OVE", "UNE")) %>%
   dplyr::rename("Gene_name" = "genes") %>%

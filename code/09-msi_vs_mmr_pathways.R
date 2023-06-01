@@ -24,7 +24,7 @@ tpm_dat <- file.path(data_dir, "merged_files", "gene-expression-rsem-tpm-collaps
 tpm_dat <- tpm_dat[rownames(tpm_dat) %in% gencode_gtf$gene_name,]
 
 # master histology file
-hist_df <- file.path(data_dir, "master_histology_hope_cohort.tsv") %>% read_tsv()
+hist_df <- file.path(results_dir, "master_histology_hope_cohort.tsv") %>% read_tsv()
 manifest <- list.files(path = "data/manifest/", pattern = "rna", full.names = T) %>%
   read_tsv()
 manifest <- manifest %>%
@@ -66,7 +66,7 @@ ssgsea_scores_each <- ssgsea_scores_each %>%
   dplyr::select(Sample_ID, msi_paired, msi_tumor_only), by = c("sample_id" = "Sample_ID"))
 
 # 1) merge with MSI (tumor only)
-pdf(file = file.path("results", "msisensor-pro-tumor-only", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
+pdf(file = file.path(results_dir, "msisensor-pro-tumor-only", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
 ggplot(ssgsea_scores_each, aes(x = msi_tumor_only, y = gsea_score)) +
   xlab("MSI Percent") + 
   ylab("GSVA score") +
@@ -77,7 +77,7 @@ ggplot(ssgsea_scores_each, aes(x = msi_tumor_only, y = gsea_score)) +
 dev.off()
 
 # 2) merge with MSI (paired)
-pdf(file = file.path("results", "msisensor-pro-paired", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
+pdf(file = file.path(results_dir, "msisensor-pro-paired", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
 ggplot(ssgsea_scores_each, aes(x = msi_paired, y = gsea_score)) +
   xlab("MSI Percent") + 
   ylab("GSVA score") +

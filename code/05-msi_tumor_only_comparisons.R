@@ -7,12 +7,12 @@ suppressPackageStartupMessages({
 
 # output directories
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-data_dir <- file.path(root_dir, "data")
+input_dir <- file.path(root_dir, "results")
 results_dir <- file.path(root_dir, "results" , "msisensor-pro-tumor-only")
 dir.create(results_dir, recursive = T, showWarnings = F)
 
 # master histology
-annot <- read_tsv(file = file.path(data_dir, "master_histology_hope_cohort.tsv"))
+annot <- read_tsv(file = file.path(input_dir, "master_histology_hope_cohort.tsv"))
 output_df <- annot %>%
   filter(!is.na(msi_tumor_only))
 

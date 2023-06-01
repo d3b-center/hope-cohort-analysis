@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-data_dir <- file.path(root_dir, "data")
+input_dir <- file.path(root_dir, "results")
 output_dir <- file.path(root_dir, "results", "major_snv")
 dir.create(output_dir, showWarnings = F, recursive = T)
 
@@ -36,7 +36,7 @@ MSH6", header = F)
 major_snv <- major_snv$V1
 
 # read oncoprint matrix
-mat = read.table(file.path("results", "oncoprint.txt"),  header = TRUE, stringsAsFactors=FALSE, sep = "\t",check.names = FALSE)
+mat = read.table(file.path(input_dir, "oncoprint.txt"),  header = TRUE, stringsAsFactors=FALSE, sep = "\t",check.names = FALSE)
 mat[is.na(mat)] = ""
 rownames(mat) = mat[, 1]
 mat = mat[, -1]
@@ -51,7 +51,7 @@ mat <- dcast(mat, sample_id~gene, value.var = "type")
 
 # ALT status, telomere content and MSI percent correlation with the binary matrix
 # read combined file for paired MSI output (n = 73)
-merged_output <- read_tsv(file.path("data", "master_histology_hope_cohort.tsv"))
+merged_output <- read_tsv(file.path(input_dir, "master_histology_hope_cohort.tsv"))
 merged_output <- merged_output %>%
   filter(!is.na(msi_paired)) %>%
   dplyr::rename("sample_id" = "Sample_ID")

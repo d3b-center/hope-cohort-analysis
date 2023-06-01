@@ -6,6 +6,7 @@ suppressPackageStartupMessages({
 # input directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
+output_dir <- file.path(root_dir, "results")
 
 # clinical info
 annot <- readr::read_tsv(file.path(data_dir, "hopeonly_clinical_table_011823.tsv"))
@@ -89,4 +90,4 @@ tmb_output = hist_df %>%
   inner_join(tmb_output, by = c("Kids First Biospecimen ID" = "Tumor_Sample_Barcode"))
 annot <- annot %>%
   left_join(tmb_output %>% dplyr::select(-c(`Kids First Biospecimen ID`)), by = c("Sample_ID" = "sample_id"))
-write_tsv(annot, file = file.path(data_dir, "master_histology_hope_cohort.tsv"))
+write_tsv(annot, file = file.path(output_dir, "master_histology_hope_cohort.tsv"))

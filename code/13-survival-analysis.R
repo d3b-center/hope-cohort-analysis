@@ -9,6 +9,7 @@ suppressPackageStartupMessages({
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
+input_dir <- file.path(root_dir, "results")
 output_dir <- file.path(root_dir, "results", "survival_analysis")
 dir.create(output_dir, showWarnings = F, recursive = T)
 
@@ -16,7 +17,7 @@ dir.create(output_dir, showWarnings = F, recursive = T)
 source(file.path(root_dir, "utils", "plotForest.R"))
 
 # master histology
-merged_output <- read_tsv(file.path(data_dir, "master_histology_hope_cohort.tsv"))
+merged_output <- read_tsv(file.path(input_dir, "master_histology_hope_cohort.tsv"))
 merged_output <- merged_output %>%
   mutate(OS_days = as.numeric(Age_at_Initial_Diagnosis),
          OS_status = as.numeric(ifelse(last_known_clinical_status == "Alive", 0, 1)))
