@@ -39,15 +39,16 @@ hist_df <- hist_df %>%
 merged_output <- merged_output %>%
   left_join(hist_df, by = c("Sample_ID" = "sample_id"))
 
-# survival curves stratified by molecular subtype + ALT status
+# update columns
 merged_output <- merged_output %>%
   mutate(molecular_subtype = as.factor(molecular_subtype),
          ALT_status = as.factor(ALT_status),
          t_n_telomere_content = as.numeric(t_n_telomere_content),
          MSI_status = as.factor(ifelse(msi_paired > (msi_paired %>% mean(na.rm = T)), "MSI-high", "MSI-low")))
 merged_output$molecular_subtype <- relevel(merged_output$molecular_subtype, ref = "HGG, H3 wildtype")
+
+# survival curves stratified by molecular subtype + ALT status
 merged_output$ALT_status <- relevel(merged_output$ALT_status, ref = "ALT-")
-merged_output$MSI_status <- relevel(merged_output$MSI_status, ref = "MSI-low")
 res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + ALT_status, data = merged_output)
 # survminer::ggforest(res.cox, data = as.data.table(merged_output))
 pdf(file = file.path(output_dir, "alt_status_vs_survival_multivariate.pdf"), width = 8, height = 6)
@@ -61,6 +62,7 @@ plotForest(model = res.cox)
 dev.off()
 
 # kaplan meier
+merged_output$ALT_status <- relevel(merged_output$ALT_status, ref = "ALT+")
 pdf(file = file.path(output_dir, "alt_vs_survival_km.pdf"), height = 8, width = 10, onefile = FALSE)
 fit <- survival::survfit(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = merged_output)
 sdf <- survival::survdiff(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = merged_output)
@@ -84,6 +86,7 @@ print(p)
 dev.off()
 
 # survival curves stratified by molecular subtype + MSI (High > 3.5 and Low) 
+merged_output$MSI_status <- relevel(merged_output$MSI_status, ref = "MSI-low")
 res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + MSI_status, data = merged_output)
 # survminer::ggforest(res.cox, data = as.data.table(merged_output))
 pdf(file = file.path(output_dir, "msi_status_vs_survival_multivariate.pdf"), width = 8, height = 6)
@@ -91,6 +94,7 @@ plotForest(model = res.cox)
 dev.off()
 
 # kaplan meier
+merged_output$MSI_status <- relevel(merged_output$MSI_status, ref = "MSI-high")
 pdf(file = file.path(output_dir, "msi_status_vs_survival_km.pdf"), height = 8, width = 10, onefile = FALSE)
 fit <- survival::survfit(Surv(as.numeric(OS_days), OS_status) ~ MSI_status, data = merged_output)
 sdf <- survival::survdiff(Surv(as.numeric(OS_days), OS_status) ~ MSI_status, data = merged_output)
@@ -112,4 +116,3 @@ p <- p$plot +
   annotate("text", x = 12000, y = 0.75, label = paste0("Log-rank\nP-value: ", pvalue), cex=6, col="black", vjust=0, hjust = 1.1, fontface=1)
 print(p)
 dev.off()
-
