@@ -22,13 +22,13 @@ output_df <- output_df %>%
   dplyr::mutate(Type = ifelse(msi_paired > 3.5, Sample_ID, ""))
 
 # 1) MSI vs TMB
-ggplot(output_df, aes(msi_paired, TMB_paired)) + 
+p <- ggplot(output_df, aes(msi_paired, TMB_paired)) + 
   geom_point() + 
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "red") +
   theme_pubr() + 
   xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs TMB") +
-  stat_cor(method = "pearson")
-ggsave(filename = file.path(results_dir, "msisensorpro_vs_tmb.png"), height = 6, width = 8)
+  stat_cor(method = "pearson", color = "red")
+ggsave(plot = p, filename = file.path(results_dir, "msi_vs_tmb.png"), height = 6, width = 8)
 
 # 2) proteomics clusters
 plot_data <- output_df %>%
@@ -39,7 +39,7 @@ plot_data <- output_df %>%
   mutate(proteomics_rdt_cc = paste0(proteomics_rdt_cc, "\n(n = ",n,")")) 
 p <- ggplot(plot_data, aes(x = as.character(proteomics_rdt_cc), y = msi_paired, color = as.character(proteomics_rdt_cc))) +
   stat_boxplot(geom = "errorbar", width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
   stat_compare_means(color = "red", 
@@ -51,7 +51,21 @@ p <- ggplot(plot_data, aes(x = as.character(proteomics_rdt_cc), y = msi_paired, 
   ggtitle("% Microsatellite Instability vs. Proteomics Cluster") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none")
-ggsave(filename = file.path(results_dir, "msi_sensor_vs_proteomics_clusters.png"), width = 6, height = 6)
+q <- ggplot(plot_data %>% filter(!grepl("NA", proteomics_rdt_cc)), aes(x = as.character(proteomics_rdt_cc), y = msi_paired, color = as.character(proteomics_rdt_cc))) +
+  stat_boxplot(geom = "errorbar", width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", 
+                     label = "p.format",
+                     ref.group = ".all.",
+                     size = 4) +
+  xlab("") + 
+  ylab("% Microsatellite Instability") +
+  ggtitle("% Microsatellite Instability vs. Proteomics Cluster") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none")
+ggsave(plot = ggarrange(plotlist = list(p, q), ncol = 2), filename = file.path(results_dir, "msi_vs_proteomics_clusters.png"), width = 10, height = 6)
 
 # 3) developmental clusters
 plot_data <- output_df %>%
@@ -59,9 +73,9 @@ plot_data <- output_df %>%
   group_by(dtt.cc) %>%
   mutate(n = n()) %>%
   mutate(dtt.cc = paste0(dtt.cc, "\n(n = ",n,")")) 
-q <- ggplot(plot_data, aes(x = as.character(dtt.cc), y = msi_paired, color = as.character(dtt.cc))) +
+p <- ggplot(plot_data, aes(x = as.character(dtt.cc), y = msi_paired, color = as.character(dtt.cc))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
   stat_compare_means(color = "red", 
@@ -73,7 +87,21 @@ q <- ggplot(plot_data, aes(x = as.character(dtt.cc), y = msi_paired, color = as.
   ggtitle("% Microsatellite Instability vs. Developmental Cluster") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = file.path(results_dir, "msi_sensor_vs_dev_clusters.png"), width = 6, height = 6)
+q <- ggplot(plot_data %>% filter(!grepl("NA", dtt.cc)), aes(x = as.character(dtt.cc), y = msi_paired, color = as.character(dtt.cc))) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", 
+                     label = "p.format",
+                     ref.group = ".all.",
+                     size = 4) +
+  xlab("") + 
+  ylab("% Microsatellite Instability") +
+  ggtitle("% Microsatellite Instability vs. Developmental Cluster") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none") 
+ggsave(plot = ggarrange(plotlist = list(p, q), ncol = 2), filename = file.path(results_dir, "msi_vs_dev_clusters.png"), width = 10, height = 6)
 
 # 4) age (three groups)
 plot_data <- output_df %>%
@@ -82,9 +110,9 @@ plot_data <- output_df %>%
   mutate(n = n()) %>%
   mutate(age_three_groups = paste0(age_three_groups, "\n(n = ",n,")")) 
 plot_data$age_three_groups <- factor(plot_data$age_three_groups, levels = c("[0,15]\n(n = 45)", "(15,26]\n(n = 20)", "(26,40]\n(n = 8)"))
-r <- ggplot(plot_data, aes(x = age_three_groups, y = msi_paired, color = as.character(age_three_groups))) +
+p <- ggplot(plot_data, aes(x = age_three_groups, y = msi_paired, color = as.character(age_three_groups))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
   stat_compare_means(color = "red", 
@@ -96,7 +124,7 @@ r <- ggplot(plot_data, aes(x = age_three_groups, y = msi_paired, color = as.char
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = file.path(results_dir, "msi_sensor_vs_age_three_groups.png"), width = 6, height = 6)
+ggsave(plot = p, filename = file.path(results_dir, "msi_vs_age_three_groups.png"), width = 6, height = 6)
 
 # 5) age (two groups)
 plot_data <- output_df %>%
@@ -105,21 +133,18 @@ plot_data <- output_df %>%
   mutate(n = n()) %>%
   mutate(age_two_groups = paste0(age_two_groups, "\n(n = ",n,")")) 
 plot_data$age_two_groups <- factor(plot_data$age_two_groups, levels = c("[0,15]\n(n = 45)", "(15,40]\n(n = 28)"))
-r <- ggplot(plot_data, aes(x = age_two_groups, y = msi_paired, color = as.character(age_two_groups))) +
+p <- ggplot(plot_data, aes(x = age_two_groups, y = msi_paired, color = as.character(age_two_groups))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
+  stat_compare_means(color = "red", size = 4) +
   xlab("") + 
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = file.path(results_dir, "msi_sensor_vs_age_two_groups.png"), width = 6, height = 6)
+ggsave(plot = p, filename = file.path(results_dir, "msi_vs_age_two_groups.png"), width = 6, height = 6)
 
 # 6) developmental cluster name
 plot_data <- output_df %>%
@@ -127,9 +152,9 @@ plot_data <- output_df %>%
   group_by(rdt.name) %>%
   mutate(n = n()) %>%
   mutate(rdt.name = paste0(rdt.name, "\n(n = ",n,")")) 
-s <- ggplot(plot_data, aes(x = as.character(rdt.name), y = msi_paired, color = as.character(rdt.name))) +
+p <- ggplot(plot_data, aes(x = as.character(rdt.name), y = msi_paired, color = as.character(rdt.name))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
   stat_compare_means(color = "red", 
@@ -141,7 +166,21 @@ s <- ggplot(plot_data, aes(x = as.character(rdt.name), y = msi_paired, color = a
   ggtitle("% Microsatellite Instability vs. Dev. Cluster Name") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = file.path(results_dir, "msi_sensor_vs_dev_cluster_name.png"), width = 8, height = 6)
+q <- ggplot(plot_data %>% filter(!grepl("NA", rdt.name)), aes(x = as.character(rdt.name), y = msi_paired, color = as.character(rdt.name))) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", 
+                     label = "p.format",
+                     ref.group = ".all.",
+                     size = 4) +
+  xlab("") + 
+  ylab("% Microsatellite Instability") +
+  ggtitle("% Microsatellite Instability vs. Dev. Cluster Name") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none") 
+ggsave(plot = ggarrange(plotlist = list(p, q), ncol = 2), filename = file.path(results_dir, "msi_vs_dev_cluster_name.png"), width = 18, height = 6)
 
 # 7) gender
 plot_data <- output_df %>%
@@ -151,7 +190,7 @@ plot_data <- output_df %>%
   mutate(Gender = paste0(Gender, "\n(n = ",n,")")) 
 p <- ggplot(plot_data, aes(x = as.character(Gender), y = msi_paired, color = as.character(Gender))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
   stat_compare_means(color = "red", size = 4) +
@@ -160,7 +199,7 @@ p <- ggplot(plot_data, aes(x = as.character(Gender), y = msi_paired, color = as.
   ggtitle("% Microsatellite Instability vs. Gender") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(filename = file.path(results_dir, "msi_sensor_vs_gender.png"), width = 6, height = 6)
+ggsave(plot = p, filename = file.path(results_dir, "msi_vs_gender.png"), width = 6, height = 6)
 
 # 8) ALT 
 output_df = output_df %>% 
@@ -168,7 +207,21 @@ output_df = output_df %>%
   mutate(n = n(), ALT_status = paste0(ALT_status, "\n(n = ", n, ")"))
 p <- ggplot(output_df, aes(x = ALT_status, msi_paired, color = ALT_status)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", 
+                     label = "p.format",
+                     ref.group = ".all.",
+                     size = 4) +
+  xlab("") + 
+  ylab("% Microsatellite Instability") +
+  ggtitle("% Microsatellite Instability vs. ALT Status") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none") 
+q <- ggplot(output_df %>% filter(!grepl("NA", ALT_status)), aes(x = ALT_status, msi_paired, color = ALT_status)) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
   stat_compare_means(color = "red", size = 4) +
@@ -177,7 +230,16 @@ p <- ggplot(output_df, aes(x = ALT_status, msi_paired, color = ALT_status)) +
   ggtitle("% Microsatellite Instability vs. ALT Status") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-ggsave(plot = p, filename = file.path(results_dir, "msisensorpro_vs_alt_status.png"), height = 6, width = 6)
+ggsave(plot = ggarrange(plotlist = list(p, q), ncol = 2), filename = file.path(results_dir, "msi_vs_alt_status.png"), height = 6, width = 10)
+
+# 9) MSI vs ALT telomere content
+p <- ggplot(output_df, aes(x = msi_paired, y = t_n_telomere_content)) +
+  geom_point() +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "red") +
+  theme_pubr() + 
+  xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs Telomere content") +
+  stat_cor(method = "pearson", color = "red")
+ggsave(plot = p, filename = file.path(results_dir, "msi_vs_telomere_content.png"))
 
 # # add cluster from miRNA clustering (shiny)
 # mirna_clusters <- read.csv('data/PBTA_Sample_Clusters.csv', check.names = F)
