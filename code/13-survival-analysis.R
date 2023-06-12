@@ -94,6 +94,12 @@ pdf(file = file.path(output_dir, "msi_status_vs_survival_multivariate.pdf"), wid
 plotForest(model = res.cox)
 dev.off()
 
+# molecular subtype and MSI value 
+res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + msi_paired, data = merged_output)
+pdf(file = file.path(output_dir, "msi_paired_vs_survival_multivariate.pdf"), width = 12, height = 6)
+plotForest(model = res.cox)
+dev.off()
+
 # kaplan meier
 merged_output$MSI_status <- relevel(merged_output$MSI_status, ref = "MSI-high")
 pdf(file = file.path(output_dir, "msi_status_vs_survival_km.pdf"), height = 8, width = 10, onefile = FALSE)
@@ -117,3 +123,4 @@ p <- p$plot +
   annotate("text", x = 12000, y = 0.75, label = paste0("Log-rank\nP-value: ", pvalue), cex=6, col="black", vjust=0, hjust = 1.1, fontface=1)
 print(p)
 dev.off()
+
