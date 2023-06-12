@@ -65,8 +65,6 @@ tmb_output <- tmb_output %>%
 lf <- list.files(file.path(data_dir, "manifest"), full.names = T)
 lf <- lf[grep("snv", lf)]
 hist_df = read_tsv(lf)
-hist_df = hist_df %>%
-  filter(sample_id %in% annot$Sample_ID)
 tmb_output = hist_df %>% 
   dplyr::select(`Kids First Biospecimen ID`, sample_id) %>%
   inner_join(tmb_output, by = c("Kids First Biospecimen ID" = "Tumor_Sample_Barcode"))
@@ -80,11 +78,9 @@ tmb_output <- tmb_output %>%
   dplyr::select(Tumor_Sample_Barcode, TMB_tumor_only)
 
 # add sample_id to TMB
-lf <- list.files(file.path(data_dir, "manifest"), full.names = T)
+lf <- list.files(file.path(data_dir, "manifest_tumor_only"), full.names = T)
 lf <- lf[grep("snv", lf)]
 hist_df = read_tsv(lf)
-hist_df = hist_df %>%
-  filter(sample_id %in% annot$Sample_ID)
 tmb_output = hist_df %>% 
   dplyr::select(`Kids First Biospecimen ID`, sample_id) %>%
   inner_join(tmb_output, by = c("Kids First Biospecimen ID" = "Tumor_Sample_Barcode"))

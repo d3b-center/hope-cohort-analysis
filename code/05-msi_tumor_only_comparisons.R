@@ -3,6 +3,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(tidyverse)
   library(ggpubr)
+  library(ggrepel)
 })
 
 # output directories

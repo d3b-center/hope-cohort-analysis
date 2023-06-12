@@ -3,7 +3,7 @@ Sample	Tumor_Descriptor	Integrated_Diagnosis	Sex	Sequencing_Experiment	MSI	TMB	A
 7316-620	Initial CNS Tumor	Glioblastoma	Female	RNA-Seq	NA	NA	[0,15]	[0,15]
 7316-3075	Initial CNS Tumor	Glioblastoma	Male	RNA-Seq, WGS	0	0.166737618154792	[0,15]	[0,15]
 7316-4842	Initial CNS Tumor	Glioblastoma	Male	RNA-Seq, WGS	0	0.083368809077396	[0,15]	[0,15]
-7316-4844	Initial CNS Tumor	Astrocytoma	Male	RNA-Seq, WGS	0	NA	[0,15]	[0,15]
+7316-4844	Initial CNS Tumor	Astrocytoma	Male	RNA-Seq, WGS	0	0.138948015128993	[0,15]	[0,15]
 7316-4552	Initial CNS Tumor	Astrocytoma	Male	RNA-Seq, WGS	0	2.38990586021869	[0,15]	[0,15]
 7316-2857	Initial CNS Tumor	Glioblastoma	Male	RNA-Seq, WGS	0.01	0.166737618154792	[0,15]	[0,15]
 7316-1455	Initial CNS Tumor	Astrocytoma	Female	RNA-Seq	NA	NA	[0,15]	[0,15]
