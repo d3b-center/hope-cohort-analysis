@@ -219,18 +219,7 @@ p <- ggplot(output_df, aes(x = ALT_status, msi_paired, color = ALT_status)) +
   ggtitle("% Microsatellite Instability vs. ALT Status") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-q <- ggplot(output_df %>% filter(!grepl("NA", ALT_status)), aes(x = ALT_status, msi_paired, color = ALT_status)) +
-  stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", size = 4) +
-  xlab("") + 
-  ylab("% Microsatellite Instability") +
-  ggtitle("% Microsatellite Instability vs. ALT Status") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-ggsave(plot = ggarrange(plotlist = list(p, q), ncol = 2), filename = file.path(results_dir, "msi_vs_alt_status.png"), height = 6, width = 10)
+ggsave(plot = p, filename = file.path(results_dir, "msi_vs_alt_status.png"), height = 6, width = 6)
 
 # 9) MSI vs ALT telomere content
 p <- ggplot(output_df, aes(x = msi_paired, y = t_n_telomere_content)) +

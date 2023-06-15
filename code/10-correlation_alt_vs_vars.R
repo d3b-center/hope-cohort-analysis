@@ -102,14 +102,4 @@ p <- ggplot(plot_data, aes(x = ALT_status, y = TMB, color = ALT_status)) +
   ggtitle("ALT Status vs TMB") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") 
-q <- ggplot(plot_data %>% filter(!grepl("NA", ALT_status)), aes(x = ALT_status, y = TMB, color = ALT_status)) +
-  stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", size = 4) +
-  xlab("") + 
-  ylab("TMB") +
-  ggtitle("ALT Status vs TMB") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-ggsave(plot = ggarrange(plotlist = list(p, q), ncol = 2), filename = file.path(output_dir, "alt_status_vs_tmb_paired.png"), height = 6, width = 10)
+ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_tmb_paired.png"), height = 6, width = 6)
