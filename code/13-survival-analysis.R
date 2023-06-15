@@ -40,6 +40,10 @@ hist_df <- hist_df %>%
 merged_output <- merged_output %>%
   left_join(hist_df, by = c("Sample_ID" = "sample_id"))
 
+# remove LGG, BRAF V600E
+merged_output <- merged_output %>%
+  filter(molecular_subtype != "LGG, BRAF V600E")
+
 # update columns
 merged_output <- merged_output %>%
   mutate(molecular_subtype = as.factor(molecular_subtype),
@@ -96,7 +100,7 @@ dev.off()
 
 # molecular subtype and MSI value 
 res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + msi_paired, data = merged_output)
-pdf(file = file.path(output_dir, "msi_paired_vs_survival_multivariate.pdf"), width = 12, height = 6)
+pdf(file = file.path(output_dir, "msi_paired_vs_survival_multivariate.pdf"), width = 8, height = 6)
 plotForest(model = res.cox)
 dev.off()
 
@@ -123,4 +127,3 @@ p <- p$plot +
   annotate("text", x = 12000, y = 0.75, label = paste0("Log-rank\nP-value: ", pvalue), cex=6, col="black", vjust=0, hjust = 1.1, fontface=1)
 print(p)
 dev.off()
-
