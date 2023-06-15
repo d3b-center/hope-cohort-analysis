@@ -40,9 +40,11 @@ hist_df <- hist_df %>%
 merged_output <- merged_output %>%
   left_join(hist_df, by = c("Sample_ID" = "sample_id"))
 
-# remove LGG, BRAF V600E
+# keep molecular subtypes >= 3
 merged_output <- merged_output %>%
-  filter(molecular_subtype != "LGG, BRAF V600E")
+  group_by(molecular_subtype) %>%
+  mutate(n = n()) %>%
+  filter(n >= 3)
 
 # update columns
 merged_output <- merged_output %>%
