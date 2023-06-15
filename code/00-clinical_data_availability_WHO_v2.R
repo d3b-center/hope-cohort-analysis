@@ -28,24 +28,21 @@ annot$Age <- factor(annot$Age, levels = c("[0,15]", "(15,40]"))
 
 # select columns of interest
 annot <- annot %>%
-  dplyr::select(Sample_ID, Age, Age_at_Initial_Diagnosis, Gender, diagnosis, diagnosis_type, sample_annotation, Tumor.Location.condensed) %>%
-  dplyr::rename("Diagnosis" = "diagnosis",
+  dplyr::select(Sample_ID, Age, Age_at_Initial_Diagnosis, Gender, WHO.Grade, diagnosis_type, sample_annotation, Tumor.Location.condensed) %>%
+  dplyr::rename("WHO Grade" = "WHO.Grade",
                 "Diagnosis Type" = "diagnosis_type",
                 "Annotation" = "sample_annotation",
                 "Tumor Location" = "Tumor.Location.condensed") %>%
   column_to_rownames('Sample_ID') %>%
-  dplyr::arrange(Age, Age_at_Initial_Diagnosis, Gender, Diagnosis, `Diagnosis Type`, Annotation, `Tumor Location`)
+  dplyr::arrange(Age, Age_at_Initial_Diagnosis, Gender, `WHO Grade`, `Diagnosis Type`, Annotation, `Tumor Location`)
 
 # variable for splitting the circular heatmap
 split <- factor(annot$Age, levels = c("[0,15]", "(15,40]"))
 
 # colour mapping for factor variables
-col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseagreen",
-                 "Diffuse Midline Glioma" = "darkgreen",
-                 "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
-                 "Astrocytoma" = "brown2", 
-                 "Glioblastoma" = "orange",
-                 "Pleomorphic xanthoastrocytoma" = "#005082",
+col_fun1 <- list("3" = "#ffac59",
+                 "4" = "#ff5959",
+                 "NA" = "lightgray",
                  "Male" = "navy",
                  "Female" = "deeppink4",
                  "[0,15]" = "gold",
@@ -66,7 +63,7 @@ col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseag
 col_fun_age <- colorRamp2(breaks = c(min(annot$Age_at_Initial_Diagnosis), median(annot$Age_at_Initial_Diagnosis), max(annot$Age_at_Initial_Diagnosis)),
                           colors = c("lightskyblue1","skyblue","dodgerblue4"))
 
-pdf(file = file.path(output_dir, "hope_cohort_data_availability_clinical_v2.pdf"), width = 10, height = 10)
+pdf(file = file.path(output_dir, "hope_cohort_data_availability_clinical_with_WHOGrade_v2.pdf"), width = 10, height = 10)
 circos.clear()
 circos.par(gap.degree = 0.1, points.overflow.warning = FALSE)
 circos.heatmap(mat = annot %>% dplyr::select(Age), 
@@ -87,14 +84,9 @@ circos.heatmap(annot %>%
                bg.lwd = 2, cell.lwd = 2)
 
 # legends
-lgd_diagnosis = Legend(title = "Diagnosis", 
-                       at = c("Pleomorphic xanthoastrocytoma",
-                              "Diffuse Midline Glioma",
-                              "Astrocytoma;Oligoastrocytoma",
-                              "High-grade glioma/astrocytoma (WHO grade III/IV)",
-                              "Astrocytoma", 
-                              "Glioblastoma"), 
-                       legend_gp = gpar(fill = c("lightseagreen", "darkgreen", "mediumorchid2", "brown2", "orange", "#005082")))
+lgd_grade = Legend(title = "WHO Grade",
+                   at = c("3", "4", "N/A"),
+                   legend_gp = gpar(fill = c("#ffac59", "#ff5959", "lightgray")))
 lgd_gender = Legend(title = "Sex", 
                     at = c("Male", "Female"), 
                     legend_gp = gpar(fill = c("navy", "deeppink4")))
@@ -110,13 +102,11 @@ lgd_tumor_location = Legend(title = "Tumor Location",
                             legend_gp = gpar(fill = c("magenta", "pink", "purple", "navy")))
 h = dev.size()[2]
 circle_size = unit(1, "snpc")
-lgd_list = packLegend(lgd_age, lgd_gender, max_height = unit(0.9*h, "inch"), direction = "horizontal")
-lgd_list1 = packLegend(lgd_diagnosis, max_height = unit(0.9*h, "inch"), direction = "horizontal")
+lgd_list = packLegend(lgd_age, lgd_gender, lgd_grade, max_height = unit(0.9*h, "inch"), direction = "horizontal")
 lgd_list2 = packLegend(lgd_dtype, lgd_annot, max_height = unit(0.9*h, "inch"), direction = "horizontal")
 lgd_list3 = packLegend(lgd_tumor_location, max_height = unit(0.9*h, "inch"), direction = "horizontal")
-draw(lgd_list, x = unit(125, "mm"), y = unit(170, "mm")) 
-draw(lgd_list1, x = unit(130, "mm"), y = unit(140, "mm")) 
-draw(lgd_list2, x = unit(123, "mm"), y = unit(110, "mm")) 
-draw(lgd_list3, x = unit(114, "mm"), y = unit(85, "mm")) 
+draw(lgd_list, x = unit(120, "mm"), y = unit(150, "mm")) 
+draw(lgd_list2, x = unit(124, "mm"), y = unit(122, "mm")) 
+draw(lgd_list3, x = unit(115, "mm"), y = unit(95, "mm")) 
 circos.clear()
 dev.off()

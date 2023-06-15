@@ -75,7 +75,7 @@ for(sn in get.all.sector.index()) {
               CELL_META$cell.xlim[2], CELL_META$cell.ylim[2],
               col = NA, border = unlist(col_fun1)[sn])
 }
-lgd_grade = Legend(title = "WHO_Grade",
+lgd_grade = Legend(title = "WHO Grade",
                    at = c("3", "4", "N/A"),
                    legend_gp = gpar(fill = c("#ffac59", "#ff5959", "lightgray")))
 lgd_gender = Legend(title = "Sex", 
@@ -84,7 +84,7 @@ lgd_gender = Legend(title = "Sex",
 lgd_age = Legend(title = "Age", 
                  at = c("[0,15]", "(15,40]"), 
                  legend_gp = gpar(fill = c("gold", "purple")))
-lgd_dtype = Legend(title = "Diagnosis_type",
+lgd_dtype = Legend(title = "Diagnosis Type",
                    at = c("Initial CNS Tumor", "Progressive", "Recurrence", "Second Malignancy") ,
                    legend_gp = gpar(fill = c("#cee397", "#827397", "#363062", "#005082")))
 lgd_annot = Legend(title = "Annotation",
@@ -163,7 +163,7 @@ for(sn in get.all.sector.index()) {
               CELL_META$cell.xlim[2], CELL_META$cell.ylim[2],
               col = NA, border = unlist(col_fun1)[sn])
 }
-lgd_grade = Legend(title = "WHO_Grade",
+lgd_grade = Legend(title = "WHO Grade",
                    at = c("3", "4", "N/A"),
                    legend_gp = gpar(fill = c("#ffac59", "#ff5959", "lightgray")))
 lgd_gender = Legend(title = "Sex", 
@@ -172,7 +172,7 @@ lgd_gender = Legend(title = "Sex",
 lgd_age = Legend(title = "Age", 
                  at = c("[0,15]", "(15,26]", "(26,40]"), 
                  legend_gp = gpar(fill = c("gold", "purple", "darkgreen")))
-lgd_dtype = Legend(title = "Diagnosis_type",
+lgd_dtype = Legend(title = "Diagnosis Type",
                    at = c("Initial CNS Tumor", "Progressive", "Recurrence", "Second Malignancy") ,
                    legend_gp = gpar(fill = c("#cee397", "#827397", "#363062", "#005082")))
 lgd_annot = Legend(title = "Annotation",

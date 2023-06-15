@@ -95,7 +95,7 @@ lgd_gender = Legend(title = "Sex",
 lgd_age = Legend(title = "Age", 
                  at = c("[0,15]", "(15,40]"), 
                  legend_gp = gpar(fill = c("gold", "purple")))
-lgd_dtype = Legend(title = "Diagnosis_type",
+lgd_dtype = Legend(title = "Diagnosis Type",
                    at = c("Initial CNS Tumor", "Progressive", "Recurrence", "Second Malignancy") ,
                    legend_gp = gpar(fill = c("#cee397", "#827397", "#363062", "#005082")))
 lgd_annot = Legend(title = "Annotation",
@@ -200,7 +200,7 @@ lgd_gender = Legend(title = "Sex",
 lgd_age = Legend(title = "Age", 
                  at = c("[0,15]", "(15,26]", "(26,40]"), 
                  legend_gp = gpar(fill = c("gold", "purple", "darkgreen")))
-lgd_dtype = Legend(title = "Diagnosis_type",
+lgd_dtype = Legend(title = "Diagnosis Type",
                    at = c("Initial CNS Tumor", "Progressive", "Recurrence", "Second Malignancy") ,
                    legend_gp = gpar(fill = c("#cee397", "#827397", "#363062", "#005082")))
 lgd_annot = Legend(title = "Annotation",
