@@ -1,5 +1,5 @@
 # adapted from https://github.com/d3b-center/pbta-splicing/blob/main/analyses/survival/util/survival_models.R
-plotForest <- function(model) {
+plotForest <- function(model, title_extra = "") {
   
   # Determine if OS or EFS model 
   
@@ -63,7 +63,7 @@ plotForest <- function(model) {
     geom_vline(xintercept = 1, linetype = 3
     ) +
     labs(x = "Hazard Ratio ± 95% CI", y = "",
-         subtitle = glue::glue("{event_type}: N = {survival_n$n} with {survival_n$nevent} events")
+         subtitle = glue::glue("{event_type}: N = {survival_n$n} with {survival_n$nevent} events \n {title_extra}")
     ) + 
     # log-scale the x-axis
     scale_x_log10() +
