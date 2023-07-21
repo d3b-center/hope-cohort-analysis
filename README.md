@@ -2,9 +2,21 @@
 
 Module authors: [Komal S. Rathi](https://github.com/komalsrathi/)
 
-## Structure
+## Run the script on docker
+
+To pull the docker image, run the command line:
+```
+docker pull pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:last
+```
+
+To run the docker, run the command line below. For mac M1 user, add `--platform=linux/arm64`.
+```
+docker run -e PASSWORD=pass -p 8787:8787 --name <CONTAINER_NAME> -v $PWD:/home/rstudio/HOPE pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:last
 
 ```
+
+## Structure
+
 code
 ├── 00-create_merged_files.R 
 ├── 01-deg-vs-gtex-brain.R
