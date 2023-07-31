@@ -39,6 +39,7 @@ hist_df <- hist_df %>%
   unique()
 merged_output <- merged_output %>%
   left_join(hist_df, by = c("Sample_ID" = "sample_id"))
+write_tsv(merged_output, file = file.path(input_dir, "master_histology_hope_cohort_with_subtypes.tsv"))
 
 # update columns
 merged_output <- merged_output %>%

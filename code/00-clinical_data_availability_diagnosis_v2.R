@@ -29,6 +29,7 @@ annot$Age <- factor(annot$Age, levels = c("[0,15]", "(15,40]"))
 # select columns of interest
 annot <- annot %>%
   dplyr::select(Sample_ID, Age, Age_at_Initial_Diagnosis, Gender, diagnosis, diagnosis_type, sample_annotation, Tumor.Location.condensed) %>%
+  dplyr::mutate(Age_at_Initial_Diagnosis = Age_at_Initial_Diagnosis/365) %>%
   dplyr::rename("Diagnosis" = "diagnosis",
                 "Diagnosis Type" = "diagnosis_type",
                 "Annotation" = "sample_annotation",
@@ -68,12 +69,13 @@ col_fun_age <- colorRamp2(breaks = c(min(annot$Age_at_Initial_Diagnosis), median
 
 pdf(file = file.path(output_dir, "hope_cohort_data_availability_clinical_v2.pdf"), width = 10, height = 10)
 circos.clear()
-circos.par(gap.degree = 0.1, points.overflow.warning = FALSE)
+circos.par(start.degree = 30, gap.degree = 1, points.overflow.warning = FALSE)
 circos.heatmap(mat = annot %>% dplyr::select(Age), 
+               split = split,
                col = list("[0,15]" = "white", "(15,40]" = "white"), 
                track.height = 0.001, 
                cell.border = "white",
-               bg.lwd = 1, cell.lwd = 2)
+               bg.lwd = 2, cell.lwd = 2)
 circos.heatmap(mat = annot %>% dplyr::select(Age_at_Initial_Diagnosis), 
                col = col_fun_age, 
                track.height = 0.06, 
@@ -98,7 +100,7 @@ lgd_diagnosis = Legend(title = "Diagnosis",
 lgd_gender = Legend(title = "Sex", 
                     at = c("Male", "Female"), 
                     legend_gp = gpar(fill = c("navy", "deeppink4")))
-lgd_age = Legend(title = "Age (days)", col_fun = col_fun_age, at = c(83, 14581.0), labels = c(83, 14581.0))
+lgd_age = Legend(title = "Age (years)", col_fun = col_fun_age, at = c(0, 20, 39.9), labels = c(0, 20, 39.9))
 lgd_dtype = Legend(title = "Diagnosis Type",
                    at = c("Initial CNS Tumor", "Progressive", "Recurrence", "Second Malignancy") ,
                    legend_gp = gpar(fill = c("#cee397", "#827397", "#363062", "#005082")))
