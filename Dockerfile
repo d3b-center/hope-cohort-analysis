@@ -24,15 +24,17 @@ RUN ./install_bioc.r \
 	Biobase \
 	BiocManager \
 	corrplot \
-  cowplot \
-  cutpointr \
+	cowplot \
+	cutpointr \
 	ggpubr \
 	ggthemes \
 	ggstatsplot \
 	ggfortify \
 	ggrepel \
-	msigdb \
-  reshape2 
+	msigdbr \
+	reshape2 \
+	survival \
+	survminer
   
   
 ## R packages for tp53_nf1_score
