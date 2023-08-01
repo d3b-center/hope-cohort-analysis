@@ -1,0 +1,547 @@
+---
+title: "High-Grade Glioma Molecular Subtyping - Combine DNA Assays"
+author: "Chante Bethell, Jaclyn Taroni for ALSF CCDL, Zhuangzhuang Geng for D3b, Eric Wafula for DBHI, Jo Lynne Rokita for D3b"
+date: "2020"
+output:
+  html_notebook:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+This notebook joins copy number alteration, mutation, fusion and gene expression data for the
+purposes of subtyping HGG samples
+([`AlexsLemonade/OpenPBTA-analysis#249`](https://github.com/AlexsLemonade/OpenPBTA-analysis/issues/249)).
+
+All data are cleaned in notebooks upstream:
+
+* Copy number data in [`03-HGG-molecular-subtyping-cnv.Rmd`](./03-HGG-molecular-subtyping-cnv.Rmd)
+* Mutation data in [`04-HGG-molecular-subtyping-mutation.Rmd`](./04-HGG-molecular-subtyping-mutation.Rmd); specific defining lesions are prepared in [`01-HGG-molecular-subtyping-defining-lesions.Rmd`](./01-HGG-molecular-subtyping-defining-lesions.Rmd)
+* Fusion data in [`05-HGG-molecular-subtyping-fusion.Rmd`](./05-HGG-molecular-subtyping-fusion.Rmd)
+* Gene expression data in [`06-HGG-molecular-subtyping-gene-expression.Rmd`](./06-HGG-molecular-subtyping-gene-expression.Rmd)
+
+## Usage
+
+This notebook is intended to be run via the command line from the top directory
+of the repository as follows:
+
+```
+Rscript -e "rmarkdown::render('analyses/molecular-subtyping-HGG/07-HGG-molecular-subtyping-combine-dna.Rmd', clean = TRUE)"
+```
+
+## Set up
+
+### Libraries and Functions
+
+```{r}
+library(tidyverse)
+```
+
+### Directories
+
+```{r}
+# Detect the ".git" folder -- this will in the project root directory.
+# Use this as the root directory to ensure proper sourcing of functions no
+# matter where this is called from
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+
+# Other directory file paths
+analysis_dir <- file.path(root_dir, "analyses", "molecular-subtyping-HGG")
+subset_dir <- file.path(analysis_dir, "hgg-subset")
+results_dir <- file.path(analysis_dir, "results")
+
+data_dir <- file.path(root_dir, "data")
+```
+
+### Read in Files
+
+```{r message=FALSE}
+cn_gistic_df <- read_tsv(file.path(results_dir, "HGG_cleaned_cnv.tsv"))
+mutation_df <- read_tsv(file.path(results_dir, "HGG_cleaned_mutation.tsv"))
+hgg_meta <- read_tsv(file.path(subset_dir, "hgg_metadata.tsv")) %>% 
+  dplyr::filter(cohort %in% c("PBTA", "Kentucky", "DGD"),
+                !is.na(pathology_diagnosis)) %>%
+  # create cell line merge id & tumor merge id
+  mutate(id = ifelse(composition == "Derived Cell Line", paste(sample_id, composition, cell_line_composition, cell_line_passage, sep = "_"),
+                     paste(sample_id, composition, sep= "_")))
+
+fusion_df <- read_tsv(file.path(results_dir, "HGG_cleaned_fusion.tsv"))
+exp_df <- read_tsv(file.path(results_dir,
+                                "HGG_cleaned_expression.tsv"))
+```
+
+### Output Files
+
+```{r}
+# full table
+lesion_subtype_file <- file.path(results_dir, "HGG_cleaned_all_table.tsv")
+# molecular subtype table
+subtype_file <- file.path(results_dir, "HGG_molecular_subtype.tsv")
+```
+
+## collect all dna, rna, and methyl bs ids
+```{r sample lists}
+rna_bsids <- hgg_meta %>%
+  filter(experimental_strategy == "RNA-Seq" | (experimental_strategy == "Targeted Sequencing" & !is.na(RNA_library))) %>%
+  select(Kids_First_Biospecimen_ID_RNA = Kids_First_Biospecimen_ID,
+         id)
+
+dna_bsids <- hgg_meta %>%
+  filter(!is.na(pathology_diagnosis),
+                (experimental_strategy %in% c("WGS", "WXS", "Targeted Sequencing") & is.na(RNA_library))) %>%
+  select(Kids_First_Biospecimen_ID_DNA = Kids_First_Biospecimen_ID,
+       id)
+
+methyl_bsids <- hgg_meta %>%
+  filter(experimental_strategy == "Methylation") %>%
+  select(Kids_First_Biospecimen_ID_Methyl = Kids_First_Biospecimen_ID,
+       id)
+
+# do we have them all? yes
+isTRUE(length(rna_bsids$Kids_First_Biospecimen_ID_RNA)+length(dna_bsids$Kids_First_Biospecimen_ID_DNA)+length(methyl_bsids$Kids_First_Biospecimen_ID_Methyl) == nrow(hgg_meta))
+```
+
+
+## Join Together
+
+```{r}
+dna_df <- mutation_df %>%
+  rename(Kids_First_Biospecimen_ID = Tumor_Sample_Barcode) %>%
+  left_join(cn_gistic_df) %>%
+  left_join(hgg_meta[, c("Kids_First_Participant_ID", "sample_id", "Kids_First_Biospecimen_ID", "composition", "id")])
+```
+
+```{r}
+rm(mutation_df, cn_gistic_df)
+```
+
+### Join RNA-seq Data (Fusion, Gene Expression)
+
+```{r}
+rna_df <- full_join(exp_df, fusion_df)
+```
+
+```{r}
+rna_df <- hgg_meta %>%
+  select(Kids_First_Participant_ID, Kids_First_Biospecimen_ID, sample_id, composition, id) %>%
+  inner_join(rna_df)
+```
+
+```{r}
+rm(exp_df)
+```
+
+### All Data
+
+Create one table with the all cleaned data.
+
+```{r}
+all_data_df <- full_join(dna_df, rna_df,
+                         by = c("Kids_First_Participant_ID", "sample_id", "composition", "id"),
+                         suffix = c("_DNA", "_RNA"))
+```
+
+Add in brain region and age.
+
+```{r}
+relevant_clinical_df <- hgg_meta %>%
+  filter(sample_id %in% all_data_df$sample_id) %>%
+  mutate(age_at_diagnosis_yr =
+           floor(as.integer(age_at_diagnosis_days)/365)) %>%
+  group_by(Kids_First_Participant_ID, sample_id, id) %>%
+  summarize(CNS_region = paste(sort(unique(CNS_region)),
+                               collapse = ", "),
+            age_at_diagnosis_yr = paste(sort(unique(age_at_diagnosis_yr)),
+                                        collapse = ", "))
+```
+
+Merge DNA and RNA composition.
+
+```{r}
+all_data_df <- inner_join(relevant_clinical_df, 
+                          all_data_df) %>%
+  dplyr::arrange(Kids_First_Participant_ID, sample_id)
+```
+
+Add methylation to all_data_df.
+
+```{r}
+methyl_df <- hgg_meta %>% 
+  filter(experimental_strategy == "Methylation", 
+         (grepl("GBM_|pedHGG_|HGG_", dkfz_v12_methylation_subclass) |
+             dkfz_v12_methylation_subclass %in% c("DHG_G34", "DMG_K27", "DMG_EGFR", "A_IDH_HG", "IHG", "HGAP", "A_IDH_HG")), 
+         dkfz_v12_methylation_subclass_score >= 0.8) %>% 
+  # add all samples but only keep subtypes if score >=0.8
+  mutate(molecular_subtype_methyl = case_when(grepl("GBM_|pedHGG_|HGG_", dkfz_v12_methylation_subclass) ~ "HGG, H3 wildtype",
+    dkfz_v12_methylation_subclass == "DHG_G34"  ~ "DHG, H3 G35",
+    dkfz_v12_methylation_subclass %in% c("DMG_K27", "DMG_EGFR")  ~ "DMG, H3 K28",
+    dkfz_v12_methylation_subclass == "A_IDH_HG"  ~ "HGG, IDH",
+    dkfz_v12_methylation_subclass == "O_IDH" ~ "Oligo, IDH",
+    dkfz_v12_methylation_subclass == "IHG"  ~ "IHG",
+    dkfz_v12_methylation_subclass == "HGAP"  ~ "HGG, MAPK",
+    TRUE ~ NA_character_)) %>% 
+  select(Kids_First_Biospecimen_ID, Kids_First_Participant_ID, sample_id, 
+                composition, id, molecular_subtype_methyl) %>%
+  dplyr::rename(Kids_First_Biospecimen_ID_Methyl = Kids_First_Biospecimen_ID) %>%
+  distinct()
+
+# add remaining methyl without the subtypes of interest 
+methyl_not_subtyped <- hgg_meta %>%
+  filter(experimental_strategy == "Methylation",
+         !Kids_First_Biospecimen_ID %in% methyl_df$Kids_First_Biospecimen_ID_Methyl) %>%
+  dplyr::rename(Kids_First_Biospecimen_ID_Methyl = Kids_First_Biospecimen_ID) %>%
+  select(Kids_First_Biospecimen_ID_Methyl, Kids_First_Participant_ID, sample_id, 
+                composition, id) %>%
+  left_join(methyl_df[, c("id", "molecular_subtype_methyl", "Kids_First_Participant_ID")]) %>%
+  distinct()
+
+methyl_df <- methyl_df %>%
+  bind_rows(methyl_not_subtyped) %>% 
+  distinct()
+
+all_data_df <-  all_data_df %>% 
+  full_join(methyl_df, by = c("Kids_First_Participant_ID", "sample_id", "composition", "id"))  %>% 
+  select(starts_with("Kids_First"), sample_id, everything())
+
+```
+
+
+## Tables by Molecular Subtype
+
+In this section, we'll divide up the table based on the molecular subtypes described in [`AlexsLemonade/OpenPBTA-analysis#249`](https://github.com/AlexsLemonade/OpenPBTA-analysis/issues/249).
+
+### H3 K28 mutant
+
+> * These tumors contain H3F3A K28M or HIST1H3B K28M mutations
+> * Co-occurring lesions include: ACVR1, TP53, ATRX mutations; PDGFRA amplification; PTEN loss
+> * Mutually-exclusive lesions: FGFR1 mutations/fusions (thalamic); IDH1 mutations
+> * Average age of 9 years
+> * Majority should be midline localized
+
+```{r}
+h3_k28_df <- all_data_df %>%
+  # Only rows with H3 K28M mutations or methyl subtype of H3 K28M
+  filter(`H3F3A_H3-3A.K28M` == "Yes" | HIST1H3B_H3C2.K28M == "Yes" |
+           HIST1H3C_H3C3.K28M == "Yes" | HIST2H3C_H3C14.K28M == "Yes" | 
+           molecular_subtype_methyl == "DMG, H3 K28") %>%
+  # Only the relevant columns
+  select(Kids_First_Participant_ID,
+         id,
+         `H3F3A_H3-3A.K28M`,
+         HIST1H3B_H3C2.K28M,
+         HIST1H3C_H3C3.K28M,
+         HIST2H3C_H3C14.K28M,
+         `H3F3A_H3-3A.G35R`,
+         `H3F3A_H3-3A.G35V`,
+         age_at_diagnosis_yr,
+         CNS_region,
+         relevant_coding_mutations,
+         PDGFRA_focal_status,
+         PTEN_focal_status,
+         EGFR_focal_status,
+         EGFR_expression_zscore,
+         EZHIP_expression_zscore,
+         FGFR1_fusions) %>%
+  distinct()
+
+h3_k28_df
+```
+
+Mutually exclusive with the H3 G35 mutations? yes
+
+```{r}
+isTRUE(any(h3_k28_df$`H3F3A_H3-3A.G35R` == "Yes"))
+```
+
+```{r}
+isTRUE(any(h3_k28_df$`H3F3A_H3-3A.G35V` == "Yes"))
+```
+
+Are the majority midline localized?
+
+```{r}
+table(h3_k28_df$CNS_region)
+```
+
+Yes.
+
+```{r}
+h3_k28_df %>%
+  group_by(relevant_coding_mutations) %>%
+  count() %>%
+  arrange(desc(n))
+```
+
+The coding mutation list looks like what we would expect based on the description, with the exception of some BRAF mutations.
+There are no _IDH1_ mutations.
+
+```{r}
+summary(as.integer(h3_k28_df$age_at_diagnosis_yr))
+```
+
+Age is similar to what is described.
+
+```{r}
+table(h3_k28_df$FGFR1_fusions)
+```
+
+One _FGFR1_ fusion.
+
+The histologies file that gets distributed as part of the project and contains molecular subtypes contains one row per biospecimen.
+So we'll create a table that contains the biospecimen IDs and the calls.
+
+```{r}
+h3_k28_df_biospecimen <- all_data_df %>%
+  filter(`H3F3A_H3-3A.K28M` == "Yes" | HIST1H3B_H3C2.K28M == "Yes" |
+           HIST1H3C_H3C3.K28M == "Yes" | HIST2H3C_H3C14.K28M == "Yes" |
+           molecular_subtype_methyl == "DMG, H3 K28") %>%
+  mutate(molecular_subtype = "DMG, H3 K28")
+
+```
+
+### H3 G35 mutant
+
+> * These tumors contain H3F3A G35R/V mutations
+> * Co-occurring lesions include: ATRX/DAXX, TP53, SETD2 mutations, NTRK fusions
+> * Mutually exclusive lesions: IDH1 mutations
+> * Average age of 20 years
+
+```{r}
+h3_g35_df <- all_data_df %>%
+  # Only rows with H3 G35 mutations of methyl subtyped as G35
+  filter(`H3F3A_H3-3A.G35R` == "Yes" | `H3F3A_H3-3A.G35V` == "Yes" |
+           molecular_subtype_methyl == "DHG, H3 G35") %>%
+  # Only the relevant columns
+  select(Kids_First_Participant_ID,
+         id,
+         `H3F3A_H3-3A.K28M`,
+         HIST1H3B_H3C2.K28M,
+         `H3F3A_H3-3A.G35R`,
+         `H3F3A_H3-3A.G35V`,
+         age_at_diagnosis_yr,
+         relevant_coding_mutations,
+         NTRK_fusions) %>%
+  distinct()
+
+h3_g35_df
+```
+
+Make a biospecimen-centric table.
+
+```{r}
+h3_g35_df_biospecimen <- all_data_df %>%
+  # Only rows with H3 G35 mutations
+  filter(`H3F3A_H3-3A.G35R` == "Yes" | `H3F3A_H3-3A.G35V` == "Yes" |
+           molecular_subtype_methyl == "DHG, H3 G35") %>%
+  mutate(molecular_subtype = "DHG, H3 G35")
+```
+
+### IDH mutant
+
+> * These tumors contain IDH1 R132H mutations
+> * Co-occurring lesions include: TP53 mutations; P73-AS1 promoter methylation and downregulation
+> * High expression of FOXG1 and OLIG2
+> * Mutually exclusive lesions: chr7 gain and chr10 loss
+
+Looks like there is an H3-mutant sample with no IDH mutations, but IDH methyl subtype - this should be checked for mis-id
+
+```{r}
+idh_df <- all_data_df %>%
+  filter(IDH1_mutation == "p.R132H" | molecular_subtype_methyl == "HGG, IDH")
+idh_df
+
+```
+
+In these instances, the broad copy data look consistent with the description, all tumors have _TP53_ mutations, and the _TP73-AS1_ expression is consistent with downregulation.
+
+Make a biospecimen-centric table - exclude samples with H3 mutations.
+
+```{r}
+idh_df_biospecimen <- all_data_df %>%
+  filter(grepl("p.R132", IDH1_mutation) | (!grepl("H3-3A", relevant_coding_mutations) & molecular_subtype_methyl == "HGG, IDH")) %>%
+  mutate(molecular_subtype = "HGG, IDH")
+```
+
+
+We will label samples without H3 mutations as `HGG, H3 wildtype` below.
+
+### 1p/19q co-deleted oligodendrogliomas
+
+> * Co-deletion of chr 1p and 19q (LOH, loss of heterozygosity of both) results in translocation t(1p;19q)
+> * Nearly all have a co-occurring IDH1 mutation (R132 or R172)
+> * Other co-occurring lesions include: TERT promoter, CIC, and FUBP1 mutations
+> * Mutually exclusive of TP53 and ATRX mutation
+> * Typically occurs in adult tumors
+
+Let's first filter by the broad arm data and see what we get.
+
+```{r}
+all_data_df %>%
+  filter(`1p` == "loss" & `19q` == "loss")
+```
+
+No co-occurring 1p/19q
+
+> We expect very few, if any of these (maybe 1 when we looked by CNV), so I think maybe we can approach this cohort by starting to look for 1p/19q codeletions in all samples + IDH mutations, and if we see any, we may manually want to check the CNV plots just to confirm.
+
+### IHG subtype
+
+> There is a new 2021 entity within HGGs called "Infant-type hemispheric glioma" (IHG). This HGG is cerebral (hemispheric), arises in early childhood, and is characterized by RTK (receptor tyrosine kinase) alterations, typically fusions, in the NTRK family or in ROS1, ALK, or MET.
+
+> The subtypes are:
+
+> IHG, NTRK-altered
+> IHG, ROS1-altered
+> IHG, ALK-altered
+> IHG, MET-altered
+
+```{r ihg}
+NTRK <- fusion_df %>% 
+  select(Kids_First_Biospecimen_ID, NTRK_fusions) %>%
+  filter(NTRK_fusions != "None") %>%
+  pull(Kids_First_Biospecimen_ID) 
+
+ALK <- fusion_df %>% 
+  select(Kids_First_Biospecimen_ID, ALK_fusions) %>%
+  filter(ALK_fusions != "None") %>%
+  pull(Kids_First_Biospecimen_ID) 
+
+ROS1 <- fusion_df %>% 
+  select(Kids_First_Biospecimen_ID, ROS1_fusions) %>%
+  filter(ROS1_fusions != "None") %>%
+  pull(Kids_First_Biospecimen_ID) 
+
+MET <- fusion_df %>% 
+  select(Kids_First_Biospecimen_ID, MET_fusions) %>%
+  filter(MET_fusions != "None") %>%
+  pull(Kids_First_Biospecimen_ID) 
+
+RTK_list <- c(NTRK, ALK, MET, ROS1)
+
+ihg_df_biospecimen <- all_data_df %>% 
+  # need free text
+  left_join(unique(hgg_meta[,c("pathology_free_text_diagnosis", "id")])) %>%
+  filter(molecular_subtype_methyl == "IHG" | grepl("infant type hemispheric glioma with ALK fusion", pathology_free_text_diagnosis)) %>%
+  mutate(tmp_tag = "ihg_sample") %>%
+  unique() %>%
+  mutate(molecular_subtype = case_when((!is.na(tmp_tag) & Kids_First_Biospecimen_ID_RNA %in% NTRK ~ "IHG, NTRK-altered"),
+                                       (!is.na(tmp_tag) & Kids_First_Biospecimen_ID_RNA %in% ALK ~ "IHG, ALK-altered"),
+                                       (!is.na(tmp_tag) & Kids_First_Biospecimen_ID_RNA %in% ROS1 ~ "IHG, ROS1-altered"),
+                                       (!is.na(tmp_tag) & Kids_First_Biospecimen_ID_RNA %in% MET ~ "IHG, MET-altered"),
+                                       (!is.na(tmp_tag) & !Kids_First_Biospecimen_ID_RNA %in% c(NTRK, ALK, MET, ROS1) & molecular_subtype_methyl == "IHG") ~ "IHG, To be classified")) %>%
+  select(-c(tmp_tag, pathology_free_text_diagnosis)) %>%
+  unique()
+```
+
+
+## Biospecimen Table
+
+Join all the tables that contain the biospecimen ids and `molecular_subtype` column together.
+
+```{r}
+molecular_subtype_table <- bind_rows(h3_g35_df_biospecimen,
+                                     h3_k28_df_biospecimen,
+                                     idh_df_biospecimen,
+                                     ihg_df_biospecimen) %>% 
+  distinct()
+
+as.data.frame(table(molecular_subtype_table$molecular_subtype)) %>%
+  arrange(desc(Freq))
+```
+
+### H3.3 and IDH wildtype
+
+> * High-grade gliomas absent of H3F3A and IDH mutations
+> * Defining lesions: MYCN, PDGFRA amplification, TP53 and TERT mutations
+
+```{r}
+# which tumors were not yet subtyped?
+not_subtyped <- setdiff(unique(all_data_df$id), molecular_subtype_table$id)
+#"BS_DBH8YWA1"
+  
+  
+wildtype_df <- all_data_df %>%
+  filter(id %in% not_subtyped) %>%
+  left_join(molecular_subtype_table[c("id", "molecular_subtype", "molecular_subtype_methyl")]) %>%
+  filter(`H3F3A_H3-3A.K28M` == "No",
+         HIST1H3B_H3C2.K28M == "No",
+         HIST1H3C_H3C3.K28M == "No",
+         HIST2H3C_H3C14.K28M == "No",
+         `H3F3A_H3-3A.G35R` == "No",
+         `H3F3A_H3-3A.G35V` == "No",
+         IDH1_mutation == "No R132 or R172",
+         # and not re-classified by methyl
+         !molecular_subtype_methyl %in% c("DMG, H3 K28", "DHG, H3 G35", "IHG")) %>%
+  mutate(molecular_subtype = "HGG, H3 wildtype") %>%
+  distinct()
+
+# add wildtype methyl not already there
+wildtype_methyl <- all_data_df %>%
+  filter(!Kids_First_Biospecimen_ID_Methyl %in% wildtype_df$Kids_First_Biospecimen_ID_Methyl,
+         molecular_subtype_methyl == "HGG, H3 wildtype") %>%
+  mutate(molecular_subtype = molecular_subtype_methyl)
+
+wildtype_df <- wildtype_df %>%
+  bind_rows(wildtype_methyl)
+
+wildtype_df %>% arrange(MYCN_focal_status, PDGFRA_focal_status)
+```
+
+### Add samples missing from all_data_df due to not having any mutations/cnv data
+> We joined entire fusion and expression data together earlier, so no RNA specimens should be missing
+> We added non-methyl DNA bs_ids which were not present in CNV or mutation files
+> We added high-confidence methyl bs_ids earlier, so need to add remaining methylation bs_ids
+
+```{r add subtypes if exist for other specimens or the same id and rest as To be classified}
+molecular_subtype_table_wt <- molecular_subtype_table %>%
+  bind_rows(wildtype_df)
+
+# subtype mapping 
+subtype_map <- molecular_subtype_table_wt %>%
+  select(id, molecular_subtype, molecular_subtype_methyl) %>%
+  unique()
+
+# which ids have samples which can be assigned subtypes
+all_subtypes <- subtype_map %>%
+  left_join(hgg_meta[,c("Kids_First_Biospecimen_ID", "id")]) %>%
+  select(Kids_First_Biospecimen_ID, id, molecular_subtype, molecular_subtype_methyl)
+
+# add rest as TO BE CLASSIFIED
+to_be_classified <- hgg_meta %>%
+  filter(!id %in% all_subtypes$id) %>%
+  mutate(molecular_subtype = "HGG, To be classified") %>%
+select(Kids_First_Participant_ID, Kids_First_Biospecimen_ID, sample_id, id, molecular_subtype)
+
+molecular_subtype_table_final <- all_subtypes %>%
+  bind_rows(to_be_classified) %>%
+  arrange(Kids_First_Biospecimen_ID)
+
+# create final lesion + subtype file
+lesions_subtypes <- all_data_df %>%
+  right_join(molecular_subtype_table_final[,c("id", "molecular_subtype")]) %>%
+  unique() %>%
+  arrange(id)
+```
+
+# Summary 
+```{r summary}
+tumors_subtyped <- molecular_subtype_table_final %>%
+  select(id, molecular_subtype) %>%
+  unique()
+
+as.data.frame(table(tumors_subtyped$molecular_subtype)) %>%
+  arrange(desc(Freq))
+
+```
+
+Write to file.
+
+```{r}
+write_tsv(lesions_subtypes, lesion_subtype_file)
+write_tsv(molecular_subtype_table_final, subtype_file)
+```
+
+## Session Info
+
+```{r}
+sessionInfo()
+```

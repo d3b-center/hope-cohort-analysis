@@ -1,0 +1,215 @@
+---
+title: "High-Grade Glioma Molecular Subtyping - Defining Lesions"
+output: 
+  html_notebook:
+    toc: TRUE
+    toc_float: TRUE
+author: Chante Bethell for ALSF CCDL
+date: 2019
+---
+
+This notebook looks at the defining lesions for all samples for the issue of 
+molecular subtyping high-grade glioma samples in the OpenPBTA dataset. 
+
+# Usage
+
+This notebook is intended to be run via the command line from the top directory
+of the repository as follows:
+
+```
+Rscript -e "rmarkdown::render('analyses/molecular-subtyping-HGG/01-HGG-molecular-subtyping-defining-lesions.Rmd', clean = TRUE)"
+```
+
+# Set Up
+
+```{r}
+library(tidyverse)
+
+# Get `magrittr` pipe
+`%>%` <- dplyr::`%>%`
+```
+
+## Directories and Files
+
+```{r}
+# Detect the ".git" folder -- this will in the project root directory.
+# Use this as the root directory to ensure proper sourcing of functions no
+# matter where this is called from
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+
+# Get hgg subset folder from the module in master
+hgg_subset_dir <- file.path(root_dir, 
+                        "analyses",
+                        "molecular-subtyping-HGG",
+                        "hgg-subset")
+
+# File path to results directory
+results_dir <-
+  file.path(root_dir, "analyses", "molecular-subtyping-HGG", "results")
+
+if (!dir.exists(results_dir)) {
+  dir.create(results_dir)
+}
+
+# Read in metadata
+metadata <-
+  readr::read_tsv(file.path(root_dir, "data", "HOPE-GBM-histologies-base.tsv"), 
+                  guess_max = 100000) %>%
+  dplyr::filter(!is.na(pathology_diagnosis))
+
+# Read in the JSON file that contains the strings we'll use to include or
+# exclude samples for subtyping - see 00-HGG-select-pathology-dx
+path_dx_list <- jsonlite::fromJSON(
+  file.path(hgg_subset_dir,
+            "hgg_subtyping_path_dx_strings.json")
+)
+
+#### Filter metadata -----------------------------------------------------------
+
+# Filter metadata based on pathology diagnosis fields and include samples that
+# should be classified as high-grade glioma based on defining lesions
+
+# Samples included on the basis of the pathology diagnosis fields
+hgg_only_meta <- metadata %>%
+  # Inclusion on the basis of CBTTC harmonized pathology diagnoses
+  filter(pathology_diagnosis %in% path_dx_list$exact_path_dx |
+         # Inclusion based on pathology free text diagnosis
+         pathology_free_text_diagnosis %in% path_dx_list$path_free_text_exact |
+         # Inclusion based on pathology free text diagnosis for IHG
+         pathology_free_text_diagnosis %in% path_dx_list$IHG_path_free_path_dx)
+
+dna_bsids <- hgg_only_meta %>%
+  filter(!is.na(pathology_diagnosis),
+                (experimental_strategy %in% c("WGS", "WXS", "Targeted Sequencing") & is.na(RNA_library))) %>%
+  pull(Kids_First_Biospecimen_ID)
+
+```
+
+# Prepare Data
+# Read in snv consensus and hotspots mutation data, filtering out LGAT
+ - We will use the `snv-consensus-plus-hotspots.maf.tsv.gz` which contains consensus SNV calls that are present in all 3 callers (strelka2, mutect2, and lancet) and with hotspot rescued. Also include the DGD MAF, `snv-dgd.maf.tsv.gz` for OpenPedCan.  
+ - Calls that overlap MSKCC hotspots found in any caller are included (except if only vardict calls the site as variant, we remove these calls since we have a lot of calls unique to vardict which we consider as false positive as discussed [here](https://github.com/AlexsLemonade/OpenPBTA-analysis/tree/master/analyses/snv-callers#snv-caller-comparison-analysis))
+
+```{r}
+
+# select tumor sample barcode, gene, short protein annotation and variant classification
+keep_cols <- c("Chromosome",
+             "Start_Position",
+             "End_Position",
+             "Strand",
+             "Variant_Classification",
+             "IMPACT",
+             "Kids_First_Biospecimen_ID",
+             "Hugo_Symbol",
+             "HGVSp_Short",
+             "Exon_Number")
+# DGD MAF
+snv_consensus_hotspot_maf <- readr::read_rds(
+  file.path(root_dir, "data" , "Hope-consensus-mutation.maf.rds")) %>%
+  select(all_of(keep_cols))
+                                  
+
+```
+
+
+## SNV consensus mutation data - defining lesions
+
+```{r}
+# Filter the snv consensus mutation data for the target lesions
+snv_lesions_df <- snv_consensus_hotspot_maf  %>%
+  dplyr::filter(Hugo_Symbol %in% c("H3-3A", "H3C2",
+                                   "H3C3", "H3C14") &
+                  HGVSp_Short %in% c("p.K28M", "p.G35R",
+                                     "p.G35V")) %>%
+  dplyr::select(Kids_First_Biospecimen_ID, Hugo_Symbol, HGVSp_Short) %>%
+  dplyr::mutate(
+    `H3F3A_H3-3A.K28M` = dplyr::case_when(Hugo_Symbol == "H3-3A" &
+                                    HGVSp_Short == "p.K28M" ~ "Yes",
+                                  TRUE ~ "No"),
+    HIST1H3B_H3C2.K28M = dplyr::case_when(
+      Hugo_Symbol == "H3C2" & HGVSp_Short == "p.K28M" ~ "Yes",
+      TRUE ~ "No"),
+    HIST1H3C_H3C3.K28M = dplyr::case_when(
+      Hugo_Symbol == "H3C3" & HGVSp_Short == "p.K28M" ~ "Yes",
+      TRUE ~ "No"),
+    HIST2H3C_H3C14.K28M = dplyr::case_when(
+      Hugo_Symbol == "H3C14" & HGVSp_Short == "p.K28M" ~ "Yes",
+      TRUE ~ "No"),
+    `H3F3A_H3-3A.G35R` = dplyr::case_when(Hugo_Symbol == "H3-3A" &
+                                    HGVSp_Short == "p.G35R" ~ "Yes",
+                                  TRUE ~ "No"),
+    `H3F3A_H3-3A.G35V` = dplyr::case_when(Hugo_Symbol == "H3-3A" &
+                                    HGVSp_Short == "p.G35V" ~ "Yes",
+                                  TRUE ~ "No")
+  ) %>%
+  dplyr::select(
+    -HGVSp_Short,
+    -Hugo_Symbol
+  )
+
+# add back in samples with no evidence of these specific mutations and are not LGAT
+snv_lesions_df <- snv_lesions_df %>%
+  dplyr::bind_rows(
+    data.frame(
+      Tumor_Sample_Barcode = setdiff(dna_bsids, snv_lesions_df$Kids_First_Biospecimen_ID)
+    )
+  ) %>%
+  dplyr::mutate_all(function(x) tidyr::replace_na(x, "No"))
+```
+
+Add a column that keeps track of the presence of any defining lesion.
+We'll use this to create subset files in the next step.
+
+```{r}
+snv_lesions_df <- snv_lesions_df %>%
+  dplyr::mutate(
+    defining_lesion = dplyr::case_when(
+      `H3F3A_H3-3A.K28M` == "Yes" ~ TRUE,
+      HIST1H3B_H3C2.K28M == "Yes" ~ TRUE,
+      HIST1H3C_H3C3.K28M == "Yes" ~ TRUE,
+      HIST2H3C_H3C14.K28M == "Yes" ~ TRUE,
+      `H3F3A_H3-3A.G35R` == "Yes" ~ TRUE,
+      `H3F3A_H3-3A.G35V` == "Yes" ~ TRUE,
+      TRUE ~ FALSE
+    )
+  )
+```
+
+## What are the diagnoses of the samples which have defining lesions but are not HGG, LGG, or EPN? Make sure to add these back at the end!
+
+```{r non HGG samples with defining lesions}
+metadata %>%
+  filter(Kids_First_Biospecimen_ID %in% setdiff(snv_lesions_df$Kids_First_Biospecimen_ID, dna_bsids)) %>%
+  select(Kids_First_Biospecimen_ID, sample_id, pathology_diagnosis)
+
+```
+
+
+Add other identifiers and sort.
+
+```{r}
+snv_lesions_df <- metadata %>%
+  dplyr::select(Kids_First_Participant_ID, 
+                sample_id,
+                Kids_First_Biospecimen_ID) %>%
+  dplyr::inner_join(snv_lesions_df,
+                    by = c("Kids_First_Biospecimen_ID" = "Kids_First_Biospecimen_ID")) %>%
+  dplyr::arrange(Kids_First_Participant_ID, sample_id)
+```
+
+
+
+## Save final table of results
+
+```{r}
+# Save final data.frame to file
+readr::write_tsv(snv_lesions_df,
+                 file.path(results_dir, "Hope_HGG_defining_lesions.tsv"))
+```
+
+## Session Info
+
+```{r}
+# Print the session information
+sessionInfo()
+```

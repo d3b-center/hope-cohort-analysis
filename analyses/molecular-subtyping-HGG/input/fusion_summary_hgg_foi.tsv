@@ -1,0 +1,49 @@
+Kids_First_Biospecimen_ID	FusionName	Fusion_Type	Gene1A	Gene1B	Gene2A	Gene2B	Gene1A_anno	Gene1B_anno	reciprocal_exists
+BS_1EBQ3T20	BRAF--BRAF	in-frame	BRAF	BRAF	NA	NA	Kinase, CosmicCensus, Oncogene	Kinase, CosmicCensus, Oncogene	TRUE
+BS_1EBQ3T20	NTRK3--NTRK3	frameshift	NTRK3	NTRK3	NA	NA	TumorSuppressorGene, CosmicCensus, Oncogene, Kinase	TumorSuppressorGene, CosmicCensus, Oncogene, Kinase	TRUE
+BS_2GSAPE1R	TPM3--NTRK1	in-frame	TPM3	NTRK1	NA	NA	CosmicCensus, Oncogene	CosmicCensus, Oncogene, Kinase	FALSE
+BS_4B0BAVTX	TRIM24--BRAF	in-frame	TRIM24	BRAF	NA	NA	TumorSuppressorGene, CosmicCensus, Oncogene	Kinase, CosmicCensus, Oncogene	FALSE
+BS_4QW2S1Q8	MET--CAMK2B	in-frame	MET	CAMK2B	NA	NA	Kinase, CosmicCensus, Oncogene	Oncogene, Kinase	FALSE
+BS_4QW2S1Q8	MET--CAMK2B	frameshift	MET	CAMK2B	NA	NA	Kinase, CosmicCensus, Oncogene	Oncogene, Kinase	FALSE
+BS_4QW2S1Q8	MET--GCK	in-frame	MET	GCK	NA	NA	Kinase, CosmicCensus, Oncogene	Kinase	FALSE
+BS_4QW2S1Q8	MET--HECW1	in-frame	MET	HECW1	NA	NA	Kinase, CosmicCensus, Oncogene	NA	FALSE
+BS_4QW2S1Q8	MET--HECW1	other	MET	HECW1	NA	NA	Kinase, CosmicCensus, Oncogene	NA	FALSE
+BS_4V42BXBT	TMEM165--PDGFRA	in-frame	TMEM165	PDGFRA	NA	NA	NA	CosmicCensus, Oncogene, Kinase	FALSE
+BS_52C576HH	ZCCHC8--ROS1	in-frame	ZCCHC8	ROS1	NA	NA	CosmicCensus	CosmicCensus, Oncogene, Kinase	FALSE
+BS_6WP1FHTE	ENSG00000285106--MET	other	ENSG00000285106	MET	NA	NA	NA	Kinase, CosmicCensus, Oncogene	FALSE
+BS_6WP1FHTE	LINC-PINT--MET	other	LINC-PINT	MET	NA	NA	TumorSuppressorGene	Kinase, CosmicCensus, Oncogene	FALSE
+BS_6WP1FHTE	MET--ENSG00000232006	other	MET	ENSG00000232006	NA	NA	Kinase, CosmicCensus, Oncogene	NA	FALSE
+BS_6WP1FHTE	MET--ENSG00000232006	frameshift	MET	ENSG00000232006	NA	NA	Kinase, CosmicCensus, Oncogene	NA	FALSE
+BS_84XCR9GG	NTRK3--NTRK3	frameshift	NTRK3	NTRK3	NA	NA	TumorSuppressorGene, CosmicCensus, Oncogene, Kinase	TumorSuppressorGene, CosmicCensus, Oncogene, Kinase	TRUE
+BS_84XCR9GG	PDGFRA--GAB1	other	PDGFRA	GAB1	NA	NA	CosmicCensus, Oncogene, Kinase	Oncogene	FALSE
+BS_84XCR9GG	TIMM23--RN7SKP167(9698)/FGFR2(57434)	frameshift	TIMM23	RN7SKP167	NA	FGFR2	NA	NA	FALSE
+BS_9XVACXP0	CCDC88A--ALK	in-frame	CCDC88A	ALK	NA	NA	NA	Kinase, CosmicCensus, Oncogene	FALSE
+BS_9XVACXP0	ENSG00000240401--ALK	other	ENSG00000240401	ALK	NA	NA	NA	Kinase, CosmicCensus, Oncogene	FALSE
+BS_9XVACXP0	PRCC--NTRK1	frameshift	PRCC	NTRK1	NA	NA	CosmicCensus, Oncogene	CosmicCensus, Oncogene, Kinase	FALSE
+BS_AWH9757B	CHD7--MYBL1	in-frame	CHD7	MYBL1	NA	NA	NA	Oncogene, TranscriptionFactor	FALSE
+BS_AWH9757B	CHD7--MYBL1	frameshift	CHD7	MYBL1	NA	NA	NA	Oncogene, TranscriptionFactor	FALSE
+BS_AWH9757B	ENSG00000253288--MYBL1	other	ENSG00000253288	MYBL1	NA	NA	NA	Oncogene, TranscriptionFactor	TRUE
+BS_AWH9757B	ENSG00000253988--MYBL1	other	ENSG00000253988	MYBL1	NA	NA	NA	Oncogene, TranscriptionFactor	TRUE
+BS_AWH9757B	MYBL1--ENSG00000253288	other	MYBL1	ENSG00000253288	NA	NA	Oncogene, TranscriptionFactor	NA	TRUE
+BS_AWH9757B	MYBL1--ENSG00000253988	other	MYBL1	ENSG00000253988	NA	NA	Oncogene, TranscriptionFactor	NA	TRUE
+BS_AWH9757B	MYBL1--ENSG00000253988	frameshift	MYBL1	ENSG00000253988	NA	NA	Oncogene, TranscriptionFactor	NA	TRUE
+BS_AWH9757B	MYBL1--NSMAF(109691)/TOX(35868)	frameshift	MYBL1	NSMAF	NA	TOX	Oncogene, TranscriptionFactor	NA	FALSE
+BS_JRYJGYC4	BRAF--WSB1	other	BRAF	WSB1	NA	NA	Kinase, CosmicCensus, Oncogene	NA	FALSE
+BS_KP735TJ6	TPM3--NTRK1	frameshift	TPM3	NTRK1	NA	NA	CosmicCensus, Oncogene	CosmicCensus, Oncogene, Kinase	FALSE
+BS_KP735TJ6	TPM3--NTRK1	in-frame	TPM3	NTRK1	NA	NA	CosmicCensus, Oncogene	CosmicCensus, Oncogene, Kinase	FALSE
+BS_M7HCF7DW	CLIP1--ROS1	in-frame	CLIP1	ROS1	NA	NA	CosmicCensus	CosmicCensus, Oncogene, Kinase	FALSE
+BS_M7HCF7DW	NTRK3--NTRK3	frameshift	NTRK3	NTRK3	NA	NA	TumorSuppressorGene, CosmicCensus, Oncogene, Kinase	TumorSuppressorGene, CosmicCensus, Oncogene, Kinase	TRUE
+BS_ME6VQGG4	RAF1--TMEM40	other	RAF1	TMEM40	NA	NA	Kinase, CosmicCensus, Oncogene	NA	FALSE
+BS_ME6VQGG4	RAF1--TMEM40	in-frame	RAF1	TMEM40	NA	NA	Kinase, CosmicCensus, Oncogene	NA	FALSE
+BS_ME6VQGG4	RAF1--TMEM40	frameshift	RAF1	TMEM40	NA	NA	Kinase, CosmicCensus, Oncogene	NA	FALSE
+BS_PS0P3QJ3	KIF21A--ROS1	other	KIF21A	ROS1	NA	NA	NA	CosmicCensus, Oncogene, Kinase	FALSE
+BS_PS0P3QJ3	KIF21A--ROS1	in-frame	KIF21A	ROS1	NA	NA	NA	CosmicCensus, Oncogene, Kinase	FALSE
+BS_RZBFH1QF	NTRK2--NTRK2(34178)/UBE2V1P10(29753)	frameshift	NTRK2	NTRK2	NA	UBE2V1P10	Oncogene, Kinase	Oncogene, Kinase	FALSE
+BS_S2TA8R29	TRIM24--ROS1	in-frame	TRIM24	ROS1	NA	NA	TumorSuppressorGene, CosmicCensus, Oncogene	CosmicCensus, Oncogene, Kinase	FALSE
+BS_SNVM7CZT	BCL11A--ALK	in-frame	BCL11A	ALK	NA	NA	CosmicCensus, Oncogene, TranscriptionFactor	Kinase, CosmicCensus, Oncogene	FALSE
+BS_SNVM7CZT	BCL11A--ALK	frameshift	BCL11A	ALK	NA	NA	CosmicCensus, Oncogene, TranscriptionFactor	Kinase, CosmicCensus, Oncogene	FALSE
+BS_TGS109T3	NTRK2--NTRK2(34178)/UBE2V1P10(29753)	frameshift	NTRK2	NTRK2	NA	UBE2V1P10	Oncogene, Kinase	Oncogene, Kinase	FALSE
+BS_TGS109T3	PDGFRA--PDGFRA	in-frame	PDGFRA	PDGFRA	NA	NA	CosmicCensus, Oncogene, Kinase	CosmicCensus, Oncogene, Kinase	TRUE
+BS_XQ5SFW35	FGFR1--FGFR1	frameshift	FGFR1	FGFR1	NA	NA	Kinase, CosmicCensus, Oncogene	Kinase, CosmicCensus, Oncogene	TRUE
+BS_YSZRQ95C	TPM3--NTRK1	in-frame	TPM3	NTRK1	NA	NA	CosmicCensus, Oncogene	CosmicCensus, Oncogene, Kinase	FALSE
+BS_YSZRQ95C	TPM3--NTRK1	frameshift	TPM3	NTRK1	NA	NA	CosmicCensus, Oncogene	CosmicCensus, Oncogene, Kinase	FALSE

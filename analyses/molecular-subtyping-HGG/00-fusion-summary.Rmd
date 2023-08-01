@@ -1,0 +1,190 @@
+---
+title: "Generate Fusion Summary Files"
+output: html_notebook
+author: Daniel Miller (D3b), Jaclyn Taroni (CCDL), Jo Lynne Rokita (D3b)
+date: 2020, 2023
+params:
+  ci_run:
+    label: "1/0 to run in CI"
+    value: 1
+    input: integer
+editor_options: 
+  chunk_output_type: inline
+---
+
+Generate fusion files specifically for consumption by molecular subtyping analyses
+
+## Set up
+
+### Libraries and functions
+
+```{r}
+library(tidyverse)
+library(annoFuseData)
+```
+
+```{r}
+#' Generate filtered fusion frame
+#' @param df Unfiltered fusion data frame
+#' @param bioid List of biospecimen IDs
+#' @param fuses List of explicit fusion names
+#' @param genes List of gene names
+#' @return the filtered fusion data frame
+filterFusion <- function(df, bioid, fuses, genes) {
+  if (!missing(bioid)) {
+    df <- dplyr::filter(df, Sample %in% bioid)
+  }
+  if (!missing(fuses) & !missing(genes)) {
+    df <- dplyr::filter(df, FusionName %in% fuses |
+                   Gene1A %in% genes |
+                   Gene2A %in% genes |
+                   Gene1B %in% genes |
+                   Gene2B %in% genes)
+  } else if (!missing(fuses)) {
+    df <- dplyr::filter(df, FusionName %in% fuses)
+  } else if (!missing(genes)) {
+    df <- dplyr::filter(df,
+                 Gene1A %in% genes |
+                   Gene2A %in% genes |
+                   Gene1B %in% genes |
+                   Gene2B %in% genes)
+  }
+  return(df %>% 
+           dplyr::select(Sample, FusionName, Fusion_Type, Gene1A, Gene1B, Gene2A, Gene2B, Gene1A_anno, Gene1B_anno, reciprocal_exists) %>%
+           distinct())
+}
+
+#' Generate matrix with fusion counts
+#' @param fuseDF Filtered fusion data frame
+#' @param bioid List of biospecimen IDs that should be included in final table
+#' @return Data frame that contains fusion counts
+prepareOutput <- function(fuseDF, bioid) {
+  fuseDF %>% 
+    # some fusions have in-frame and frameshift fusion calls for a sample
+    # this will make unique fusionName and Sample dataset to get 1/0 values
+    dplyr::select(Sample,FusionName) %>%
+    unique() %>%
+    reshape2::dcast(Sample ~ FusionName,fun.aggregate = length) %>%
+    right_join(data.frame(Sample = bioid)) %>%
+    replace(is.na(.), 0) %>%
+    rename(Kids_First_Biospecimen_ID = Sample)
+}
+```
+
+### Read in data
+
+```{r}
+dataDir <- file.path("..", "..", "data")
+fusDir <- file.path("..", "..", "analyses", "fusion_filtering", "results")
+annotDir <- file.path("..", "..", "analyses", "fusion_filtering", "references")
+inputDir <- "input"
+#' Annotation file to be used for identifying kinase genes
+annot <- read.delim(system.file("extdata", "genelistreference.txt", package = "annoFuseData"))
+
+#' The putative oncogenic fusion file is what we'll use to check for the #' presence or absence of the fusions.
+#' However, some biospecimens are not represented in this filtered, prioritized
+#' file but have been assayed - we will gather those from the histology file
+hist <- read_tsv(file.path(dataDir, "Hope-GBM-histologies-base.tsv"))
+
+# read fusion data
+
+putativeOncogenicDF <- 
+  read_rds(file.path(dataDir, "Hope-fusion-putative-oncogenic.rds")) %>% 
+  rename(Sample = Kids_First_Biospecimen_ID)
+
+
+```
+
+
+### Output
+
+```{r}
+lgg_hggFile <- file.path(inputDir, "fusion_summary_hgg_foi.tsv")
+```
+
+## Fusions and genes of interest
+
+Taken from [`AlexsLemonade/OpenPBTA-analysis#245`](https://github.com/AlexsLemonade/OpenPBTA-analysis/issues/245), [`AlexsLemonade/OpenPBTA-analysis#251`](https://github.com/AlexsLemonade/OpenPBTA-analysis/issues/251), [`AlexsLemonade/OpenPBTA-analysis#623`](https://github.com/AlexsLemonade/OpenPBTA-analysis/issues/623) respectively, and [`AlexsLemonade/OpenPBTA-analysis#808`](https://github.com/AlexsLemonade/OpenPBTA-analysis/issues/808) 
+
+```{r}
+#' Exact match a list of fusions common in low-grade glioma and high-grade glioma tumors
+#' as well as fusions containing a particular gene with any other gene
+lggFuses <- c(
+  "KIAA1549--BRAF",
+  "FGFR1--TACC1",
+  "MYB--QKI"
+)
+lgghggGenes <- c(
+  "BRAF",
+  "ALK",
+  "ROS1",
+  "NTRK1",
+  "NTRK2",
+  "NTRK3",
+  "PDGFRA",
+  "FGFR2",
+  "FGFR1",
+  "MYB",
+  "MYBL1",
+  "RAF1", 
+  "MET"
+)
+
+```
+
+### Filter putative oncogenic fusions list
+
+```{r}
+
+allFuseLGGHGG <- filterFusion(df = putativeOncogenicDF,
+                             fuses = lggFuses,
+                             genes = lgghggGenes)
+
+```
+
+Get the biospecimen IDs that have had either RNA-Seq or Targeted fusion panel performed.
+We use the putative oncogenic file here, therefore any sample that was profiled but does not have a fusion that is relevant to the subtyping tickets is not _missing_ but instead has no evidence of the relevant fusions.
+
+```{r}
+# gather and combine
+specimensUnion <- hist %>%
+  filter(experimental_strategy == "RNA-Seq") %>%
+  pull(Kids_First_Biospecimen_ID)
+```
+
+
+#### Perform selection for LGG and HGG fusions
+First pull the fusions or genes from the goi list which are not kinases for the final output file, since these will not need further interrogation.
+```{r}
+# Which genes/fusions are not kinases, but in the list?
+# Separate fusions into genes, combine with gene list, check for not kinase
+lggFuses_df <- as.data.frame(lggFuses) %>%
+  separate(lggFuses, into = c("Gene1A", "Gene1B"), remove = F)
+
+kinases <- annot %>%
+  filter(type == "Kinase") %>%
+  pull(Gene_Symbol)
+
+lggFuses_df <- lggFuses_df %>% 
+  dplyr::mutate(Gene1A_anno = case_when(Gene1A %in% kinases ~ "Kinase", TRUE ~ "Non-Kinase"), 
+                Gene1B_anno = case_when(Gene1B %in% kinases ~ "Kinase", TRUE ~ "Non-Kinase"))
+
+
+```
+
+## as we do not have the columns to show whether the domain is retained, so I deleted the 3' and 5' part, and direct use 
+
+#### Write LGG and HGG fusions to file
+
+```{r}
+allFuseLGGHGG %>%
+  rename(Kids_First_Biospecimen_ID = Sample) %>%
+  arrange(Kids_First_Biospecimen_ID) %>%
+  write_tsv(lgg_hggFile)
+```
+
+## Session Info
+
+```{r}
+sessionInfo()
+```
