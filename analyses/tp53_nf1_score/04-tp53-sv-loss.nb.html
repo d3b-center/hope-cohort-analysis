@@ -9,9 +9,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="K S Gaonkar (D3B)" />
 
 
-<title>TP53 annotation for HGG</title>
+<title>Find CNV losses that overlap with TP53 domains</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1746,79 +1747,1058 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">TP53 annotation for HGG</h1>
+<h1 class="title toc-ignore">Find CNV losses that overlap with TP53
+domains</h1>
+<h4 class="author">K S Gaonkar (D3B)</h4>
 
 </div>
 
 
 <!-- rnb-text-begin -->
-<p>In this notebook we will annotate HGG samples with TP53 status we
-obtained from snv/cnv and TP53 classifier. We believe TP53 annotation
-will add useful information to the current known subtypes as we see TP53
-mutations co-occurring with H3 mutations.</p>
-<div id="set-up" class="section level2">
-<h2>Set up</h2>
+<p>In this script we will find if there are a Structural Variant
+breakpoints within TP53 or covering the gene locus such that it is
+deleted and concurrently, there are either one or both of: - 0 or 1 copy
+of TP53 (we would already have captured them as loss) - expression less
+than 1 TPM</p>
+<p>We want to subset SV calls which will possibly lead to loss of
+function to use for evaluation of TP53 inactivation score at a later
+step.</p>
+<div id="setup" class="section level3">
+<h3>Setup</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBMb2FkIGluIHRpZHl2ZXJzZSBmdW5jdGlvbnNcbmxpYnJhcnkodGlkeXZlcnNlKVxuXG5yb290X2RpciA8LSBycHJvanJvb3Q6OmZpbmRfcm9vdChycHJvanJvb3Q6Omhhc19kaXIoXCIuZ2l0XCIpKVxuIyByZXN1bHRzIGZvbGRlclxucmVzdWx0c19kaXIgPC0gZmlsZS5wYXRoKFxuICByb290X2RpcixcbiAgXCJhbmFseXNlc1wiLFxuICBcIm1vbGVjdWxhci1zdWJ0eXBpbmctSEdHXCIsXG4gIFwicmVzdWx0c1wiKVxuYGBgIn0= -->
-<pre class="r"><code># Load in tidyverse functions
-library(tidyverse)
-
+<!-- rnb-source-begin eyJkYXRhIjoibGlicmFyeShcImdncHViclwiKSJ9 -->
+<pre class="r"><code>library(&quot;ggpubr&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-message-begin eyJkYXRhIjoiTG9hZGluZyByZXF1aXJlZCBwYWNrYWdlOiBnZ3Bsb3QyXG4ifQ== -->
+<pre><code>Loading required package: ggplot2</code></pre>
+<!-- rnb-message-end -->
+<!-- rnb-source-begin eyJkYXRhIjpbImxpYnJhcnkoXCJnZ3RoZW1lc1wiKSIsImxpYnJhcnkoXCJkYXRhLnRhYmxlXCIpIiwibGlicmFyeShcInRpZHl2ZXJzZVwiKSJdfQ== -->
+<pre class="r"><code>library(&quot;ggthemes&quot;)
+library(&quot;data.table&quot;)
+library(&quot;tidyverse&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-message-begin eyJkYXRhIjoi4pSA4pSAIEF0dGFjaGluZyBjb3JlIHRpZHl2ZXJzZSBwYWNrYWdlcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeXZlcnNlIDIuMC4wIOKUgOKUgFxu4pyUIGRwbHlyICAgICAxLjEuMSAgICAg4pyUIHJlYWRyICAgICAyLjEuNFxu4pyUIGZvcmNhdHMgICAxLjAuMCAgICAg4pyUIHN0cmluZ3IgICAxLjUuMFxu4pyUIGx1YnJpZGF0ZSAxLjkuMiAgICAg4pyUIHRpYmJsZSAgICAzLjIuMVxu4pyUIHB1cnJyICAgICAxLjAuMSAgICAg4pyUIHRpZHlyICAgICAxLjMuMFxuIn0= -->
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.1     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ lubridate 1.9.2     ✔ tibble    3.2.1
+✔ purrr     1.0.1     ✔ tidyr     1.3.0</code></pre>
+<!-- rnb-message-end -->
+<!-- rnb-message-begin eyJkYXRhIjoi4pSA4pSAIENvbmZsaWN0cyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeXZlcnNlX2NvbmZsaWN0cygpIOKUgOKUgFxu4pyWIGRwbHlyOjpiZXR3ZWVuKCkgICAgIG1hc2tzIGRhdGEudGFibGU6OmJldHdlZW4oKVxu4pyWIGRwbHlyOjpmaWx0ZXIoKSAgICAgIG1hc2tzIHN0YXRzOjpmaWx0ZXIoKVxu4pyWIGRwbHlyOjpmaXJzdCgpICAgICAgIG1hc2tzIGRhdGEudGFibGU6OmZpcnN0KClcbuKcliBsdWJyaWRhdGU6OmhvdXIoKSAgICBtYXNrcyBkYXRhLnRhYmxlOjpob3VyKClcbuKcliBsdWJyaWRhdGU6Omlzb3dlZWsoKSBtYXNrcyBkYXRhLnRhYmxlOjppc293ZWVrKClcbuKcliBkcGx5cjo6bGFnKCkgICAgICAgICBtYXNrcyBzdGF0czo6bGFnKClcbuKcliBkcGx5cjo6bGFzdCgpICAgICAgICBtYXNrcyBkYXRhLnRhYmxlOjpsYXN0KClcbuKcliBsdWJyaWRhdGU6Om1kYXkoKSAgICBtYXNrcyBkYXRhLnRhYmxlOjptZGF5KClcbuKcliBsdWJyaWRhdGU6Om1pbnV0ZSgpICBtYXNrcyBkYXRhLnRhYmxlOjptaW51dGUoKVxu4pyWIGx1YnJpZGF0ZTo6bW9udGgoKSAgIG1hc2tzIGRhdGEudGFibGU6Om1vbnRoKClcbuKcliBsdWJyaWRhdGU6OnF1YXJ0ZXIoKSBtYXNrcyBkYXRhLnRhYmxlOjpxdWFydGVyKClcbuKcliBsdWJyaWRhdGU6OnNlY29uZCgpICBtYXNrcyBkYXRhLnRhYmxlOjpzZWNvbmQoKVxu4pyWIHB1cnJyOjp0cmFuc3Bvc2UoKSAgIG1hc2tzIGRhdGEudGFibGU6OnRyYW5zcG9zZSgpXG7inJYgbHVicmlkYXRlOjp3ZGF5KCkgICAgbWFza3MgZGF0YS50YWJsZTo6d2RheSgpXG7inJYgbHVicmlkYXRlOjp3ZWVrKCkgICAgbWFza3MgZGF0YS50YWJsZTo6d2VlaygpXG7inJYgbHVicmlkYXRlOjp5ZGF5KCkgICAgbWFza3MgZGF0YS50YWJsZTo6eWRheSgpXG7inJYgbHVicmlkYXRlOjp5ZWFyKCkgICAgbWFza3MgZGF0YS50YWJsZTo6eWVhcigpXG7ihLkgVXNlIHRoZSBjb25mbGljdGVkIHBhY2thZ2UgKDxodHRwOi8vY29uZmxpY3RlZC5yLWxpYi5vcmcvPikgdG8gZm9yY2UgYWxsIGNvbmZsaWN0cyB0byBiZWNvbWUgZXJyb3JzXG4ifQ== -->
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::between()     masks data.table::between()
+✖ dplyr::filter()      masks stats::filter()
+✖ dplyr::first()       masks data.table::first()
+✖ lubridate::hour()    masks data.table::hour()
+✖ lubridate::isoweek() masks data.table::isoweek()
+✖ dplyr::lag()         masks stats::lag()
+✖ dplyr::last()        masks data.table::last()
+✖ lubridate::mday()    masks data.table::mday()
+✖ lubridate::minute()  masks data.table::minute()
+✖ lubridate::month()   masks data.table::month()
+✖ lubridate::quarter() masks data.table::quarter()
+✖ lubridate::second()  masks data.table::second()
+✖ purrr::transpose()   masks data.table::transpose()
+✖ lubridate::wday()    masks data.table::wday()
+✖ lubridate::week()    masks data.table::week()
+✖ lubridate::yday()    masks data.table::yday()
+✖ lubridate::year()    masks data.table::year()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<!-- rnb-message-end -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiMgcm9vdGRpciIsInJvb3RfZGlyIDwtIHJwcm9qcm9vdDo6ZmluZF9yb290KHJwcm9qcm9vdDo6aGFzX2RpcihcIi5naXRcIikpIiwiZGF0YV9kaXIgPC0gZmlsZS5wYXRoKHJvb3RfZGlyLCBcImRhdGFcIikiLCJyZXN1bHRzX2RpciA8LSBmaWxlLnBhdGgoXG4gIHJvb3RfZGlyLFxuICBcImFuYWx5c2VzXCIsXG4gIFwidHA1M19uZjFfc2NvcmVcIixcbiAgXCJyZXN1bHRzXCJcbikiLCIiLCJpZiAoIWRpci5leGlzdHMocmVzdWx0c19kaXIpKSB7XG4gIGRpci5jcmVhdGUocmVzdWx0c19kaXIpXG59Il19 -->
+<pre class="r"><code># rootdir
 root_dir &lt;- rprojroot::find_root(rprojroot::has_dir(&quot;.git&quot;))
-# results folder
+data_dir &lt;- file.path(root_dir, &quot;data&quot;)
 results_dir &lt;- file.path(
   root_dir,
   &quot;analyses&quot;,
-  &quot;molecular-subtyping-HGG&quot;,
-  &quot;results&quot;)</code></pre>
+  &quot;tp53_nf1_score&quot;,
+  &quot;results&quot;
+)
+
+if (!dir.exists(results_dir)) {
+  dir.create(results_dir)
+}</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<div id="required-files" class="section level3">
-<h3>Required files</h3>
+</div>
+<div id="input-files" class="section level3">
+<h3>Input files</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBGaWxlIHBhdGggdG8gZGF0YSBkaXJlY3RvcnlcbnRwNTNfc3RhdHVzIDwtIHJlYWRfdHN2KGZpbGUucGF0aChcbiAgcm9vdF9kaXIsXG4gIFwiYW5hbHlzZXNcIixcbiAgXCJ0cDUzX25mMV9zY29yZVwiLFxuICBcInJlc3VsdHNcIixcbiAgXCJ0cDUzX2FsdGVyZWRfc3RhdHVzLnRzdlwiKSwgZ3Vlc3NfbWF4ID0gMTAwMDAwKVxuYGBgIn0= -->
-<pre class="r"><code># File path to data directory
-tp53_status &lt;- read_tsv(file.path(
-  root_dir,
-  &quot;analyses&quot;,
-  &quot;tp53_nf1_score&quot;,
-  &quot;results&quot;,
-  &quot;tp53_altered_status.tsv&quot;), guess_max = 100000)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjpbInB1dGF0aXZlX29uY29fZnVzaW9uIDwtIHJlYWRfcmRzKGZpbGUucGF0aChkYXRhX2RpciwgXCJIb3BlLWZ1c2lvbi1wdXRhdGl2ZS1vbmNvZ2VuaWMucmRzXCIpKSIsIm1hbnRhX3N2IDwtIGRhdGEudGFibGU6OmZyZWFkKGZpbGUucGF0aChkYXRhX2RpciwgXCJIb3BlLXN2LW1hbnRhLnRzdi5nelwiKSkgIiwicm5hX2V4cHIgPC0gcmVhZFJEUyhmaWxlLnBhdGgoZGF0YV9kaXIsIFwiSG9wZS1hbmQtQ1BUQUMtR0JNLWdlbmUtZXhwcmVzc2lvbi1yc2VtLXRwbS1jb2xsYXBzZWQucmRzXCIpKSIsImNsaW5pY2FsPC1yZWFkX3RzdihmaWxlLnBhdGgoZGF0YV9kaXIsXCJIb3BlLUdCTS1oaXN0b2xvZ2llcy1iYXNlLnRzdlwiKSkiXX0= -->
+<pre class="r"><code>putative_onco_fusion &lt;- read_rds(file.path(data_dir, &quot;Hope-fusion-putative-oncogenic.rds&quot;))
+manta_sv &lt;- data.table::fread(file.path(data_dir, &quot;Hope-sv-manta.tsv.gz&quot;)) 
+rna_expr &lt;- readRDS(file.path(data_dir, &quot;Hope-and-CPTAC-GBM-gene-expression-rsem-tpm-collapsed.rds&quot;))
+clinical&lt;-read_tsv(file.path(data_dir,&quot;Hope-GBM-histologies-base.tsv&quot;))</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3I6ICcvaG9tZS9yc3R1ZGlvL2hvcGUvYW5hbHlzZXMvdHA1M19uZjFfc2NvcmUvcmVzdWx0cy90cDUzX2FsdGVyZWRfc3RhdHVzLnRzdicgZG9lcyBub3QgZXhpc3QuXG4ifQ== -->
-<pre><code>Error: &#39;/home/rstudio/hope/analyses/tp53_nf1_score/results/tp53_altered_status.tsv&#39; does not exist.</code></pre>
+<!-- rnb-message-begin eyJkYXRhIjoiUm93czogMzgyIENvbHVtbnM6IDk4XG7ilIDilIAgQ29sdW1uIHNwZWNpZmljYXRpb24g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSAXG5EZWxpbWl0ZXI6IFwiXFx0XCJcbmNociAoNTMpOiBLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lELCBzYW1wbGVfaWQsIHNhbXBsZV9pZF93X2FwcGVuZGVkLCBLaWRzX0YuLi5cbmRibCAoMjApOiBhbGlxdW90X2lkLCBhZ2VfYXRfZGlhZ25vc2lzX2RheXMsIGFnZV9hdF9ldmVudF9kYXlzLCBPU19kYXlzLCBFRlMuLi5cbmxnbCAoMjUpOiBDTlNfcmVnaW9uLCBpbnRlZ3JhdGVkX2RpYWdub3Npcywgc2hvcnRfaGlzdG9sb2d5LCBicm9hZF9oaXN0b2xvZ3kuLi5cblxu4oS5IFVzZSBgc3BlYygpYCB0byByZXRyaWV2ZSB0aGUgZnVsbCBjb2x1bW4gc3BlY2lmaWNhdGlvbiBmb3IgdGhpcyBkYXRhLlxu4oS5IFNwZWNpZnkgdGhlIGNvbHVtbiB0eXBlcyBvciBzZXQgYHNob3dfY29sX3R5cGVzID0gRkFMU0VgIHRvIHF1aWV0IHRoaXMgbWVzc2FnZS5cbiJ9 -->
+<pre><code>Rows: 382 Columns: 98
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: &quot;\t&quot;
+chr (53): Kids_First_Biospecimen_ID, sample_id, sample_id_w_appended, Kids_F...
+dbl (20): aliquot_id, age_at_diagnosis_days, age_at_event_days, OS_days, EFS...
+lgl (25): CNS_region, integrated_diagnosis, short_histology, broad_histology...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<!-- rnb-message-end -->
+<!-- rnb-source-begin eyJkYXRhIjpbImhpc3RvbG9neSA8LSBkcGx5cjo6c2VsZWN0KGNsaW5pY2FsLGMoXCJLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEXCIsIFwic2FtcGxlX2lkXCIpKSIsIiIsIiMgaGlnaCBjb25maWRlbmNlIGNudiBsb3NzZXMgZnJvbSBgMDMtdHA1My1jbnYtbG9zcy1kb21haW4uUm1kYCIsImNudl90cDUzX2xvc3MgPC0gcmVhZF90c3YoZmlsZS5wYXRoKHJlc3VsdHNfZGlyLCBcImxvc3Nfb3ZlcmxhcF9kb21haW5zX3RwNTMudHN2XCIpKSJdfQ== -->
+<pre class="r"><code>histology &lt;- dplyr::select(clinical,c(&quot;Kids_First_Biospecimen_ID&quot;, &quot;sample_id&quot;))
+
+# high confidence cnv losses from `03-tp53-cnv-loss-domain.Rmd`
+cnv_tp53_loss &lt;- read_tsv(file.path(results_dir, &quot;loss_overlap_domains_tp53.tsv&quot;))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-message-begin eyJkYXRhIjoiUm93czogMCBDb2x1bW5zOiA4XG7ilIDilIAgQ29sdW1uIHNwZWNpZmljYXRpb24g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSAXG5EZWxpbWl0ZXI6IFwiXFx0XCJcbmNociAoOCk6IGJpb3NwZWNpbWVuX2lkLCBjb3B5X251bWJlciwgZG9tYWluLCBLaWRzX0ZpcnN0X1BhcnRpY2lwYW50X0lELCBzYW0uLi5cblxu4oS5IFVzZSBgc3BlYygpYCB0byByZXRyaWV2ZSB0aGUgZnVsbCBjb2x1bW4gc3BlY2lmaWNhdGlvbiBmb3IgdGhpcyBkYXRhLlxu4oS5IFNwZWNpZnkgdGhlIGNvbHVtbiB0eXBlcyBvciBzZXQgYHNob3dfY29sX3R5cGVzID0gRkFMU0VgIHRvIHF1aWV0IHRoaXMgbWVzc2FnZS5cbiJ9 -->
+<pre><code>Rows: 0 Columns: 8
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: &quot;\t&quot;
+chr (8): biospecimen_id, copy_number, domain, Kids_First_Participant_ID, sam...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<!-- rnb-message-end -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiMgZ2VuZXJhdGUgdHhkYiBvYmxlY3QgZnJvbSBndGYgZmlsZSB0byBnYXRoZXIgZXhvbiBhbmQgaW50cm9uIGxvY2F0aW9ucyIsImFubm90YXRpb25fZGlyZWN0b3J5IDwtIGZpbGUucGF0aChyb290X2RpciwgXCJkYXRhXCIpIiwiYW5ub3RhdGlvbl9maWxlIDwtIGZpbGUucGF0aChhbm5vdGF0aW9uX2RpcmVjdG9yeSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJ0eGRiX2Zyb21fZ2VuY29kZS52MzkuZ3RmLmRiXCIpIiwiaWYgKCFmaWxlLmV4aXN0cyhhbm5vdGF0aW9uX2ZpbGUpKSB7XG4gICMgRGVmaW5lIHRoZSBhbm5vdGF0aW9ucyBmb3IgdGhlIGhnMzggZ2Vub21lXG4gIHR4ZGIgPC0gR2Vub21pY0ZlYXR1cmVzOjptYWtlVHhEYkZyb21HRkYoXG4gICAgZmlsZSA9IGZpbGUucGF0aChkYXRhX2RpcixcImdlbmNvZGUudjM5LnByaW1hcnlfYXNzZW1ibHkuYW5ub3RhdGlvbi5ndGYuZ3pcIiksXG4gICAgZm9ybWF0ID0gXCJndGZcIlxuICApXG4gICMgY2FuIGRvIHRoaXMgZXZlbiBpZiB0aGUgZGlyZWN0b3J5IGV4aXN0c1xuICBkaXIuY3JlYXRlKGFubm90YXRpb25fZGlyZWN0b3J5LCBzaG93V2FybmluZ3MgPSBGQUxTRSlcbiAgIyB3cml0ZSB0aGlzIHRvIGZpbGUgdG8gc2F2ZSB0aW1lIG5leHQgdGltZVxuICBBbm5vdGF0aW9uRGJpOjpzYXZlRGIodHhkYiwgYW5ub3RhdGlvbl9maWxlKVxufSBlbHNlIHtcbiAgdHhkYiA8LSBBbm5vdGF0aW9uRGJpOjpsb2FkRGIoYW5ub3RhdGlvbl9maWxlKVxufSJdfQ== -->
+<pre class="r"><code># generate txdb oblect from gtf file to gather exon and intron locations
+annotation_directory &lt;- file.path(root_dir, &quot;data&quot;)
+annotation_file &lt;- file.path(annotation_directory,
+                             &quot;txdb_from_gencode.v39.gtf.db&quot;)
+if (!file.exists(annotation_file)) {
+  # Define the annotations for the hg38 genome
+  txdb &lt;- GenomicFeatures::makeTxDbFromGFF(
+    file = file.path(data_dir,&quot;gencode.v39.primary_assembly.annotation.gtf.gz&quot;),
+    format = &quot;gtf&quot;
+  )
+  # can do this even if the directory exists
+  dir.create(annotation_directory, showWarnings = FALSE)
+  # write this to file to save time next time
+  AnnotationDbi::saveDb(txdb, annotation_file)
+} else {
+  txdb &lt;- AnnotationDbi::loadDb(annotation_file)
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-message-begin eyJkYXRhIjoiTG9hZGluZyByZXF1aXJlZCBwYWNrYWdlOiBHZW5vbWljRmVhdHVyZXNcbkxvYWRpbmcgcmVxdWlyZWQgcGFja2FnZTogQmlvY0dlbmVyaWNzXG5cbkF0dGFjaGluZyBwYWNrYWdlOiAnQmlvY0dlbmVyaWNzJ1xuXG5UaGUgZm9sbG93aW5nIG9iamVjdHMgYXJlIG1hc2tlZCBmcm9tICdwYWNrYWdlOmx1YnJpZGF0ZSc6XG5cbiAgICBpbnRlcnNlY3QsIHNldGRpZmYsIHVuaW9uXG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0cyBhcmUgbWFza2VkIGZyb20gJ3BhY2thZ2U6ZHBseXInOlxuXG4gICAgY29tYmluZSwgaW50ZXJzZWN0LCBzZXRkaWZmLCB1bmlvblxuXG5UaGUgZm9sbG93aW5nIG9iamVjdHMgYXJlIG1hc2tlZCBmcm9tICdwYWNrYWdlOnN0YXRzJzpcblxuICAgIElRUiwgbWFkLCBzZCwgdmFyLCB4dGFic1xuXG5UaGUgZm9sbG93aW5nIG9iamVjdHMgYXJlIG1hc2tlZCBmcm9tICdwYWNrYWdlOmJhc2UnOlxuXG4gICAgYW55RHVwbGljYXRlZCwgYXBlcm0sIGFwcGVuZCwgYXMuZGF0YS5mcmFtZSwgYmFzZW5hbWUsIGNiaW5kLFxuICAgIGNvbG5hbWVzLCBkaXJuYW1lLCBkby5jYWxsLCBkdXBsaWNhdGVkLCBldmFsLCBldmFscSwgRmlsdGVyLCBGaW5kLFxuICAgIGdldCwgZ3JlcCwgZ3JlcGwsIGludGVyc2VjdCwgaXMudW5zb3J0ZWQsIGxhcHBseSwgTWFwLCBtYXBwbHksXG4gICAgbWF0Y2gsIG1nZXQsIG9yZGVyLCBwYXN0ZSwgcG1heCwgcG1heC5pbnQsIHBtaW4sIHBtaW4uaW50LFxuICAgIFBvc2l0aW9uLCByYW5rLCByYmluZCwgUmVkdWNlLCByb3duYW1lcywgc2FwcGx5LCBzZXRkaWZmLCBzb3J0LFxuICAgIHRhYmxlLCB0YXBwbHksIHVuaW9uLCB1bmlxdWUsIHVuc3BsaXQsIHdoaWNoLm1heCwgd2hpY2gubWluXG5cbkxvYWRpbmcgcmVxdWlyZWQgcGFja2FnZTogUzRWZWN0b3JzXG5Mb2FkaW5nIHJlcXVpcmVkIHBhY2thZ2U6IHN0YXRzNFxuXG5BdHRhY2hpbmcgcGFja2FnZTogJ1M0VmVjdG9ycydcblxuVGhlIGZvbGxvd2luZyBvYmplY3RzIGFyZSBtYXNrZWQgZnJvbSAncGFja2FnZTpsdWJyaWRhdGUnOlxuXG4gICAgc2Vjb25kLCBzZWNvbmQ8LVxuXG5UaGUgZm9sbG93aW5nIG9iamVjdHMgYXJlIG1hc2tlZCBmcm9tICdwYWNrYWdlOmRwbHlyJzpcblxuICAgIGZpcnN0LCByZW5hbWVcblxuVGhlIGZvbGxvd2luZyBvYmplY3QgaXMgbWFza2VkIGZyb20gJ3BhY2thZ2U6dGlkeXInOlxuXG4gICAgZXhwYW5kXG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0cyBhcmUgbWFza2VkIGZyb20gJ3BhY2thZ2U6ZGF0YS50YWJsZSc6XG5cbiAgICBmaXJzdCwgc2Vjb25kXG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0cyBhcmUgbWFza2VkIGZyb20gJ3BhY2thZ2U6YmFzZSc6XG5cbiAgICBleHBhbmQuZ3JpZCwgSSwgdW5uYW1lXG5cbkxvYWRpbmcgcmVxdWlyZWQgcGFja2FnZTogSVJhbmdlc1xuXG5BdHRhY2hpbmcgcGFja2FnZTogJ0lSYW5nZXMnXG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0IGlzIG1hc2tlZCBmcm9tICdwYWNrYWdlOmx1YnJpZGF0ZSc6XG5cbiAgICAld2l0aGluJVxuXG5UaGUgZm9sbG93aW5nIG9iamVjdHMgYXJlIG1hc2tlZCBmcm9tICdwYWNrYWdlOmRwbHlyJzpcblxuICAgIGNvbGxhcHNlLCBkZXNjLCBzbGljZVxuXG5UaGUgZm9sbG93aW5nIG9iamVjdCBpcyBtYXNrZWQgZnJvbSAncGFja2FnZTpwdXJycic6XG5cbiAgICByZWR1Y2VcblxuVGhlIGZvbGxvd2luZyBvYmplY3QgaXMgbWFza2VkIGZyb20gJ3BhY2thZ2U6ZGF0YS50YWJsZSc6XG5cbiAgICBzaGlmdFxuXG5Mb2FkaW5nIHJlcXVpcmVkIHBhY2thZ2U6IEdlbm9tZUluZm9EYlxuTG9hZGluZyByZXF1aXJlZCBwYWNrYWdlOiBHZW5vbWljUmFuZ2VzXG5Mb2FkaW5nIHJlcXVpcmVkIHBhY2thZ2U6IEFubm90YXRpb25EYmlcbkxvYWRpbmcgcmVxdWlyZWQgcGFja2FnZTogQmlvYmFzZVxuV2VsY29tZSB0byBCaW9jb25kdWN0b3JcblxuICAgIFZpZ25ldHRlcyBjb250YWluIGludHJvZHVjdG9yeSBtYXRlcmlhbDsgdmlldyB3aXRoXG4gICAgJ2Jyb3dzZVZpZ25ldHRlcygpJy4gVG8gY2l0ZSBCaW9jb25kdWN0b3IsIHNlZVxuICAgICdjaXRhdGlvbihcIkJpb2Jhc2VcIiknLCBhbmQgZm9yIHBhY2thZ2VzICdjaXRhdGlvbihcInBrZ25hbWVcIiknLlxuXG5cbkF0dGFjaGluZyBwYWNrYWdlOiAnQW5ub3RhdGlvbkRiaSdcblxuVGhlIGZvbGxvd2luZyBvYmplY3QgaXMgbWFza2VkIGZyb20gJ3BhY2thZ2U6ZHBseXInOlxuXG4gICAgc2VsZWN0XG4ifQ== -->
+<pre><code>Loading required package: GenomicFeatures
+Loading required package: BiocGenerics
+
+Attaching package: &#39;BiocGenerics&#39;
+
+The following objects are masked from &#39;package:lubridate&#39;:
+
+    intersect, setdiff, union
+
+The following objects are masked from &#39;package:dplyr&#39;:
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from &#39;package:stats&#39;:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from &#39;package:base&#39;:
+
+    anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+    colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+    get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply,
+    match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
+    Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort,
+    table, tapply, union, unique, unsplit, which.max, which.min
+
+Loading required package: S4Vectors
+Loading required package: stats4
+
+Attaching package: &#39;S4Vectors&#39;
+
+The following objects are masked from &#39;package:lubridate&#39;:
+
+    second, second&lt;-
+
+The following objects are masked from &#39;package:dplyr&#39;:
+
+    first, rename
+
+The following object is masked from &#39;package:tidyr&#39;:
+
+    expand
+
+The following objects are masked from &#39;package:data.table&#39;:
+
+    first, second
+
+The following objects are masked from &#39;package:base&#39;:
+
+    expand.grid, I, unname
+
+Loading required package: IRanges
+
+Attaching package: &#39;IRanges&#39;
+
+The following object is masked from &#39;package:lubridate&#39;:
+
+    %within%
+
+The following objects are masked from &#39;package:dplyr&#39;:
+
+    collapse, desc, slice
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    reduce
+
+The following object is masked from &#39;package:data.table&#39;:
+
+    shift
+
+Loading required package: GenomeInfoDb
+Loading required package: GenomicRanges
+Loading required package: AnnotationDbi
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    &#39;browseVignettes()&#39;. To cite Bioconductor, see
+    &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.
+
+
+Attaching package: &#39;AnnotationDbi&#39;
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    select</code></pre>
+<!-- rnb-message-end -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiMgZXhvbiByZWdpb25zIiwiZXhvbiA8LSBHZW5vbWljRmVhdHVyZXM6OmV4b25pY1BhcnRzKHR4ZGIsIGxpbmtlZC50by5zaW5nbGUuZ2VuZS5vbmx5PUZBTFNFKSIsIiMgaW50cm9uIHJlZ2lvbnMiLCJpbnRyb24gPC0gR2Vub21pY0ZlYXR1cmVzOjppbnRyb25pY1BhcnRzKHR4ZGIsIGxpbmtlZC50by5zaW5nbGUuZ2VuZS5vbmx5PUZBTFNFKSJdfQ== -->
+<pre class="r"><code># exon regions
+exon &lt;- GenomicFeatures::exonicParts(txdb, linked.to.single.gene.only=FALSE)
+# intron regions
+intron &lt;- GenomicFeatures::intronicParts(txdb, linked.to.single.gene.only=FALSE)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="sv-breakpoints-associated-with-tp53-loss" class="section level2">
+<h2>SV breakpoints associated with TP53 loss</h2>
+<p>Since we want to capture TP53 loss phenotypes we will only keep
+breakpoints that are either DEL: deletion, INV: inversion and BND:
+translocations which are breakpoint notations with with 2 breakpoints in
+different chromosomes</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjpbIm1hbnRhX3N2X3RwNTMgPC0gbWFudGFfc3YgJT4lXG4gIGRwbHlyOjpzZWxlY3QoU1ZfY2hyb20sIFNWX3N0YXJ0LCBTVl9lbmQsIFNWX2xlbmd0aCwgS2lkcy5GaXJzdC5CaW9zcGVjaW1lbi5JRC5UdW1vciwgU1ZfdHlwZSwgR2VuZV9uYW1lLCBBTFQpICU+JVxuICAjIERpc3RyaWJ1dGlvbiBvZiBUUDUzIFNWc1xuICBmaWx0ZXIoXG4gICAgIyBvbmx5IG92ZXJsYXBzIFRQNTMgZ2VuZVxuICAgIGdyZXBsKFwiXlRQNTMkXCIsIEdlbmVfbmFtZSkgfFxuICAgICAgIyBwYXJ0IG9mIGxhcmdlciByZWdpb24gYWxzbyBlbmNvbXBhc2luZyBUUDUzXG4gICAgICBncmVwbChcIi9UUDUzL1wiLCBHZW5lX25hbWUpLFxuICAgIFNWX3R5cGUgJWluJSBjKFwiQk5EXCIsIFwiSU5WXCIsIFwiREVMXCIpXG4gICkgJT4lXG4gIGxlZnRfam9pbihoaXN0b2xvZ3ksXG4gICAgYnkgPSBjKFwiS2lkcy5GaXJzdC5CaW9zcGVjaW1lbi5JRC5UdW1vclwiID0gXCJLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEXCIpXG4gICkiLCIiLCJtYW50YV9zdl90cDUzICU+JVxuICBhcnJhbmdlKEtpZHMuRmlyc3QuQmlvc3BlY2ltZW4uSUQuVHVtb3IpICU+JVxuICBrbml0cjo6a2FibGUoKSJdfQ== -->
+<pre class="r"><code>manta_sv_tp53 &lt;- manta_sv %&gt;%
+  dplyr::select(SV_chrom, SV_start, SV_end, SV_length, Kids.First.Biospecimen.ID.Tumor, SV_type, Gene_name, ALT) %&gt;%
+  # Distribution of TP53 SVs
+  filter(
+    # only overlaps TP53 gene
+    grepl(&quot;^TP53$&quot;, Gene_name) |
+      # part of larger region also encompasing TP53
+      grepl(&quot;/TP53/&quot;, Gene_name),
+    SV_type %in% c(&quot;BND&quot;, &quot;INV&quot;, &quot;DEL&quot;)
+  ) %&gt;%
+  left_join(histology,
+    by = c(&quot;Kids.First.Biospecimen.ID.Tumor&quot; = &quot;Kids_First_Biospecimen_ID&quot;)
+  )
+
+manta_sv_tp53 %&gt;%
+  arrange(Kids.First.Biospecimen.ID.Tumor) %&gt;%
+  knitr::kable()</code></pre>
+<!-- rnb-source-end -->
+<table>
+<colgroup>
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="9%" />
+<col width="30%" />
+<col width="7%" />
+<col width="9%" />
+<col width="5%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">SV_chrom</th>
+<th align="right">SV_start</th>
+<th align="right">SV_end</th>
+<th align="right">SV_length</th>
+<th align="left">Kids.First.Biospecimen.ID.Tumor</th>
+<th align="left">SV_type</th>
+<th align="left">Gene_name</th>
+<th align="left">ALT</th>
+<th align="left">sample_id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">1413971</td>
+<td align="right">15951129</td>
+<td align="right">-14537158</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">1770124</td>
+<td align="right">8375245</td>
+<td align="right">-6604616</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">3515318</td>
+<td align="right">12201159</td>
+<td align="right">-8685435</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">3877977</td>
+<td align="right">8352665</td>
+<td align="right">-4474688</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">4366684</td>
+<td align="right">13780887</td>
+<td align="right">-9414203</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">4369526</td>
+<td align="right">18463646</td>
+<td align="right">-14094100</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">5186537</td>
+<td align="right">18111107</td>
+<td align="right">-12924569</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">7266849</td>
+<td align="right">17550916</td>
+<td align="right">-10284066</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">7541112</td>
+<td align="right">18325202</td>
+<td align="right">-10784090</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">1618695</td>
+<td align="right">16689488</td>
+<td align="right">15070793</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">1753796</td>
+<td align="right">17527009</td>
+<td align="right">15772588</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">1770295</td>
+<td align="right">8374983</td>
+<td align="right">6604688</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">1969611</td>
+<td align="right">7785167</td>
+<td align="right">5815556</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">2041683</td>
+<td align="right">17129657</td>
+<td align="right">15087974</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">2185674</td>
+<td align="right">11018801</td>
+<td align="right">8833127</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">3925149</td>
+<td align="right">7959450</td>
+<td align="right">4034301</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">5032606</td>
+<td align="right">17546789</td>
+<td align="right">12514183</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">5064455</td>
+<td align="right">16012385</td>
+<td align="right">10947930</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">5186254</td>
+<td align="right">15349536</td>
+<td align="right">10162787</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">6038519</td>
+<td align="right">18194383</td>
+<td align="right">12155864</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">6683878</td>
+<td align="right">12200940</td>
+<td align="right">5517062</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">6765239</td>
+<td align="right">15318180</td>
+<td align="right">8552941</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">6796599</td>
+<td align="right">18326588</td>
+<td align="right">11529989</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">6902444</td>
+<td align="right">16075411</td>
+<td align="right">9172967</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">7379255</td>
+<td align="right">16689143</td>
+<td align="right">9309888</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">7539664</td>
+<td align="right">18972644</td>
+<td align="right">11432980</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">7564265</td>
+<td align="right">17548857</td>
+<td align="right">9984592</td>
+<td align="left">BS_3NX3RBCX</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-114</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">6129205</td>
+<td align="right">74663636</td>
+<td align="right">68534431</td>
+<td align="left">BS_46TXYD8H</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-4552</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">6598836</td>
+<td align="right">67757252</td>
+<td align="right">-61158416</td>
+<td align="left">BS_7ZM4PG53</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316UP-310</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">2172414</td>
+<td align="right">11629012</td>
+<td align="right">9456598</td>
+<td align="left">BS_7ZM4PG53</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316UP-310</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">2338778</td>
+<td align="right">20148170</td>
+<td align="right">17809392</td>
+<td align="left">BS_7ZM4PG53</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316UP-310</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">947391</td>
+<td align="right">10566553</td>
+<td align="right">-9618688</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">947414</td>
+<td align="right">13052544</td>
+<td align="right">-12105128</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">1060418</td>
+<td align="right">14491387</td>
+<td align="right">-13430390</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">1080925</td>
+<td align="right">10341301</td>
+<td align="right">-9259924</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">1439410</td>
+<td align="right">8507248</td>
+<td align="right">-7067838</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">1662648</td>
+<td align="right">9357607</td>
+<td align="right">-7694958</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">3134837</td>
+<td align="right">8239794</td>
+<td align="right">-5104956</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">552698</td>
+<td align="right">7984792</td>
+<td align="right">7432094</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">1161263</td>
+<td align="right">13117290</td>
+<td align="right">11956027</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">1263812</td>
+<td align="right">8229300</td>
+<td align="right">6965488</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">5415500</td>
+<td align="right">8234275</td>
+<td align="right">2818775</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">5490144</td>
+<td align="right">7985119</td>
+<td align="right">2494975</td>
+<td align="left">BS_96S0VQBN</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-3303</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">1358020</td>
+<td align="right">29400838</td>
+<td align="right">28042818</td>
+<td align="left">BS_E4N5C9JF</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-4917</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">7673717</td>
+<td align="right">7673803</td>
+<td align="right">-86</td>
+<td align="left">BS_JZ40GV74</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left">T</td>
+<td align="left">7316-4942</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">7673717</td>
+<td align="right">7673803</td>
+<td align="right">-86</td>
+<td align="left">BS_JZ40GV74</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left">T</td>
+<td align="left">7316-4942</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">1161093</td>
+<td align="right">11852607</td>
+<td align="right">-10691513</td>
+<td align="left">BS_KHSYAB3J</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-2152</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">3142811</td>
+<td align="right">21192943</td>
+<td align="right">-18050131</td>
+<td align="left">BS_KHSYAB3J</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-2152</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">4412925</td>
+<td align="right">18173756</td>
+<td align="right">-13760829</td>
+<td align="left">BS_KHSYAB3J</td>
+<td align="left">DEL</td>
+<td align="left">TP53</td>
+<td align="left"><DEL></td>
+<td align="left">7316-2152</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">3028887</td>
+<td align="right">21753518</td>
+<td align="right">18724631</td>
+<td align="left">BS_KHSYAB3J</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-2152</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">3865033</td>
+<td align="right">21173084</td>
+<td align="right">17308051</td>
+<td align="left">BS_KHSYAB3J</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-2152</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">3867249</td>
+<td align="right">21536376</td>
+<td align="right">17669127</td>
+<td align="left">BS_KHSYAB3J</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-2152</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">3867269</td>
+<td align="right">21178289</td>
+<td align="right">17311020</td>
+<td align="left">BS_KHSYAB3J</td>
+<td align="left">INV</td>
+<td align="left">TP53</td>
+<td align="left"><INV></td>
+<td align="left">7316-2152</td>
+</tr>
+</tbody>
+</table>
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="fusion-breakpoints-within-tp53" class="section level2">
+<h2>Fusion breakpoints within TP53</h2>
+<p>We will also add exon and intron information to this fusion call.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoicHV0YXRpdmVfb25jb190cDUzX2Z1c2lvbiA8LSBwdXRhdGl2ZV9vbmNvX2Z1c2lvbiAlPiVcbiAgZmlsdGVyKHN0cmluZ3I6OnN0cl9kZXRlY3QoRnVzaW9uTmFtZSxcIl5UUDUzLS18LS1UUDUzJFwiKSkgJT4lXG4gIGxlZnRfam9pbihoaXN0b2xvZ3ksXG4gICAgICAgICAgICBieSA9IGMoXCJLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEXCIgPSBcIktpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSURcIilcbiAgKSAlPiVcbiAgcmVuYW1lKFwiS2lkc19GaXJzdF9CaW9zcGVjaW1lbl9JRFwiID0gXCJTYW1wbGVcIikgJT4lXG4gIGRwbHlyOjpzZWxlY3QoXCJTYW1wbGVcIixcbiAgICAgICAgICAgICAgICBcInNhbXBsZV9pZFwiLFxuICAgICAgICAgICAgICAgIFwiRnVzaW9uTmFtZVwiLFxuICAgICAgICAgICAgICAgIFwiUmlnaHRCcmVha3BvaW50XCIsXG4gICAgICAgICAgICAgICAgXCJMZWZ0QnJlYWtwb2ludFwiKSAlPiVcbiAgcmVzaGFwZTI6Om1lbHQoYyhcIlNhbXBsZVwiLFwic2FtcGxlX2lkXCIsXCJGdXNpb25OYW1lXCIpKSJ9 -->
+<pre class="r"><code>putative_onco_tp53_fusion &lt;- putative_onco_fusion %&gt;%
+  filter(stringr::str_detect(FusionName,&quot;^TP53--|--TP53$&quot;)) %&gt;%
+  left_join(histology,
+            by = c(&quot;Kids_First_Biospecimen_ID&quot; = &quot;Kids_First_Biospecimen_ID&quot;)
+  ) %&gt;%
+  rename(&quot;Kids_First_Biospecimen_ID&quot; = &quot;Sample&quot;) %&gt;%
+  dplyr::select(&quot;Sample&quot;,
+                &quot;sample_id&quot;,
+                &quot;FusionName&quot;,
+                &quot;RightBreakpoint&quot;,
+                &quot;LeftBreakpoint&quot;) %&gt;%
+  reshape2::melt(c(&quot;Sample&quot;,&quot;sample_id&quot;,&quot;FusionName&quot;))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<div id="generate-granges-and-overlaps" class="section level3">
+<h3>Generate Granges and overlaps</h3>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiaWYobnJvdyhwdXRhdGl2ZV9vbmNvX3RwNTNfZnVzaW9uKSA+IDApIHtcbiAgcHV0YXRpdmVfb25jb190cDUzX2Z1c2lvbl9nciA8LSBwdXRhdGl2ZV9vbmNvX3RwNTNfZnVzaW9uICU+JVxuICAgIG11dGF0ZShcbiAgICAgIEJyZWFrcG9pbnRDaHIgPSBwYXN0ZTAoXCJjaHJcIixnc3ViKFwiOi4qJFwiLCBcIlwiLCB2YWx1ZSkpLFxuICAgICAgQnJlYWtwb2ludCA9IGdzdWIoXCJeLio6XCIsIFwiXCIsIHZhbHVlKSkgJT4lXG4gICAgR2Vub21pY1Jhbmdlczo6bWFrZUdSYW5nZXNGcm9tRGF0YUZyYW1lKHNlcW5hbWVzLmZpZWxkID0gXCJCcmVha3BvaW50Q2hyXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0YXJ0LmZpZWxkID0gXCJCcmVha3BvaW50XCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGVuZC5maWVsZCA9IFwiQnJlYWtwb2ludFwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAga2VlcC5leHRyYS5jb2x1bW5zID0gVFJVRSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnRzLmluLmRmLmFyZS4wYmFzZWQgPSBGQUxTRSlcbiAgXG4gICMgQ2hlY2sgZm9yIGV4b24gb3ZlcmxhcFxuICBia19vdmVybGFwc19leG9uIDwtIElSYW5nZXM6Om1lcmdlQnlPdmVybGFwcyhwdXRhdGl2ZV9vbmNvX3RwNTNfZnVzaW9uX2dyLGV4b24pICU+JVxuICAgIGFzLmRhdGEuZnJhbWUoKSBcbiAgXG4gIGJrX292ZXJsYXBzX2V4b24kZXhvbl9yYW5rIDwtIGFzLmNoYXJhY3Rlcihia19vdmVybGFwc19leG9uJGV4b25fcmFuaylcbiAgXG4gIGJrX292ZXJsYXBzX2V4b24gPC0gYmtfb3ZlcmxhcHNfZXhvbiAlPiVcbiAgICBkcGx5cjo6ZmlsdGVyKGdyZXBsKFwiRU5TRzAwMDAwMTQxNTEwXCIsZ2VuZV9pZCkpICU+JVxuICAgIGRwbHlyOjptdXRhdGUoZXhvbl9yYW5rID0gc3Ryc3BsaXQoZXhvbl9yYW5rLCBcIiwgXCIpKSAlPiUgXG4gICAgdGlkeXI6OnVubmVzdChleG9uX3JhbmspICU+JSAjIHNwbGl0IGludG8gbmV3IHJvd3NcbiAgICBkcGx5cjo6ZmlsdGVyKGV4b25fcmFuaz09XCIxXCIpICU+JVxuICAgIGRwbHlyOjpzZWxlY3Qoc3RhcnRzX3dpdGgoXCJwdXRhdGl2ZV9vbmNvXCIpKSAlPiVcbiAgICBkcGx5cjo6cmVuYW1lX2F0KHZhcnMoc3RhcnRzX3dpdGgoXCJwdXRhdGl2ZV9vbmNvXCIpKSx+c3RyaW5ncjo6c3RyX3JlbW92ZSguLFwicHV0YXRpdmVfb25jb190cDUzX2Z1c2lvbl9nci5cIikpXG4gIFxuICAjIENoZWNrIGZvciBpbnRyb24gb3ZlcmxhcFxuICBia19vdmVybGFwc19pbnRyb24gPC0gSVJhbmdlczo6bWVyZ2VCeU92ZXJsYXBzKHB1dGF0aXZlX29uY29fdHA1M19mdXNpb25fZ3IsaW50cm9uKSAlPiVcbiAgICBhcy5kYXRhLmZyYW1lKCkgJT4lXG4gICAgZHBseXI6OmZpbHRlcihncmVwbChcIkVOU0cwMDAwMDE0MTUxMFwiLGdlbmVfaWQpKSAlPiVcbiAgICBkcGx5cjo6c2VsZWN0KHN0YXJ0c193aXRoKFwicHV0YXRpdmVfb25jb1wiKSkgJT4lXG4gICAgZHBseXI6OnJlbmFtZV9hdCh2YXJzKHN0YXJ0c193aXRoKFwicHV0YXRpdmVfb25jb1wiKSksfnN0cl9yZW1vdmUoLixcInB1dGF0aXZlX29uY29fdHA1M19mdXNpb25fZ3IuXCIpKSBcbiAgXG4gICMgU2F2ZVxuICBpZiAobnJvdyhia19vdmVybGFwc19pbnRyb24pID09IDApIHtcbiAgICAjIG9ubHkgc2F2aW5nIGZ1c2lvbiBjYWxscyBvdmVybGFwcGluZyBleG9uIDFcbiAgICBia19vdmVybGFwc19leG9uICU+JSBcbiAgICAgIHdyaXRlX3RzdihmaWxlLnBhdGgocmVzdWx0c19kaXIsIFwiZnVzaW9uX2JrX3RwNTNfbG9zcy50c3ZcIikpXG4gIH1lbHNlIGlmIChucm93KGJrX292ZXJsYXBzX2V4b24pID09IDApIHtcbiAgICAjIG9ubHkgc2F2aW5nIGZ1c2lvbiBjYWxscyBvdmVybGFwcGluZyBpbnRyb24gMVxuICAgIGJrX292ZXJsYXBzX2ludHJvbiAlPiUgXG4gICAgICB3cml0ZV90c3YoZmlsZS5wYXRoKHJlc3VsdHNfZGlyLCBcImZ1c2lvbl9ia190cDUzX2xvc3MudHN2XCIpKVxuICB9IGVsc2Uge1xuICAgICMgYmluZCBjYWxscyBvdmVybGFwcGluZyBleG9uMSBvciBpbnRyb24xXG4gICAgYmluZF9yb3dzKGJrX292ZXJsYXBzX2V4b24sXG4gICAgICAgICAgICAgIGJrX292ZXJsYXBzX2ludHJvbikgJT4lXG4gICAgICB3cml0ZV90c3YoZmlsZS5wYXRoKHJlc3VsdHNfZGlyLCBcImZ1c2lvbl9ia190cDUzX2xvc3MudHN2XCIpKVxuICB9XG4gIFxufSJ9 -->
+<pre class="r"><code>if(nrow(putative_onco_tp53_fusion) &gt; 0) {
+  putative_onco_tp53_fusion_gr &lt;- putative_onco_tp53_fusion %&gt;%
+    mutate(
+      BreakpointChr = paste0(&quot;chr&quot;,gsub(&quot;:.*$&quot;, &quot;&quot;, value)),
+      Breakpoint = gsub(&quot;^.*:&quot;, &quot;&quot;, value)) %&gt;%
+    GenomicRanges::makeGRangesFromDataFrame(seqnames.field = &quot;BreakpointChr&quot;,
+                                            start.field = &quot;Breakpoint&quot;,
+                                            end.field = &quot;Breakpoint&quot;,
+                                            
+                                            keep.extra.columns = TRUE,
+                                            starts.in.df.are.0based = FALSE)
+  
+  # Check for exon overlap
+  bk_overlaps_exon &lt;- IRanges::mergeByOverlaps(putative_onco_tp53_fusion_gr,exon) %&gt;%
+    as.data.frame() 
+  
+  bk_overlaps_exon$exon_rank &lt;- as.character(bk_overlaps_exon$exon_rank)
+  
+  bk_overlaps_exon &lt;- bk_overlaps_exon %&gt;%
+    dplyr::filter(grepl(&quot;ENSG00000141510&quot;,gene_id)) %&gt;%
+    dplyr::mutate(exon_rank = strsplit(exon_rank, &quot;, &quot;)) %&gt;% 
+    tidyr::unnest(exon_rank) %&gt;% # split into new rows
+    dplyr::filter(exon_rank==&quot;1&quot;) %&gt;%
+    dplyr::select(starts_with(&quot;putative_onco&quot;)) %&gt;%
+    dplyr::rename_at(vars(starts_with(&quot;putative_onco&quot;)),~stringr::str_remove(.,&quot;putative_onco_tp53_fusion_gr.&quot;))
+  
+  # Check for intron overlap
+  bk_overlaps_intron &lt;- IRanges::mergeByOverlaps(putative_onco_tp53_fusion_gr,intron) %&gt;%
+    as.data.frame() %&gt;%
+    dplyr::filter(grepl(&quot;ENSG00000141510&quot;,gene_id)) %&gt;%
+    dplyr::select(starts_with(&quot;putative_onco&quot;)) %&gt;%
+    dplyr::rename_at(vars(starts_with(&quot;putative_onco&quot;)),~str_remove(.,&quot;putative_onco_tp53_fusion_gr.&quot;)) 
+  
+  # Save
+  if (nrow(bk_overlaps_intron) == 0) {
+    # only saving fusion calls overlapping exon 1
+    bk_overlaps_exon %&gt;% 
+      write_tsv(file.path(results_dir, &quot;fusion_bk_tp53_loss.tsv&quot;))
+  }else if (nrow(bk_overlaps_exon) == 0) {
+    # only saving fusion calls overlapping intron 1
+    bk_overlaps_intron %&gt;% 
+      write_tsv(file.path(results_dir, &quot;fusion_bk_tp53_loss.tsv&quot;))
+  } else {
+    # bind calls overlapping exon1 or intron1
+    bind_rows(bk_overlaps_exon,
+              bk_overlaps_intron) %&gt;%
+      write_tsv(file.path(results_dir, &quot;fusion_bk_tp53_loss.tsv&quot;))
+  }
+  
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+</div>
+<div id="filter-sv-calls-that-are-associated-with-sample-with-tp53-cnv-loss" class="section level2">
+<h2>Filter SV calls that are associated with sample with TP53 CNV
+loss</h2>
+<p>High confidence cnv losses from
+<code>03-tp53-cnv-loss-domain.Rmd</code> overlap TP53 domains:</p>
+<ul>
+<li>TAD = trans-activating domain (essential for function)</li>
+<li>DBD = DNA-binding domain (residues 102–292)</li>
+<li>TD = tetramerization domain (residues 326–356)</li>
+</ul>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjpbInN2X3dpdGhfbG9zc19jbnYgPC0gbWFudGFfc3ZfdHA1MyAlPiVcbiAgIyBmaWx0ZXIgdG8gc2FtcGxlcyB3aXRoIFNWIHdpdGhpbiBvciBvdmVybGFwcGluZyBUUDUzXG4gIGZpbHRlcihzYW1wbGVfaWQgJWluJSBjbnZfdHA1M19sb3NzJHNhbXBsZV9pZCkiLCIiLCJzdl93aXRoX2xvc3NfY252Il19 -->
+<pre class="r"><code>sv_with_loss_cnv &lt;- manta_sv_tp53 %&gt;%
+  # filter to samples with SV within or overlapping TP53
+  filter(sample_id %in% cnv_tp53_loss$sample_id)
+
+sv_with_loss_cnv</code></pre>
+<!-- rnb-source-end -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["SV_chrom"],"name":[1],"type":["chr"],"align":["left"]},{"label":["SV_start"],"name":[2],"type":["int"],"align":["right"]},{"label":["SV_end"],"name":[3],"type":["int"],"align":["right"]},{"label":["SV_length"],"name":[4],"type":["int"],"align":["right"]},{"label":["Kids.First.Biospecimen.ID.Tumor"],"name":[5],"type":["chr"],"align":["left"]},{"label":["SV_type"],"name":[6],"type":["chr"],"align":["left"]},{"label":["Gene_name"],"name":[7],"type":["chr"],"align":["left"]},{"label":["ALT"],"name":[8],"type":["chr"],"align":["left"]},{"label":["sample_id"],"name":[9],"type":["chr"],"align":["left"]}],"data":[],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-source-begin eyJkYXRhIjoic3Zfd2l0aF9sb3NzX2NudiAlPiUgZHBseXI6OnB1bGwoS2lkcy5GaXJzdC5CaW9zcGVjaW1lbi5JRC5UdW1vciklPiUgdW5pcXVlKCkifQ== -->
+<pre class="r"><code>sv_with_loss_cnv %&gt;% dplyr::pull(Kids.First.Biospecimen.ID.Tumor)%&gt;% unique()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiY2hhcmFjdGVyKDApXG4ifQ== -->
+<pre><code>character(0)</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-</div>
-<div id="add-tp53-status" class="section level1">
-<h1>Add tp53 status</h1>
+<div id="filter-sv-calls-that-are-associated-with-sample-with-low-tp53-expression" class="section level2">
+<h2>Filter SV calls that are associated with sample with low TP53
+expression</h2>
+<p>We will use sample_id from <code>manta_sv_tp53</code> to filter
+stranded and polya expression file</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGdnX3N1YnR5cGVzIDwtIGhnZ19zdWJ0eXBlcyAlPiVcbiAgbGVmdF9qb2luKHRwNTNfc3RhdHVzLGJ5PWMoXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxcc2FtcGxlX2lkXFwsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxcS2lkc19GaXJzdF9CaW9zcGVjaW1lbl9JRF9STkFcXCxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXFxLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEX0ROQVxcKSkgJT4lXG4gIHJlbmFtZShcXHRwNTNfU05WX2luZGVsX2NvdW50c1xcPVxcU05WX2luZGVsX2NvdW50c1xcLFxuICAgICAgICAgXFx0cDUzX0NOVl9sb3NzX2NvdW50c1xcPVxcQ05WX2xvc3NfY291bnRzXFwsXG4gICAgICAgICBcXHRwNTNfSEdWU3BfU2hvcnRcXD1cXEhHVlNwX1Nob3J0XFwgLCBcbiAgICAgICAgIFxcdHA1M19DTlZfbG9zc19ldmlkZW5jZVxcPVxcQ05WX2xvc3NfZXZpZGVuY2VcXCxcbiAgICAgICAgIFxcdHA1M19ob3RzcG90XFw9XFxob3RzcG90XFwsXG4gICAgICAgICBcXHRwNTNfYWN0aXZhdGluZ1xcPVxcYWN0aXZhdGluZ1xcLFxuICAgICAgICAgXFx0cDUzX0Z1c2lvbl9jb3VudHNcXD1cXEZ1c2lvbl9jb3VudHNcXCwgXG4gICAgICAgICBcXHRwNTNfRnVzaW9uX2V2aWRlbmNlXFw9XFxGdXNpb25fZXZpZGVuY2VcXCkgJT4lXG4gIG11dGF0ZShtb2xlY3VsYXJfc3VidHlwZT0gY2FzZV93aGVuKFxuICAgIHRwNTNfYWx0ZXJlZCAlaW4lIGMoXFxhY3RpdmF0ZWRcXCwgXFxsb3NzXFwpIH4gc3RyaW5ncjo6c3RyX2MobW9sZWN1bGFyX3N1YnR5cGUsXFxcbmBgYCJ9 -->
-<pre class="r"><code>hgg_subtypes &lt;- hgg_subtypes %&gt;%
-  left_join(tp53_status,by=c(
-                             \sample_id\,
-                             \Kids_First_Biospecimen_ID_RNA\,
-                             \Kids_First_Biospecimen_ID_DNA\)) %&gt;%
-  rename(\tp53_SNV_indel_counts\=\SNV_indel_counts\,
-         \tp53_CNV_loss_counts\=\CNV_loss_counts\,
-         \tp53_HGVSp_Short\=\HGVSp_Short\ , 
-         \tp53_CNV_loss_evidence\=\CNV_loss_evidence\,
-         \tp53_hotspot\=\hotspot\,
-         \tp53_activating\=\activating\,
-         \tp53_Fusion_counts\=\Fusion_counts\, 
-         \tp53_Fusion_evidence\=\Fusion_evidence\) %&gt;%
-  mutate(molecular_subtype= case_when(
-    tp53_altered %in% c(\activated\, \loss\) ~ stringr::str_c(molecular_subtype,\</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjpbImxvd2V4cHJfdHA1M193aXRoX3N2IDwtIHJuYV9leHByW1wiVFA1M1wiLCBdICU+JVxuICB0KCkgJT4lXG4gIGFzLmRhdGEuZnJhbWUoKSAlPiVcbiAgcm93bmFtZXNfdG9fY29sdW1uKHZhciA9IFwiS2lkc19GaXJzdF9CaW9zcGVjaW1lbl9JRFwiKSAlPiVcbiAgIyBhZGQgc2FtcGxlX2lkIHRvIGV4cHJlc3Npb24gZGZcbiAgbGVmdF9qb2luKGhpc3RvbG9neSxcbiAgICBieSA9IGMoXCJLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEXCIpXG4gICkgJT4lXG4gICMgZmlsdGVyIHRvIGtlZXAgb25seSBsb3cgZXhwcmVzc2VkIFRQNTMgc2FtcGxlX2lkc1xuICBmaWx0ZXIoVFA1MyA8IDEpIiwiIiwiIiwic3Zfd2l0aF9sb3dleHByIDwtIG1hbnRhX3N2X3RwNTMgJT4lXG4gICMgZmlsdGVyIHRvIHNhbXBsZXMgd2l0aCBTViB3aXRoaW4gb3Igb3ZlcmxhcHBpbmcgVFA1M1xuICBmaWx0ZXIoc2FtcGxlX2lkICVpbiUgbG93ZXhwcl90cDUzX3dpdGhfc3Ykc2FtcGxlX2lkKSIsIiIsInN2X3dpdGhfbG93ZXhwciJdfQ== -->
+<pre class="r"><code>lowexpr_tp53_with_sv &lt;- rna_expr[&quot;TP53&quot;, ] %&gt;%
+  t() %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;Kids_First_Biospecimen_ID&quot;) %&gt;%
+  # add sample_id to expression df
+  left_join(histology,
+    by = c(&quot;Kids_First_Biospecimen_ID&quot;)
+  ) %&gt;%
+  # filter to keep only low expressed TP53 sample_ids
+  filter(TP53 &lt; 1)
+
+
+sv_with_lowexpr &lt;- manta_sv_tp53 %&gt;%
+  # filter to samples with SV within or overlapping TP53
+  filter(sample_id %in% lowexpr_tp53_with_sv$sample_id)
+
+sv_with_lowexpr</code></pre>
+<!-- rnb-source-end -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["SV_chrom"],"name":[1],"type":["chr"],"align":["left"]},{"label":["SV_start"],"name":[2],"type":["int"],"align":["right"]},{"label":["SV_end"],"name":[3],"type":["int"],"align":["right"]},{"label":["SV_length"],"name":[4],"type":["int"],"align":["right"]},{"label":["Kids.First.Biospecimen.ID.Tumor"],"name":[5],"type":["chr"],"align":["left"]},{"label":["SV_type"],"name":[6],"type":["chr"],"align":["left"]},{"label":["Gene_name"],"name":[7],"type":["chr"],"align":["left"]},{"label":["ALT"],"name":[8],"type":["chr"],"align":["left"]},{"label":["sample_id"],"name":[9],"type":["chr"],"align":["left"]}],"data":[],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>No sample_ids with a SV within or overlapping TP53 have low
+expression of TP53!</p>
+</div>
+<div id="save-high-confidence-sv-associated-with-tp53-loss" class="section level2">
+<h2>Save high confidence SV associated with TP53 loss</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiaWYgKG5yb3coc3Zfd2l0aF9sb3dleHByKSA9PSAwKSB7XG4gICMgb25seSBzYXZpbmcgc3Zfd2l0aF9sb3NzX2NudiBoZXJlXG4gICMgYmVjYXVzZSBzdl93aXRoX2xvd2V4cHIgaXMgZW1wdHlcbiAgc3Zfd2l0aF9sb3NzX2NudiAlPiUgXG4gICAgd3JpdGVfdHN2KGZpbGUucGF0aChyZXN1bHRzX2RpciwgXCJzdl9vdmVybGFwX3RwNTMudHN2XCIpKVxufSBlbHNlIGlmIChucm93KHN2X3dpdGhfbG9zc19jbnYpID09IDApIHtcbiAgIyBvbmx5IHNhdmluZyBzdl93aXRoX2xvd2V4cHIgaGVyZVxuICAjIGJlY2F1c2Ugc3Zfd2l0aF9sb3NzX2NudiBpcyBlbXB0eVxuICBzdl93aXRoX2xvd2V4cHIgJT4lIFxuICAgIHdyaXRlX3RzdihmaWxlLnBhdGgocmVzdWx0c19kaXIsIFwic3Zfb3ZlcmxhcF90cDUzLnRzdlwiKSlcbn0gZWxzZSB7XG4gICMgYmluZCByb3dzIG9mIGJvdGggc3Zfd2l0aF9sb3dleHByXG4gICMgYW5kIHN2X3dpdGhfbG9zc19jbnYgYW5kIHNhdmVcbiAgYmluZF9yb3dzKFxuICAgIHN2X3dpdGhfbG9zc19jbnYsXG4gICAgc3Zfd2l0aF9sb3dleHByXG4gICkgJT4lXG4gICAgd3JpdGVfdHN2KGZpbGUucGF0aChyZXN1bHRzX2RpciwgXCJzdl9vdmVybGFwX3RwNTMudHN2XCIpKVxufSJ9 -->
+<pre class="r"><code>if (nrow(sv_with_lowexpr) == 0) {
+  # only saving sv_with_loss_cnv here
+  # because sv_with_lowexpr is empty
+  sv_with_loss_cnv %&gt;% 
+    write_tsv(file.path(results_dir, &quot;sv_overlap_tp53.tsv&quot;))
+} else if (nrow(sv_with_loss_cnv) == 0) {
+  # only saving sv_with_lowexpr here
+  # because sv_with_loss_cnv is empty
+  sv_with_lowexpr %&gt;% 
+    write_tsv(file.path(results_dir, &quot;sv_overlap_tp53.tsv&quot;))
+} else {
+  # bind rows of both sv_with_lowexpr
+  # and sv_with_loss_cnv and save
+  bind_rows(
+    sv_with_loss_cnv,
+    sv_with_lowexpr
+  ) %&gt;%
+    write_tsv(file.path(results_dir, &quot;sv_overlap_tp53.tsv&quot;))
+}</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiVFA1MyBhbm5vdGF0aW9uIGZvciBIR0ciCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KCkluIHRoaXMgbm90ZWJvb2sgd2Ugd2lsbCBhbm5vdGF0ZSBIR0cgc2FtcGxlcyB3aXRoIFRQNTMgc3RhdHVzIHdlIG9idGFpbmVkIGZyb20gc252L2NudiBhbmQgVFA1MyBjbGFzc2lmaWVyLiBXZSBiZWxpZXZlIFRQNTMgYW5ub3RhdGlvbiB3aWxsIGFkZCB1c2VmdWwgaW5mb3JtYXRpb24gdG8gdGhlIGN1cnJlbnQga25vd24gc3VidHlwZXMgYXMgd2Ugc2VlIFRQNTMgbXV0YXRpb25zIGNvLW9jY3VycmluZyB3aXRoIEgzIG11dGF0aW9ucy4KCiMjIFNldCB1cApgYGB7cn0KIyBMb2FkIGluIHRpZHl2ZXJzZSBmdW5jdGlvbnMKbGlicmFyeSh0aWR5dmVyc2UpCgpyb290X2RpciA8LSBycHJvanJvb3Q6OmZpbmRfcm9vdChycHJvanJvb3Q6Omhhc19kaXIoIi5naXQiKSkKIyByZXN1bHRzIGZvbGRlcgpyZXN1bHRzX2RpciA8LSBmaWxlLnBhdGgoCiAgcm9vdF9kaXIsCiAgImFuYWx5c2VzIiwKICAibW9sZWN1bGFyLXN1YnR5cGluZy1IR0ciLAogICJyZXN1bHRzIikKYGBgCgoKIyMjIFJlcXVpcmVkIGZpbGVzCmBgYHtyfQojIEZpbGUgcGF0aCB0byBkYXRhIGRpcmVjdG9yeQp0cDUzX3N0YXR1cyA8LSByZWFkX3RzdihmaWxlLnBhdGgoCiAgcm9vdF9kaXIsCiAgImFuYWx5c2VzIiwKICAidHA1M19uZjFfc2NvcmUiLAogICJyZXN1bHRzIiwKICAidHA1M19hbHRlcmVkX3N0YXR1cy50c3YiKSwgZ3Vlc3NfbWF4ID0gMTAwMDAwKQoKdHA1M19zdGF0dXMkS2lkc19GaXJzdF9CaW9zcGVjaW1lbl9JRF9STkEgPC0gYXMuY2hhcmFjdGVyKHRwNTNfc3RhdHVzJEtpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSURfUk5BKQoKCmhnZ19zdWJ0eXBlcyA8LSByZWFkX3RzdihmaWxlLnBhdGgocmVzdWx0c19kaXIsIkhHR19jbGVhbmVkX2FsbF90YWJsZS50c3YiKSkgCmhnZ19zdWJ0eXBlcyRLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEX1JOQSA8LSBhcy5jaGFyYWN0ZXIoaGdnX3N1YnR5cGVzJEtpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSURfUk5BKQoKYGBgCgojIEFkZCB0cDUzIHN0YXR1cyAKYGBge3J9CgpoZ2dfc3VidHlwZXMgPC0gaGdnX3N1YnR5cGVzICU+JQogIGxlZnRfam9pbih0cDUzX3N0YXR1cyxieT1jKAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICJzYW1wbGVfaWQiLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICJLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEX1JOQSIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIktpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSURfRE5BIikpICU+JQogIHJlbmFtZSgidHA1M19TTlZfaW5kZWxfY291bnRzIj0iU05WX2luZGVsX2NvdW50cyIsCiAgICAgICAgICJ0cDUzX0NOVl9sb3NzX2NvdW50cyI9IkNOVl9sb3NzX2NvdW50cyIsCiAgICAgICAgICJ0cDUzX0hHVlNwX1Nob3J0Ij0iSEdWU3BfU2hvcnQiICwgCiAgICAgICAgICJ0cDUzX0NOVl9sb3NzX2V2aWRlbmNlIj0iQ05WX2xvc3NfZXZpZGVuY2UiLAogICAgICAgICAidHA1M19ob3RzcG90Ij0iaG90c3BvdCIsCiAgICAgICAgICJ0cDUzX2FjdGl2YXRpbmciPSJhY3RpdmF0aW5nIiwKICAgICAgICAgInRwNTNfRnVzaW9uX2NvdW50cyI9IkZ1c2lvbl9jb3VudHMiLCAKICAgICAgICAgInRwNTNfRnVzaW9uX2V2aWRlbmNlIj0iRnVzaW9uX2V2aWRlbmNlIikgJT4lCiAgbXV0YXRlKG1vbGVjdWxhcl9zdWJ0eXBlPSBjYXNlX3doZW4oCiAgICB0cDUzX2FsdGVyZWQgJWluJSBjKCJhY3RpdmF0ZWQiLCAibG9zcyIpIH4gc3RyaW5ncjo6c3RyX2MobW9sZWN1bGFyX3N1YnR5cGUsIiwgVFA1MyIpLAogICAgVFJVRSB+IG1vbGVjdWxhcl9zdWJ0eXBlCiAgKSkgJT4lCiAgYXJyYW5nZShLaWRzX0ZpcnN0X1BhcnRpY2lwYW50X0lELCBzYW1wbGVfaWQpICU+JQogIHdyaXRlX3RzdihmaWxlLnBhdGgocmVzdWx0c19kaXIsIkhHR19tb2xlY3VsYXJfc3VidHlwZV90cDUzLnRzdiIpKQoKYGBgCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiRmluZCBDTlYgbG9zc2VzIHRoYXQgb3ZlcmxhcCB3aXRoIFRQNTMgZG9tYWlucyIKYXV0aG9yOiAiSyBTIEdhb25rYXIgKEQzQikiCm91dHB1dDogaHRtbF9ub3RlYm9vawpwYXJhbXM6CiAgYmFzZV9ydW46CiAgICBsYWJlbDogIjEvMCB0byBydW4gd2l0aCBiYXNlIGhpc3RvbG9neSIKICAgIHZhbHVlOiAwCiAgICBpbnB1dDogaW50ZWdlcgotLS0KICAgIApJbiB0aGlzIHNjcmlwdCB3ZSB3aWxsIGZpbmQgaWYgdGhlcmUgYXJlIGEgU3RydWN0dXJhbCBWYXJpYW50IGJyZWFrcG9pbnRzIHdpdGhpbiBUUDUzIG9yIGNvdmVyaW5nIHRoZSBnZW5lIGxvY3VzIHN1Y2ggdGhhdCBpdCBpcyBkZWxldGVkIGFuZCBjb25jdXJyZW50bHksIHRoZXJlIGFyZSBlaXRoZXIgb25lIG9yIGJvdGggb2Y6CiAgLSAwIG9yIDEgY29weSBvZiBUUDUzICh3ZSB3b3VsZCBhbHJlYWR5IGhhdmUgY2FwdHVyZWQgdGhlbSBhcyBsb3NzKQogIC0gZXhwcmVzc2lvbiBsZXNzIHRoYW4gMSBUUE0KCldlIHdhbnQgdG8gc3Vic2V0IFNWIGNhbGxzIHdoaWNoIHdpbGwgcG9zc2libHkgbGVhZCB0byBsb3NzIG9mIGZ1bmN0aW9uIHRvIHVzZSBmb3IgZXZhbHVhdGlvbiBvZiBUUDUzIGluYWN0aXZhdGlvbiBzY29yZSBhdCBhIGxhdGVyIHN0ZXAuCgojIyMgU2V0dXAKYGBge3J9CmxpYnJhcnkoImdncHViciIpCmxpYnJhcnkoImdndGhlbWVzIikKbGlicmFyeSgiZGF0YS50YWJsZSIpCmxpYnJhcnkoInRpZHl2ZXJzZSIpCgojIHJvb3RkaXIKcm9vdF9kaXIgPC0gcnByb2pyb290OjpmaW5kX3Jvb3QocnByb2pyb290OjpoYXNfZGlyKCIuZ2l0IikpCmRhdGFfZGlyIDwtIGZpbGUucGF0aChyb290X2RpciwgImRhdGEiKQpyZXN1bHRzX2RpciA8LSBmaWxlLnBhdGgoCiAgcm9vdF9kaXIsCiAgImFuYWx5c2VzIiwKICAidHA1M19uZjFfc2NvcmUiLAogICJyZXN1bHRzIgopCgppZiAoIWRpci5leGlzdHMocmVzdWx0c19kaXIpKSB7CiAgZGlyLmNyZWF0ZShyZXN1bHRzX2RpcikKfQpgYGAKCiMjIyBJbnB1dCBmaWxlcwpgYGB7cn0KcHV0YXRpdmVfb25jb19mdXNpb24gPC0gcmVhZF9yZHMoZmlsZS5wYXRoKGRhdGFfZGlyLCAiSG9wZS1mdXNpb24tcHV0YXRpdmUtb25jb2dlbmljLnJkcyIpKQptYW50YV9zdiA8LSBkYXRhLnRhYmxlOjpmcmVhZChmaWxlLnBhdGgoZGF0YV9kaXIsICJIb3BlLXN2LW1hbnRhLnRzdi5neiIpKSAKcm5hX2V4cHIgPC0gcmVhZFJEUyhmaWxlLnBhdGgoZGF0YV9kaXIsICJIb3BlLWFuZC1DUFRBQy1HQk0tZ2VuZS1leHByZXNzaW9uLXJzZW0tdHBtLWNvbGxhcHNlZC5yZHMiKSkKY2xpbmljYWw8LXJlYWRfdHN2KGZpbGUucGF0aChkYXRhX2RpciwiSG9wZS1HQk0taGlzdG9sb2dpZXMtYmFzZS50c3YiKSkKCmhpc3RvbG9neSA8LSBkcGx5cjo6c2VsZWN0KGNsaW5pY2FsLGMoIktpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQiLCAic2FtcGxlX2lkIikpCgojIGhpZ2ggY29uZmlkZW5jZSBjbnYgbG9zc2VzIGZyb20gYDAzLXRwNTMtY252LWxvc3MtZG9tYWluLlJtZGAKY252X3RwNTNfbG9zcyA8LSByZWFkX3RzdihmaWxlLnBhdGgocmVzdWx0c19kaXIsICJsb3NzX292ZXJsYXBfZG9tYWluc190cDUzLnRzdiIpKQoKIyBnZW5lcmF0ZSB0eGRiIG9ibGVjdCBmcm9tIGd0ZiBmaWxlIHRvIGdhdGhlciBleG9uIGFuZCBpbnRyb24gbG9jYXRpb25zCmFubm90YXRpb25fZGlyZWN0b3J5IDwtIGZpbGUucGF0aChyb290X2RpciwgImRhdGEiKQphbm5vdGF0aW9uX2ZpbGUgPC0gZmlsZS5wYXRoKGFubm90YXRpb25fZGlyZWN0b3J5LAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICJ0eGRiX2Zyb21fZ2VuY29kZS52MzkuZ3RmLmRiIikKaWYgKCFmaWxlLmV4aXN0cyhhbm5vdGF0aW9uX2ZpbGUpKSB7CiAgIyBEZWZpbmUgdGhlIGFubm90YXRpb25zIGZvciB0aGUgaGczOCBnZW5vbWUKICB0eGRiIDwtIEdlbm9taWNGZWF0dXJlczo6bWFrZVR4RGJGcm9tR0ZGKAogICAgZmlsZSA9IGZpbGUucGF0aChkYXRhX2RpciwiZ2VuY29kZS52MzkucHJpbWFyeV9hc3NlbWJseS5hbm5vdGF0aW9uLmd0Zi5neiIpLAogICAgZm9ybWF0ID0gImd0ZiIKICApCiAgIyBjYW4gZG8gdGhpcyBldmVuIGlmIHRoZSBkaXJlY3RvcnkgZXhpc3RzCiAgZGlyLmNyZWF0ZShhbm5vdGF0aW9uX2RpcmVjdG9yeSwgc2hvd1dhcm5pbmdzID0gRkFMU0UpCiAgIyB3cml0ZSB0aGlzIHRvIGZpbGUgdG8gc2F2ZSB0aW1lIG5leHQgdGltZQogIEFubm90YXRpb25EYmk6OnNhdmVEYih0eGRiLCBhbm5vdGF0aW9uX2ZpbGUpCn0gZWxzZSB7CiAgdHhkYiA8LSBBbm5vdGF0aW9uRGJpOjpsb2FkRGIoYW5ub3RhdGlvbl9maWxlKQp9CiMgZXhvbiByZWdpb25zCmV4b24gPC0gR2Vub21pY0ZlYXR1cmVzOjpleG9uaWNQYXJ0cyh0eGRiLCBsaW5rZWQudG8uc2luZ2xlLmdlbmUub25seT1GQUxTRSkKIyBpbnRyb24gcmVnaW9ucwppbnRyb24gPC0gR2Vub21pY0ZlYXR1cmVzOjppbnRyb25pY1BhcnRzKHR4ZGIsIGxpbmtlZC50by5zaW5nbGUuZ2VuZS5vbmx5PUZBTFNFKQoKYGBgCgojIyBTViBicmVha3BvaW50cyBhc3NvY2lhdGVkIHdpdGggVFA1MyBsb3NzIApTaW5jZSB3ZSB3YW50IHRvIGNhcHR1cmUgVFA1MyBsb3NzIHBoZW5vdHlwZXMgd2Ugd2lsbCBvbmx5IGtlZXAgYnJlYWtwb2ludHMgdGhhdCBhcmUgZWl0aGVyIERFTDogZGVsZXRpb24sIElOVjogaW52ZXJzaW9uIGFuZCBCTkQ6IHRyYW5zbG9jYXRpb25zIHdoaWNoIGFyZSBicmVha3BvaW50IG5vdGF0aW9ucyB3aXRoIHdpdGggMiBicmVha3BvaW50cyBpbiBkaWZmZXJlbnQgY2hyb21vc29tZXMKIApgYGB7cn0KbWFudGFfc3ZfdHA1MyA8LSBtYW50YV9zdiAlPiUKICBkcGx5cjo6c2VsZWN0KFNWX2Nocm9tLCBTVl9zdGFydCwgU1ZfZW5kLCBTVl9sZW5ndGgsIEtpZHMuRmlyc3QuQmlvc3BlY2ltZW4uSUQuVHVtb3IsIFNWX3R5cGUsIEdlbmVfbmFtZSwgQUxUKSAlPiUKICAjIERpc3RyaWJ1dGlvbiBvZiBUUDUzIFNWcwogIGZpbHRlcigKICAgICMgb25seSBvdmVybGFwcyBUUDUzIGdlbmUKICAgIGdyZXBsKCJeVFA1MyQiLCBHZW5lX25hbWUpIHwKICAgICAgIyBwYXJ0IG9mIGxhcmdlciByZWdpb24gYWxzbyBlbmNvbXBhc2luZyBUUDUzCiAgICAgIGdyZXBsKCIvVFA1My8iLCBHZW5lX25hbWUpLAogICAgU1ZfdHlwZSAlaW4lIGMoIkJORCIsICJJTlYiLCAiREVMIikKICApICU+JQogIGxlZnRfam9pbihoaXN0b2xvZ3ksCiAgICBieSA9IGMoIktpZHMuRmlyc3QuQmlvc3BlY2ltZW4uSUQuVHVtb3IiID0gIktpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQiKQogICkKCm1hbnRhX3N2X3RwNTMgJT4lCiAgYXJyYW5nZShLaWRzLkZpcnN0LkJpb3NwZWNpbWVuLklELlR1bW9yKSAlPiUKICBrbml0cjo6a2FibGUoKQpgYGAKCgojIyBGdXNpb24gYnJlYWtwb2ludHMgd2l0aGluIFRQNTMgCldlIHdpbGwgYWxzbyBhZGQgZXhvbiBhbmQgaW50cm9uIGluZm9ybWF0aW9uIHRvIHRoaXMgZnVzaW9uIGNhbGwuCgpgYGB7cn0KcHV0YXRpdmVfb25jb190cDUzX2Z1c2lvbiA8LSBwdXRhdGl2ZV9vbmNvX2Z1c2lvbiAlPiUKICBmaWx0ZXIoc3RyaW5ncjo6c3RyX2RldGVjdChGdXNpb25OYW1lLCJeVFA1My0tfC0tVFA1MyQiKSkgJT4lCiAgbGVmdF9qb2luKGhpc3RvbG9neSwKICAgICAgICAgICAgYnkgPSBjKCJLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEIiA9ICJLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEIikKICApICU+JQogIHJlbmFtZSgiS2lkc19GaXJzdF9CaW9zcGVjaW1lbl9JRCIgPSAiU2FtcGxlIikgJT4lCiAgZHBseXI6OnNlbGVjdCgiU2FtcGxlIiwKICAgICAgICAgICAgICAgICJzYW1wbGVfaWQiLAogICAgICAgICAgICAgICAgIkZ1c2lvbk5hbWUiLAogICAgICAgICAgICAgICAgIlJpZ2h0QnJlYWtwb2ludCIsCiAgICAgICAgICAgICAgICAiTGVmdEJyZWFrcG9pbnQiKSAlPiUKICByZXNoYXBlMjo6bWVsdChjKCJTYW1wbGUiLCJzYW1wbGVfaWQiLCJGdXNpb25OYW1lIikpCmBgYAoKIyMjIEdlbmVyYXRlIEdyYW5nZXMgYW5kIG92ZXJsYXBzCmBgYHtyfQppZihucm93KHB1dGF0aXZlX29uY29fdHA1M19mdXNpb24pID4gMCkgewogIHB1dGF0aXZlX29uY29fdHA1M19mdXNpb25fZ3IgPC0gcHV0YXRpdmVfb25jb190cDUzX2Z1c2lvbiAlPiUKICAgIG11dGF0ZSgKICAgICAgQnJlYWtwb2ludENociA9IHBhc3RlMCgiY2hyIixnc3ViKCI6LiokIiwgIiIsIHZhbHVlKSksCiAgICAgIEJyZWFrcG9pbnQgPSBnc3ViKCJeLio6IiwgIiIsIHZhbHVlKSkgJT4lCiAgICBHZW5vbWljUmFuZ2VzOjptYWtlR1Jhbmdlc0Zyb21EYXRhRnJhbWUoc2VxbmFtZXMuZmllbGQgPSAiQnJlYWtwb2ludENociIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnQuZmllbGQgPSAiQnJlYWtwb2ludCIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZW5kLmZpZWxkID0gIkJyZWFrcG9pbnQiLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGtlZXAuZXh0cmEuY29sdW1ucyA9IFRSVUUsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnRzLmluLmRmLmFyZS4wYmFzZWQgPSBGQUxTRSkKICAKICAjIENoZWNrIGZvciBleG9uIG92ZXJsYXAKICBia19vdmVybGFwc19leG9uIDwtIElSYW5nZXM6Om1lcmdlQnlPdmVybGFwcyhwdXRhdGl2ZV9vbmNvX3RwNTNfZnVzaW9uX2dyLGV4b24pICU+JQogICAgYXMuZGF0YS5mcmFtZSgpIAogIAogIGJrX292ZXJsYXBzX2V4b24kZXhvbl9yYW5rIDwtIGFzLmNoYXJhY3Rlcihia19vdmVybGFwc19leG9uJGV4b25fcmFuaykKICAKICBia19vdmVybGFwc19leG9uIDwtIGJrX292ZXJsYXBzX2V4b24gJT4lCiAgICBkcGx5cjo6ZmlsdGVyKGdyZXBsKCJFTlNHMDAwMDAxNDE1MTAiLGdlbmVfaWQpKSAlPiUKICAgIGRwbHlyOjptdXRhdGUoZXhvbl9yYW5rID0gc3Ryc3BsaXQoZXhvbl9yYW5rLCAiLCAiKSkgJT4lIAogICAgdGlkeXI6OnVubmVzdChleG9uX3JhbmspICU+JSAjIHNwbGl0IGludG8gbmV3IHJvd3MKICAgIGRwbHlyOjpmaWx0ZXIoZXhvbl9yYW5rPT0iMSIpICU+JQogICAgZHBseXI6OnNlbGVjdChzdGFydHNfd2l0aCgicHV0YXRpdmVfb25jbyIpKSAlPiUKICAgIGRwbHlyOjpyZW5hbWVfYXQodmFycyhzdGFydHNfd2l0aCgicHV0YXRpdmVfb25jbyIpKSx+c3RyaW5ncjo6c3RyX3JlbW92ZSguLCJwdXRhdGl2ZV9vbmNvX3RwNTNfZnVzaW9uX2dyLiIpKQogIAogICMgQ2hlY2sgZm9yIGludHJvbiBvdmVybGFwCiAgYmtfb3ZlcmxhcHNfaW50cm9uIDwtIElSYW5nZXM6Om1lcmdlQnlPdmVybGFwcyhwdXRhdGl2ZV9vbmNvX3RwNTNfZnVzaW9uX2dyLGludHJvbikgJT4lCiAgICBhcy5kYXRhLmZyYW1lKCkgJT4lCiAgICBkcGx5cjo6ZmlsdGVyKGdyZXBsKCJFTlNHMDAwMDAxNDE1MTAiLGdlbmVfaWQpKSAlPiUKICAgIGRwbHlyOjpzZWxlY3Qoc3RhcnRzX3dpdGgoInB1dGF0aXZlX29uY28iKSkgJT4lCiAgICBkcGx5cjo6cmVuYW1lX2F0KHZhcnMoc3RhcnRzX3dpdGgoInB1dGF0aXZlX29uY28iKSksfnN0cl9yZW1vdmUoLiwicHV0YXRpdmVfb25jb190cDUzX2Z1c2lvbl9nci4iKSkgCiAgCiAgIyBTYXZlCiAgaWYgKG5yb3coYmtfb3ZlcmxhcHNfaW50cm9uKSA9PSAwKSB7CiAgICAjIG9ubHkgc2F2aW5nIGZ1c2lvbiBjYWxscyBvdmVybGFwcGluZyBleG9uIDEKICAgIGJrX292ZXJsYXBzX2V4b24gJT4lIAogICAgICB3cml0ZV90c3YoZmlsZS5wYXRoKHJlc3VsdHNfZGlyLCAiZnVzaW9uX2JrX3RwNTNfbG9zcy50c3YiKSkKICB9ZWxzZSBpZiAobnJvdyhia19vdmVybGFwc19leG9uKSA9PSAwKSB7CiAgICAjIG9ubHkgc2F2aW5nIGZ1c2lvbiBjYWxscyBvdmVybGFwcGluZyBpbnRyb24gMQogICAgYmtfb3ZlcmxhcHNfaW50cm9uICU+JSAKICAgICAgd3JpdGVfdHN2KGZpbGUucGF0aChyZXN1bHRzX2RpciwgImZ1c2lvbl9ia190cDUzX2xvc3MudHN2IikpCiAgfSBlbHNlIHsKICAgICMgYmluZCBjYWxscyBvdmVybGFwcGluZyBleG9uMSBvciBpbnRyb24xCiAgICBiaW5kX3Jvd3MoYmtfb3ZlcmxhcHNfZXhvbiwKICAgICAgICAgICAgICBia19vdmVybGFwc19pbnRyb24pICU+JQogICAgICB3cml0ZV90c3YoZmlsZS5wYXRoKHJlc3VsdHNfZGlyLCAiZnVzaW9uX2JrX3RwNTNfbG9zcy50c3YiKSkKICB9CiAgCn0KYGBgCgojIyBGaWx0ZXIgU1YgY2FsbHMgdGhhdCBhcmUgYXNzb2NpYXRlZCB3aXRoIHNhbXBsZSB3aXRoIFRQNTMgQ05WIGxvc3MKSGlnaCBjb25maWRlbmNlIGNudiBsb3NzZXMgZnJvbSBgMDMtdHA1My1jbnYtbG9zcy1kb21haW4uUm1kYCBvdmVybGFwIFRQNTMgZG9tYWluczoKCiAtIFRBRCA9IHRyYW5zLWFjdGl2YXRpbmcgZG9tYWluIChlc3NlbnRpYWwgZm9yIGZ1bmN0aW9uKQogLSBEQkQgPSBETkEtYmluZGluZyBkb21haW4gKHJlc2lkdWVzIDEwMuKAkzI5MikKIC0gVEQgPSB0ZXRyYW1lcml6YXRpb24gZG9tYWluIChyZXNpZHVlcyAzMjbigJMzNTYpIAogCmBgYHtyfQpzdl93aXRoX2xvc3NfY252IDwtIG1hbnRhX3N2X3RwNTMgJT4lCiAgIyBmaWx0ZXIgdG8gc2FtcGxlcyB3aXRoIFNWIHdpdGhpbiBvciBvdmVybGFwcGluZyBUUDUzCiAgZmlsdGVyKHNhbXBsZV9pZCAlaW4lIGNudl90cDUzX2xvc3Mkc2FtcGxlX2lkKQoKc3Zfd2l0aF9sb3NzX2Nudgpzdl93aXRoX2xvc3NfY252ICU+JSBkcGx5cjo6cHVsbChLaWRzLkZpcnN0LkJpb3NwZWNpbWVuLklELlR1bW9yKSU+JSB1bmlxdWUoKQpgYGAKCgojIyBGaWx0ZXIgU1YgY2FsbHMgdGhhdCBhcmUgYXNzb2NpYXRlZCB3aXRoIHNhbXBsZSB3aXRoIGxvdyBUUDUzIGV4cHJlc3Npb24KV2Ugd2lsbCB1c2Ugc2FtcGxlX2lkIGZyb20gYG1hbnRhX3N2X3RwNTNgIHRvIGZpbHRlciBzdHJhbmRlZCBhbmQgcG9seWEgZXhwcmVzc2lvbiBmaWxlIAoKYGBge3J9Cgpsb3dleHByX3RwNTNfd2l0aF9zdiA8LSBybmFfZXhwclsiVFA1MyIsIF0gJT4lCiAgdCgpICU+JQogIGFzLmRhdGEuZnJhbWUoKSAlPiUKICByb3duYW1lc190b19jb2x1bW4odmFyID0gIktpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQiKSAlPiUKICAjIGFkZCBzYW1wbGVfaWQgdG8gZXhwcmVzc2lvbiBkZgogIGxlZnRfam9pbihoaXN0b2xvZ3ksCiAgICBieSA9IGMoIktpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQiKQogICkgJT4lCiAgIyBmaWx0ZXIgdG8ga2VlcCBvbmx5IGxvdyBleHByZXNzZWQgVFA1MyBzYW1wbGVfaWRzCiAgZmlsdGVyKFRQNTMgPCAxKQoKCnN2X3dpdGhfbG93ZXhwciA8LSBtYW50YV9zdl90cDUzICU+JQogICMgZmlsdGVyIHRvIHNhbXBsZXMgd2l0aCBTViB3aXRoaW4gb3Igb3ZlcmxhcHBpbmcgVFA1MwogIGZpbHRlcihzYW1wbGVfaWQgJWluJSBsb3dleHByX3RwNTNfd2l0aF9zdiRzYW1wbGVfaWQpCgpzdl93aXRoX2xvd2V4cHIKYGBgCk5vIHNhbXBsZV9pZHMgd2l0aCBhIFNWIHdpdGhpbiBvciBvdmVybGFwcGluZyBUUDUzIGhhdmUgbG93IGV4cHJlc3Npb24gb2YgVFA1MyEKCgojIyBTYXZlIGhpZ2ggY29uZmlkZW5jZSBTViBhc3NvY2lhdGVkIHdpdGggVFA1MyBsb3NzCmBgYHtyfQppZiAobnJvdyhzdl93aXRoX2xvd2V4cHIpID09IDApIHsKICAjIG9ubHkgc2F2aW5nIHN2X3dpdGhfbG9zc19jbnYgaGVyZQogICMgYmVjYXVzZSBzdl93aXRoX2xvd2V4cHIgaXMgZW1wdHkKICBzdl93aXRoX2xvc3NfY252ICU+JSAKICAgIHdyaXRlX3RzdihmaWxlLnBhdGgocmVzdWx0c19kaXIsICJzdl9vdmVybGFwX3RwNTMudHN2IikpCn0gZWxzZSBpZiAobnJvdyhzdl93aXRoX2xvc3NfY252KSA9PSAwKSB7CiAgIyBvbmx5IHNhdmluZyBzdl93aXRoX2xvd2V4cHIgaGVyZQogICMgYmVjYXVzZSBzdl93aXRoX2xvc3NfY252IGlzIGVtcHR5CiAgc3Zfd2l0aF9sb3dleHByICU+JSAKICAgIHdyaXRlX3RzdihmaWxlLnBhdGgocmVzdWx0c19kaXIsICJzdl9vdmVybGFwX3RwNTMudHN2IikpCn0gZWxzZSB7CiAgIyBiaW5kIHJvd3Mgb2YgYm90aCBzdl93aXRoX2xvd2V4cHIKICAjIGFuZCBzdl93aXRoX2xvc3NfY252IGFuZCBzYXZlCiAgYmluZF9yb3dzKAogICAgc3Zfd2l0aF9sb3NzX2NudiwKICAgIHN2X3dpdGhfbG93ZXhwcgogICkgJT4lCiAgICB3cml0ZV90c3YoZmlsZS5wYXRoKHJlc3VsdHNfZGlyLCAic3Zfb3ZlcmxhcF90cDUzLnRzdiIpKQp9CmBgYAoK</div>
 
 
 
@@ -1865,7 +2845,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("10-HGG-TP53-annotation.Rmd");
+  window.initializeSourceEmbed("04-tp53-sv-loss.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>

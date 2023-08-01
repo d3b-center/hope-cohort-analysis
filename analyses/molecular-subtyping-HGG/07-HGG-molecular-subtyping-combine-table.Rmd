@@ -58,8 +58,7 @@ data_dir <- file.path(root_dir, "data")
 cn_gistic_df <- read_tsv(file.path(results_dir, "HGG_cleaned_cnv.tsv"))
 mutation_df <- read_tsv(file.path(results_dir, "HGG_cleaned_mutation.tsv"))
 hgg_meta <- read_tsv(file.path(subset_dir, "hgg_metadata.tsv")) %>% 
-  dplyr::filter(cohort %in% c("PBTA", "Kentucky", "DGD"),
-                !is.na(pathology_diagnosis)) %>%
+  dplyr::filter(!is.na(pathology_diagnosis)) %>%
   # create cell line merge id & tumor merge id
   mutate(id = ifelse(composition == "Derived Cell Line", paste(sample_id, composition, cell_line_composition, cell_line_passage, sep = "_"),
                      paste(sample_id, composition, sep= "_")))
@@ -235,7 +234,7 @@ h3_k28_df <- all_data_df %>%
          age_at_diagnosis_yr,
          CNS_region,
          relevant_coding_mutations,
-         PDGFRA_focal_status,
+         #PDGFRA_focal_status,
          PTEN_focal_status,
          EGFR_focal_status,
          EGFR_expression_zscore,
@@ -372,16 +371,6 @@ We will label samples without H3 mutations as `HGG, H3 wildtype` below.
 > * Mutually exclusive of TP53 and ATRX mutation
 > * Typically occurs in adult tumors
 
-Let's first filter by the broad arm data and see what we get.
-
-```{r}
-all_data_df %>%
-  filter(`1p` == "loss" & `19q` == "loss")
-```
-
-No co-occurring 1p/19q
-
-> We expect very few, if any of these (maybe 1 when we looked by CNV), so I think maybe we can approach this cohort by starting to look for 1p/19q codeletions in all samples + IDH mutations, and if we see any, we may manually want to check the CNV plots just to confirm.
 
 ### IHG subtype
 
@@ -456,7 +445,6 @@ as.data.frame(table(molecular_subtype_table$molecular_subtype)) %>%
 ```{r}
 # which tumors were not yet subtyped?
 not_subtyped <- setdiff(unique(all_data_df$id), molecular_subtype_table$id)
-#"BS_DBH8YWA1"
   
   
 wildtype_df <- all_data_df %>%
@@ -483,7 +471,6 @@ wildtype_methyl <- all_data_df %>%
 wildtype_df <- wildtype_df %>%
   bind_rows(wildtype_methyl)
 
-wildtype_df %>% arrange(MYCN_focal_status, PDGFRA_focal_status)
 ```
 
 ### Add samples missing from all_data_df due to not having any mutations/cnv data

@@ -54,7 +54,7 @@ Crossing fusion file with hgg_metadata file to select HGG cohort.
 ```{r}
 hgg_meta <- read_tsv(file.path(input_dir, "hgg_metadata.tsv"))
 
-fusion_hgg <- read_tsv(file.path(data_dir, "fusion_summary_lgg_hgg_foi.tsv")) %>%
+fusion_hgg <- read_tsv(file.path(root_dir, "analyses", "molecular-subtyping-HGG", "input", "fusion_summary_hgg_foi.tsv")) %>%
   filter(Kids_First_Biospecimen_ID %in% hgg_meta$Kids_First_Biospecimen_ID)
 
 ```
