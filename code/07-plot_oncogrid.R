@@ -77,48 +77,45 @@ annot_info <- annot_info[samples_to_use,]
 
 # annotation 1
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
-col_fun_msi = colorRamp2(c(0, max(annot_info$MSI, na.rm = T)), c("white", "purple3"))
-annot_info$Tumor_Descriptor[is.na(annot_info$Tumor_Descriptor)] <- "N/A"
 annot_info$Integrated_Diagnosis[is.na(annot_info$Integrated_Diagnosis)] <- "N/A"
+annot_info$Diagnosis_Type[is.na(annot_info$Diagnosis_Type)] <- "N/A"
+annot_info$Tumor_Location[is.na(annot_info$Tumor_Location)] <- "N/A"
 annot_info$Sex[is.na(annot_info$Sex)] <- "N/A"
-annot_info$Age_Two_Groups[is.na(annot_info$Age_Two_Groups)] <- "N/A"
-annot_info$Age_Two_Groups <- factor(annot_info$Age_Two_Groups, levels = c("[0,15]", "(15,40]", "N/A"))
-annot_info$Age_Three_Groups[is.na(annot_info$Age_Three_Groups)] <- "N/A"
-annot_info$Age_Three_Groups <- factor(annot_info$Age_Three_Groups, levels = c("[0,15]", "(15,26]", "(26,40]", "N/A"))
-ha = HeatmapAnnotation(df = annot_info , col = list(
-  TMB = col_fun_tmb,
-  MSI = col_fun_msi,
-  Sequencing_Experiment = c("WGS" = "red",
-                            "RNA-Seq" = "yellow",
-                            "RNA-Seq, WGS" = "orange",
-                            "N/A" = "gray"),
-  Tumor_Descriptor = c("Initial CNS Tumor" = "#cee397",
-                       "Progressive" = "#827397",
-                       "Recurrence" = "#363062",
-                       "Second Malignancy" = "#005082",
-                       "N/A" = "gray"),
-  Integrated_Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
-                           "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
-                           "Astrocytoma" = "brown2", 
-                           "Glioblastoma" = "orange",
-                           "Pleomorphic xanthoastrocytoma" = "darkgreen",
-                           "Diffuse Midline Glioma" = "blue2",
-                           "N/A" = "gray"),
-  Sex = c("Female" = "deeppink4",
-          "Male" = "navy",
-          "N/A" = "gray"),
-  Age_Two_Groups = c("[0,15]" = "gold",
-                     "(15,40]" = "purple",
-                     "N/A" = "gray"),
-  Age_Three_Groups = c("[0,15]" = "gold",
-                       "(15,26]" = "purple",
-                       "(26,40]" = "darkgreen",
-                       "N/A" = "gray")),
-  annotation_name_gp = gpar(fontsize = 9),
-  gp = gpar(col = "#595959"), simple_anno_size = unit(4, "mm"), annotation_name_side = "left",
-  annotation_legend_param = list(
-    Sequencing_Experiment = list(nrow = 3)
-  ))
+annot_info$Age[is.na(annot_info$Age)] <- "N/A"
+annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,40]", "N/A"))
+ha = HeatmapAnnotation(df = annot_info , 
+                       col = list(TMB = col_fun_tmb,
+                                  Sequencing_Experiment = c("WGS" = "red",
+                                                            "RNA-Seq" = "yellow",
+                                                            "RNA-Seq, WGS" = "orangered",
+                                                            "RNA-Seq, WGS_Tumor_Only" = "orange"),
+                                  Integrated_Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
+                                                           "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
+                                                           "Astrocytoma" = "brown2", 
+                                                           "Glioblastoma" = "orange",
+                                                           "Pleomorphic xanthoastrocytoma" = "darkgreen",
+                                                           "Diffuse Midline Glioma" = "blue2",
+                                                           "N/A" = "gray"),
+                                  Diagnosis_Type = c("Initial CNS Tumor" = "#cee397",
+                                                     "Progressive" = "#827397",
+                                                     "Recurrence" = "#363062",
+                                                     "Second Malignancy" = "#005082",
+                                                     "N/A" = "gray"),
+                                  Tumor_Location = c("Cortical" = "magenta",
+                                                     "Other/Multiple locations/NOS" = "pink",
+                                                     "Midline" = "purple",
+                                                     "Cerebellar" = "navy"),
+                                  Sex = c("Female" = "deeppink4",
+                                          "Male" = "navy",
+                                          "N/A" = "gray"),
+                                  Age = c("[0,15]" = "gold",
+                                          "(15,40]" = "purple",
+                                          "N/A" = "gray")),
+                       annotation_name_gp = gpar(fontsize = 9),
+                       gp = gpar(col = "#595959"), simple_anno_size = unit(4, "mm"), annotation_name_side = "left",
+                       annotation_legend_param = list(
+                         Sequencing_Experiment = list(nrow = 3)
+                       ))
 
 # annotation 2
 amp = ifelse(apply(mat, 1, function(x) sum(grepl("GAI", x) + grepl("LOS",x) + grepl("OVE",x) + grepl("UNE",x))/length(x) > 0), "Copy number alteration and RNAseq Expression", "Genetic and Fusion alteration")
@@ -221,7 +218,7 @@ dev.off()
 
 # column order by sex + age
 sex_age_ordered <- annot_info %>% 
-  arrange(Sex, Age_Two_Groups, Age_Three_Groups)
+  arrange(Sex, Age)
 ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                alter_fun = alter_fun, col = col, show_column_names = TRUE, 
                column_names_gp = gpar(fontsize = 9),
@@ -248,7 +245,7 @@ tmp <- reshape2::melt(mat) %>%
 tmp <- annot_info %>% 
   rownames_to_column("sample_id") %>%
   inner_join(tmp, by = c("sample_id" = "Var2")) %>%
-  arrange(Sex, Age_Two_Groups, Age_Three_Groups, desc(value)) %>%
+  arrange(Sex, Age, desc(value)) %>%
   column_to_rownames("sample_id")
 ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                alter_fun = alter_fun, col = col, show_column_names = TRUE, 

@@ -37,6 +37,10 @@ deg <- read.delim(file.path(data_dir, "deg_genes.tsv"), header = F) %>%
 wgs_ids <- readRDS(file.path(data_dir, "merged_files", "cnv_merged.rds")) %>%
   pull(Kids_First_Biospecimen_ID) %>%
   unique()
+wgs_tumor_only_ids <- readRDS(file.path(data_dir, "merged_files", "cnv_merged_tumor_only.rds")) %>%
+  pull(Kids_First_Biospecimen_ID) %>%
+  unique()
+wgs_tumor_only_ids <- setdiff(wgs_tumor_only_ids, wgs_ids)
 rna_ids <- file.path(data_dir, "merged_files", "gene-expression-rsem-tpm-collapsed.rds") %>%
   readRDS() %>%
   colnames()
@@ -65,6 +69,24 @@ manifest <- manifest %>%
   dplyr::select(Kids_First_Biospecimen_ID, Sample_ID, Sequencing_Experiment) %>%
   unique()
 
+# add tumor-only for remaining ids
+manifest_tumor_only <- list.files(path = file.path(data_dir, "manifest_tumor_only"), pattern = "manifest.*.tsv", full.names = T)
+manifest_tumor_only <- grep("msi", manifest_tumor_only, invert = T, value = T)
+manifest_tumor_only <- lapply(manifest_tumor_only, FUN = function(x) readr::read_tsv(x))
+manifest_tumor_only <- data.table::rbindlist(manifest_tumor_only)
+colnames(manifest_tumor_only) <- gsub(" ", "_", colnames(manifest_tumor_only))
+manifest_tumor_only <- manifest_tumor_only %>%
+  filter(Kids_First_Biospecimen_ID %in% c(wgs_tumor_only_ids),
+         sample_id %in% hist_df$Sample_ID) %>%
+  dplyr::mutate(Sample_ID = sample_id,
+                Sequencing_Experiment = "WGS_Tumor_Only",
+                experimental_strategy = "WGS_Tumor_Only") %>%
+  dplyr::select(Kids_First_Biospecimen_ID, Sample_ID, Sequencing_Experiment) %>%
+  unique()
+
+# combine both into manifest
+manifest <- rbind(manifest, manifest_tumor_only)
+
 # annotation with sample and experimental strategy
 seq_info <- manifest %>%
   dplyr::select(-c(Kids_First_Biospecimen_ID)) %>%
@@ -88,7 +110,7 @@ annot_info <- hist_df %>%
   dplyr::select(Sample, Sequencing_Experiment, Integrated_Diagnosis, Diagnosis_Type, Tumor_Location, Sex, Age, TMB)
 
 # save annotation file
-write.table(annot_info, file = file.path(output_dir, "annotation.txt"), quote = F, sep = "\t", row.names = F)
+write.table(annot_info, file = file.path(output_dir, "annotation_add_tumor_only.txt"), quote = F, sep = "\t", row.names = F)
 
 # 1. get degene info vs GTEx Brain
 genes_df <- readRDS(file.path(output_dir, "hope_cohort_vs_gtex_brain_degs.rds"))
@@ -110,6 +132,20 @@ cnv_genes <- cnv_genes %>%
   dplyr::select(Sample_ID, Gene_name, label) %>%
   unique()
 
+# get cnv info (tumor-only)
+cnv_genes_tumor_only <- readRDS(file.path("data/merged_files/cnv_merged_tumor_only.rds"))
+cnv_genes_tumor_only <- cnv_genes_tumor_only %>%
+  dplyr::mutate(label = ifelse(status == "Gain", "GAI", "LOS")) %>%
+  filter(hgnc_symbol %in% cnv$V1,
+         Kids_First_Biospecimen_ID %in% wgs_tumor_only_ids) %>%
+  dplyr::rename("Gene_name" = "hgnc_symbol") %>%
+  inner_join(manifest, by = "Kids_First_Biospecimen_ID") %>%
+  dplyr::select(Sample_ID, Gene_name, label) %>%
+  unique()
+
+# combine both
+cnv_genes <- rbind(cnv_genes, cnv_genes_tumor_only)
+
 # 3. get snv info
 mut_genes <- readRDS(file.path("data/merged_files/snv_merged.rds"))
 
@@ -127,6 +163,26 @@ mut_genes <- mut_genes %>%
   inner_join(manifest, by = "Kids_First_Biospecimen_ID") %>%
   dplyr::select(Sample_ID, Gene_name, label) %>%
   unique()
+
+# get snv info (tumor-only)
+mut_genes_tumor_only <- readRDS(file.path("data/merged_files/snv_merged_tumor_only.rds"))
+mut_genes_tumor_only <- mut_genes_tumor_only %>%
+  filter(Variant_Classification %in% c("Missense_Mutation", "Nonsense_Mutation", "Frame_Shift_Del", "Frame_Shift_Ins", "In_Frame_Del", "Splice_Site"),
+         Kids_First_Biospecimen_ID %in% wgs_tumor_only_ids) %>%
+  dplyr::mutate(label = case_when(Variant_Classification %in% "Missense_Mutation" ~ "MIS",
+                                  Variant_Classification %in% "Nonsense_Mutation" ~ "NOS",
+                                  Variant_Classification %in% "Frame_Shift_Del" ~ "FSD",
+                                  Variant_Classification %in% "Frame_Shift_Ins" ~ "FSI",
+                                  Variant_Classification %in% "In_Frame_Del" ~ "IFD",
+                                  Variant_Classification %in% "Splice_Site" ~ "SPS")) %>%
+  filter(Hugo_Symbol %in% snv$V1) %>%
+  dplyr::rename("Gene_name" = "Hugo_Symbol") %>%
+  inner_join(manifest, by = "Kids_First_Biospecimen_ID") %>%
+  dplyr::select(Sample_ID, Gene_name, label) %>%
+  unique()
+
+# combine both
+mut_genes <- rbind(mut_genes, mut_genes_tumor_only)
 
 # 4. get fusion info
 fus_genes <- readRDS(file.path("data/merged_files/fusions_merged.rds"))
@@ -175,9 +231,9 @@ oncogrid_mat <- snv_fus %>%
 
 print("Samples missing from oncogrid:")
 print(setdiff(hist_df$Sample_ID, oncogrid_mat$Sample))
-# "7316-1455"  "7316-942"   "7316-24"    "7316-255"   "7316-1889"  "7316-212"   "7316UP-904"
+# "7316-942", "7316-24", "7316-212", "7316UP-904"
 
 # save output matrix
 oncogrid_mat <- oncogrid_mat %>%
   filter(Sample %in% annot_info$Sample)
-write.table(oncogrid_mat, file = file.path(output_dir, "oncoprint.txt"), quote = F, sep = "\t", row.names = F)
+write.table(oncogrid_mat, file = file.path(output_dir, "oncoprint_add_tumor_only.txt"), quote = F, sep = "\t", row.names = F)
