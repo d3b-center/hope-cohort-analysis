@@ -1512,7 +1512,7 @@ window.initializeCodeFolding = function(show) {
     $(this).detach().appendTo(div);
 
     // add a show code button right above
-    var showCodeText = $('<span>' + (showThis ? 'Hide' : 'Code') + '</span>');
+    var showCodeText = $('<span>' + (showThis ? 'Hide' : 'Show') + '</span>');
     var showCodeButton = $('<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm code-folding-btn pull-right float-right"></button>');
     showCodeButton.append(showCodeText);
     showCodeButton
@@ -1538,7 +1538,7 @@ window.initializeCodeFolding = function(show) {
     //   * Change text
     //   * add a class for intermediate states styling
     div.on('hide.bs.collapse', function () {
-      showCodeText.text('Code');
+      showCodeText.text('Show');
       showCodeButton.addClass('btn-collapsing');
     });
     div.on('hidden.bs.collapse', function () {
@@ -1764,15 +1764,29 @@ subtyping analyses</p>
 <h3>Libraries and functions</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KGFubm9GdXNlRGF0YSlcbmBgYCJ9 -->
-<pre class="r"><code>library(tidyverse)
-library(annoFuseData)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoibGlicmFyeSh0aWR5dmVyc2UpIn0= -->
+<pre class="r"><code>library(tidyverse)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-message-begin eyJkYXRhIjoi4pSA4pSAIEF0dGFjaGluZyBjb3JlIHRpZHl2ZXJzZSBwYWNrYWdlcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeXZlcnNlIDIuMC4wIOKUgOKUgFxu4pyUIGRwbHlyICAgICAxLjEuMiAgICAg4pyUIHJlYWRyICAgICAyLjEuNFxu4pyUIGZvcmNhdHMgICAxLjAuMCAgICAg4pyUIHN0cmluZ3IgICAxLjUuMFxu4pyUIGdncGxvdDIgICAzLjQuMiAgICAg4pyUIHRpYmJsZSAgICAzLjIuMVxu4pyUIGx1YnJpZGF0ZSAxLjkuMiAgICAg4pyUIHRpZHlyICAgICAxLjMuMFxu4pyUIHB1cnJyICAgICAxLjAuMSAgICAgXG7ilIDilIAgQ29uZmxpY3RzIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgCB0aWR5dmVyc2VfY29uZmxpY3RzKCkg4pSA4pSAXG7inJYgZHBseXI6OmZpbHRlcigpIG1hc2tzIHN0YXRzOjpmaWx0ZXIoKVxu4pyWIGRwbHlyOjpsYWcoKSAgICBtYXNrcyBzdGF0czo6bGFnKClcbuKEuSBVc2UgdGhlIGNvbmZsaWN0ZWQgcGFja2FnZSAoPGh0dHA6Ly9jb25mbGljdGVkLnItbGliLm9yZy8+KSB0byBmb3JjZSBhbGwgY29uZmxpY3RzIHRvIGJlY29tZSBlcnJvcnNcbiJ9 -->
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.2     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.2     ✔ tibble    3.2.1
+✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+✔ purrr     1.0.1     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<!-- rnb-message-end -->
+<!-- rnb-source-begin eyJkYXRhIjoibGlicmFyeShhbm5vRnVzZURhdGEpIn0= -->
+<pre class="r"><code>library(annoFuseData)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIycgR2VuZXJhdGUgZmlsdGVyZWQgZnVzaW9uIGZyYW1lXG4jJyBAcGFyYW0gZGYgVW5maWx0ZXJlZCBmdXNpb24gZGF0YSBmcmFtZVxuIycgQHBhcmFtIGJpb2lkIExpc3Qgb2YgYmlvc3BlY2ltZW4gSURzXG4jJyBAcGFyYW0gZnVzZXMgTGlzdCBvZiBleHBsaWNpdCBmdXNpb24gbmFtZXNcbiMnIEBwYXJhbSBnZW5lcyBMaXN0IG9mIGdlbmUgbmFtZXNcbiMnIEByZXR1cm4gdGhlIGZpbHRlcmVkIGZ1c2lvbiBkYXRhIGZyYW1lXG5maWx0ZXJGdXNpb24gPC0gZnVuY3Rpb24oZGYsIGJpb2lkLCBmdXNlcywgZ2VuZXMpIHtcbiAgaWYgKCFtaXNzaW5nKGJpb2lkKSkge1xuICAgIGRmIDwtIGRwbHlyOjpmaWx0ZXIoZGYsIFNhbXBsZSAlaW4lIGJpb2lkKVxuICB9XG4gIGlmICghbWlzc2luZyhmdXNlcykgJiAhbWlzc2luZyhnZW5lcykpIHtcbiAgICBkZiA8LSBkcGx5cjo6ZmlsdGVyKGRmLCBGdXNpb25OYW1lICVpbiUgZnVzZXMgfFxuICAgICAgICAgICAgICAgICAgIEdlbmUxQSAlaW4lIGdlbmVzIHxcbiAgICAgICAgICAgICAgICAgICBHZW5lMkEgJWluJSBnZW5lcyB8XG4gICAgICAgICAgICAgICAgICAgR2VuZTFCICVpbiUgZ2VuZXMgfFxuICAgICAgICAgICAgICAgICAgIEdlbmUyQiAlaW4lIGdlbmVzKVxuICB9IGVsc2UgaWYgKCFtaXNzaW5nKGZ1c2VzKSkge1xuICAgIGRmIDwtIGRwbHlyOjpmaWx0ZXIoZGYsIEZ1c2lvbk5hbWUgJWluJSBmdXNlcylcbiAgfSBlbHNlIGlmICghbWlzc2luZyhnZW5lcykpIHtcbiAgICBkZiA8LSBkcGx5cjo6ZmlsdGVyKGRmLFxuICAgICAgICAgICAgICAgICBHZW5lMUEgJWluJSBnZW5lcyB8XG4gICAgICAgICAgICAgICAgICAgR2VuZTJBICVpbiUgZ2VuZXMgfFxuICAgICAgICAgICAgICAgICAgIEdlbmUxQiAlaW4lIGdlbmVzIHxcbiAgICAgICAgICAgICAgICAgICBHZW5lMkIgJWluJSBnZW5lcylcbiAgfVxuICByZXR1cm4oZGYgJT4lIFxuICAgICAgICAgICBkcGx5cjo6c2VsZWN0KFNhbXBsZSwgRnVzaW9uTmFtZSwgRnVzaW9uX1R5cGUsIEdlbmUxQSwgR2VuZTFCLCBHZW5lMkEsIEdlbmUyQiwgR2VuZTFBX2Fubm8sIEdlbmUxQl9hbm5vLCByZWNpcHJvY2FsX2V4aXN0cykgJT4lXG4gICAgICAgICAgIGRpc3RpbmN0KCkpXG59XG5cbiMnIEdlbmVyYXRlIG1hdHJpeCB3aXRoIGZ1c2lvbiBjb3VudHNcbiMnIEBwYXJhbSBmdXNlREYgRmlsdGVyZWQgZnVzaW9uIGRhdGEgZnJhbWVcbiMnIEBwYXJhbSBiaW9pZCBMaXN0IG9mIGJpb3NwZWNpbWVuIElEcyB0aGF0IHNob3VsZCBiZSBpbmNsdWRlZCBpbiBmaW5hbCB0YWJsZVxuIycgQHJldHVybiBEYXRhIGZyYW1lIHRoYXQgY29udGFpbnMgZnVzaW9uIGNvdW50c1xucHJlcGFyZU91dHB1dCA8LSBmdW5jdGlvbihmdXNlREYsIGJpb2lkKSB7XG4gIGZ1c2VERiAlPiUgXG4gICAgIyBzb21lIGZ1c2lvbnMgaGF2ZSBpbi1mcmFtZSBhbmQgZnJhbWVzaGlmdCBmdXNpb24gY2FsbHMgZm9yIGEgc2FtcGxlXG4gICAgIyB0aGlzIHdpbGwgbWFrZSB1bmlxdWUgZnVzaW9uTmFtZSBhbmQgU2FtcGxlIGRhdGFzZXQgdG8gZ2V0IDEvMCB2YWx1ZXNcbiAgICBkcGx5cjo6c2VsZWN0KFNhbXBsZSxGdXNpb25OYW1lKSAlPiVcbiAgICB1bmlxdWUoKSAlPiVcbiAgICByZXNoYXBlMjo6ZGNhc3QoU2FtcGxlIH4gRnVzaW9uTmFtZSxmdW4uYWdncmVnYXRlID0gbGVuZ3RoKSAlPiVcbiAgICByaWdodF9qb2luKGRhdGEuZnJhbWUoU2FtcGxlID0gYmlvaWQpKSAlPiVcbiAgICByZXBsYWNlKGlzLm5hKC4pLCAwKSAlPiVcbiAgICByZW5hbWUoS2lkc19GaXJzdF9CaW9zcGVjaW1lbl9JRCA9IFNhbXBsZSlcbn1cbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiMnIEdlbmVyYXRlIGZpbHRlcmVkIGZ1c2lvbiBmcmFtZSIsIiMnIEBwYXJhbSBkZiBVbmZpbHRlcmVkIGZ1c2lvbiBkYXRhIGZyYW1lIiwiIycgQHBhcmFtIGJpb2lkIExpc3Qgb2YgYmlvc3BlY2ltZW4gSURzIiwiIycgQHBhcmFtIGZ1c2VzIExpc3Qgb2YgZXhwbGljaXQgZnVzaW9uIG5hbWVzIiwiIycgQHBhcmFtIGdlbmVzIExpc3Qgb2YgZ2VuZSBuYW1lcyIsIiMnIEByZXR1cm4gdGhlIGZpbHRlcmVkIGZ1c2lvbiBkYXRhIGZyYW1lIiwiZmlsdGVyRnVzaW9uIDwtIGZ1bmN0aW9uKGRmLCBiaW9pZCwgZnVzZXMsIGdlbmVzKSB7XG4gIGlmICghbWlzc2luZyhiaW9pZCkpIHtcbiAgICBkZiA8LSBkcGx5cjo6ZmlsdGVyKGRmLCBTYW1wbGUgJWluJSBiaW9pZClcbiAgfVxuICBpZiAoIW1pc3NpbmcoZnVzZXMpICYgIW1pc3NpbmcoZ2VuZXMpKSB7XG4gICAgZGYgPC0gZHBseXI6OmZpbHRlcihkZiwgRnVzaW9uTmFtZSAlaW4lIGZ1c2VzIHxcbiAgICAgICAgICAgICAgICAgICBHZW5lMUEgJWluJSBnZW5lcyB8XG4gICAgICAgICAgICAgICAgICAgR2VuZTJBICVpbiUgZ2VuZXMgfFxuICAgICAgICAgICAgICAgICAgIEdlbmUxQiAlaW4lIGdlbmVzIHxcbiAgICAgICAgICAgICAgICAgICBHZW5lMkIgJWluJSBnZW5lcylcbiAgfSBlbHNlIGlmICghbWlzc2luZyhmdXNlcykpIHtcbiAgICBkZiA8LSBkcGx5cjo6ZmlsdGVyKGRmLCBGdXNpb25OYW1lICVpbiUgZnVzZXMpXG4gIH0gZWxzZSBpZiAoIW1pc3NpbmcoZ2VuZXMpKSB7XG4gICAgZGYgPC0gZHBseXI6OmZpbHRlcihkZixcbiAgICAgICAgICAgICAgICAgR2VuZTFBICVpbiUgZ2VuZXMgfFxuICAgICAgICAgICAgICAgICAgIEdlbmUyQSAlaW4lIGdlbmVzIHxcbiAgICAgICAgICAgICAgICAgICBHZW5lMUIgJWluJSBnZW5lcyB8XG4gICAgICAgICAgICAgICAgICAgR2VuZTJCICVpbiUgZ2VuZXMpXG4gIH1cbiAgcmV0dXJuKGRmICU+JSBcbiAgICAgICAgICAgZHBseXI6OnNlbGVjdChTYW1wbGUsIEZ1c2lvbk5hbWUsIEZ1c2lvbl9UeXBlLCBHZW5lMUEsIEdlbmUxQiwgR2VuZTJBLCBHZW5lMkIsIEdlbmUxQV9hbm5vLCBHZW5lMUJfYW5ubywgcmVjaXByb2NhbF9leGlzdHMpICU+JVxuICAgICAgICAgICBkaXN0aW5jdCgpKVxufSIsIiIsIiMnIEdlbmVyYXRlIG1hdHJpeCB3aXRoIGZ1c2lvbiBjb3VudHMiLCIjJyBAcGFyYW0gZnVzZURGIEZpbHRlcmVkIGZ1c2lvbiBkYXRhIGZyYW1lIiwiIycgQHBhcmFtIGJpb2lkIExpc3Qgb2YgYmlvc3BlY2ltZW4gSURzIHRoYXQgc2hvdWxkIGJlIGluY2x1ZGVkIGluIGZpbmFsIHRhYmxlIiwiIycgQHJldHVybiBEYXRhIGZyYW1lIHRoYXQgY29udGFpbnMgZnVzaW9uIGNvdW50cyIsInByZXBhcmVPdXRwdXQgPC0gZnVuY3Rpb24oZnVzZURGLCBiaW9pZCkge1xuICBmdXNlREYgJT4lIFxuICAgICMgc29tZSBmdXNpb25zIGhhdmUgaW4tZnJhbWUgYW5kIGZyYW1lc2hpZnQgZnVzaW9uIGNhbGxzIGZvciBhIHNhbXBsZVxuICAgICMgdGhpcyB3aWxsIG1ha2UgdW5pcXVlIGZ1c2lvbk5hbWUgYW5kIFNhbXBsZSBkYXRhc2V0IHRvIGdldCAxLzAgdmFsdWVzXG4gICAgZHBseXI6OnNlbGVjdChTYW1wbGUsRnVzaW9uTmFtZSkgJT4lXG4gICAgdW5pcXVlKCkgJT4lXG4gICAgcmVzaGFwZTI6OmRjYXN0KFNhbXBsZSB+IEZ1c2lvbk5hbWUsZnVuLmFnZ3JlZ2F0ZSA9IGxlbmd0aCkgJT4lXG4gICAgcmlnaHRfam9pbihkYXRhLmZyYW1lKFNhbXBsZSA9IGJpb2lkKSkgJT4lXG4gICAgcmVwbGFjZShpcy5uYSguKSwgMCkgJT4lXG4gICAgcmVuYW1lKEtpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQgPSBTYW1wbGUpXG59Il19 -->
 <pre class="r"><code>#&#39; Generate filtered fusion frame
 #&#39; @param df Unfiltered fusion data frame
 #&#39; @param bioid List of biospecimen IDs
@@ -1826,7 +1840,7 @@ prepareOutput &lt;- function(fuseDF, bioid) {
 <h3>Read in data</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YURpciA8LSBmaWxlLnBhdGgoXCIuLlwiLCBcIi4uXCIsIFwiZGF0YVwiKVxuZnVzRGlyIDwtIGZpbGUucGF0aChcIi4uXCIsIFwiLi5cIiwgXCJhbmFseXNlc1wiLCBcImZ1c2lvbl9maWx0ZXJpbmdcIiwgXCJyZXN1bHRzXCIpXG5hbm5vdERpciA8LSBmaWxlLnBhdGgoXCIuLlwiLCBcIi4uXCIsIFwiYW5hbHlzZXNcIiwgXCJmdXNpb25fZmlsdGVyaW5nXCIsIFwicmVmZXJlbmNlc1wiKVxuaW5wdXREaXIgPC0gXCJpbnB1dFwiXG4jJyBBbm5vdGF0aW9uIGZpbGUgdG8gYmUgdXNlZCBmb3IgaWRlbnRpZnlpbmcga2luYXNlIGdlbmVzXG5hbm5vdCA8LSByZWFkLmRlbGltKHN5c3RlbS5maWxlKFwiZXh0ZGF0YVwiLCBcImdlbmVsaXN0cmVmZXJlbmNlLnR4dFwiLCBwYWNrYWdlID0gXCJhbm5vRnVzZURhdGFcIikpXG5cbiMnIFRoZSBwdXRhdGl2ZSBvbmNvZ2VuaWMgZnVzaW9uIGZpbGUgaXMgd2hhdCB3ZSdsbCB1c2UgdG8gY2hlY2sgZm9yIHRoZSAjJyBwcmVzZW5jZSBvciBhYnNlbmNlIG9mIHRoZSBmdXNpb25zLlxuIycgSG93ZXZlciwgc29tZSBiaW9zcGVjaW1lbnMgYXJlIG5vdCByZXByZXNlbnRlZCBpbiB0aGlzIGZpbHRlcmVkLCBwcmlvcml0aXplZFxuIycgZmlsZSBidXQgaGF2ZSBiZWVuIGFzc2F5ZWQgLSB3ZSB3aWxsIGdhdGhlciB0aG9zZSBmcm9tIHRoZSBoaXN0b2xvZ3kgZmlsZVxuaGlzdCA8LSByZWFkX3RzdihmaWxlLnBhdGgoZGF0YURpciwgXCJIb3BlLUdCTS1oaXN0b2xvZ2llcy1iYXNlLnRzdlwiKSlcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjpbImRhdGFEaXIgPC0gZmlsZS5wYXRoKFwiLi5cIiwgXCIuLlwiLCBcImRhdGFcIikiLCJmdXNEaXIgPC0gZmlsZS5wYXRoKFwiLi5cIiwgXCIuLlwiLCBcImFuYWx5c2VzXCIsIFwiZnVzaW9uX2ZpbHRlcmluZ1wiLCBcInJlc3VsdHNcIikiLCJhbm5vdERpciA8LSBmaWxlLnBhdGgoXCIuLlwiLCBcIi4uXCIsIFwiYW5hbHlzZXNcIiwgXCJmdXNpb25fZmlsdGVyaW5nXCIsIFwicmVmZXJlbmNlc1wiKSIsImlucHV0RGlyIDwtIFwiaW5wdXRcIiIsIiMnIEFubm90YXRpb24gZmlsZSB0byBiZSB1c2VkIGZvciBpZGVudGlmeWluZyBraW5hc2UgZ2VuZXMiLCJhbm5vdCA8LSByZWFkLmRlbGltKHN5c3RlbS5maWxlKFwiZXh0ZGF0YVwiLCBcImdlbmVsaXN0cmVmZXJlbmNlLnR4dFwiLCBwYWNrYWdlID0gXCJhbm5vRnVzZURhdGFcIikpIiwiIiwiIycgVGhlIHB1dGF0aXZlIG9uY29nZW5pYyBmdXNpb24gZmlsZSBpcyB3aGF0IHdlJ2xsIHVzZSB0byBjaGVjayBmb3IgdGhlICMnIHByZXNlbmNlIG9yIGFic2VuY2Ugb2YgdGhlIGZ1c2lvbnMuIiwiIycgSG93ZXZlciwgc29tZSBiaW9zcGVjaW1lbnMgYXJlIG5vdCByZXByZXNlbnRlZCBpbiB0aGlzIGZpbHRlcmVkLCBwcmlvcml0aXplZCIsIiMnIGZpbGUgYnV0IGhhdmUgYmVlbiBhc3NheWVkIC0gd2Ugd2lsbCBnYXRoZXIgdGhvc2UgZnJvbSB0aGUgaGlzdG9sb2d5IGZpbGUiLCJoaXN0IDwtIHJlYWRfdHN2KGZpbGUucGF0aChkYXRhRGlyLCBcIkhvcGUtR0JNLWhpc3RvbG9naWVzLWJhc2UudHN2XCIpKSJdfQ== -->
 <pre class="r"><code>dataDir &lt;- file.path(&quot;..&quot;, &quot;..&quot;, &quot;data&quot;)
 fusDir &lt;- file.path(&quot;..&quot;, &quot;..&quot;, &quot;analyses&quot;, &quot;fusion_filtering&quot;, &quot;results&quot;)
 annotDir &lt;- file.path(&quot;..&quot;, &quot;..&quot;, &quot;analyses&quot;, &quot;fusion_filtering&quot;, &quot;references&quot;)
@@ -1839,22 +1853,23 @@ annot &lt;- read.delim(system.file(&quot;extdata&quot;, &quot;genelistreference.
 #&#39; file but have been assayed - we will gather those from the histology file
 hist &lt;- read_tsv(file.path(dataDir, &quot;Hope-GBM-histologies-base.tsv&quot;))</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiUm93czogMzgyIENvbHVtbnM6IDk44pSA4pSAIENvbHVtbiBzcGVjaWZpY2F0aW9uIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgFxuRGVsaW1pdGVyOiBcIlxcdFwiXG5jaHIgKDUzKTogS2lkc19GaXJzdF9CaW9zcGVjaW1lbl9JRCwgc2FtcGxlX2lkLCBzYW1wbGVfaWRfd19hcHBlbmRlZCwgS2lkc19GaXJzLi4uXG5kYmwgKDIwKTogYWxpcXVvdF9pZCwgYWdlX2F0X2RpYWdub3Npc19kYXlzLCBhZ2VfYXRfZXZlbnRfZGF5cywgT1NfZGF5cywgRUZTX2RhLi4uXG5sZ2wgKDI1KTogQ05TX3JlZ2lvbiwgaW50ZWdyYXRlZF9kaWFnbm9zaXMsIHNob3J0X2hpc3RvbG9neSwgYnJvYWRfaGlzdG9sb2d5LCBiLi4uXG7ihLkgVXNlIGBzcGVjKClgIHRvIHJldHJpZXZlIHRoZSBmdWxsIGNvbHVtbiBzcGVjaWZpY2F0aW9uIGZvciB0aGlzIGRhdGEuXG7ihLkgU3BlY2lmeSB0aGUgY29sdW1uIHR5cGVzIG9yIHNldCBgc2hvd19jb2xfdHlwZXMgPSBGQUxTRWAgdG8gcXVpZXQgdGhpcyBtZXNzYWdlLlxuIn0= -->
-<pre><code>Rows: 382 Columns: 98── Column specification ───────────────────────────────────────────────────────────
+<!-- rnb-message-begin eyJkYXRhIjoiUm93czogMzgyIENvbHVtbnM6IDk4XG7ilIDilIAgQ29sdW1uIHNwZWNpZmljYXRpb24g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSAXG5EZWxpbWl0ZXI6IFwiXFx0XCJcbmNociAoNTMpOiBLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lELCBzYW1wbGVfaWQsIHNhbXBsZV9pZF93X2FwcGVuZGVkLCBLaWRzX0YuLi5cbmRibCAoMjApOiBhbGlxdW90X2lkLCBhZ2VfYXRfZGlhZ25vc2lzX2RheXMsIGFnZV9hdF9ldmVudF9kYXlzLCBPU19kYXlzLCBFRlMuLi5cbmxnbCAoMjUpOiBDTlNfcmVnaW9uLCBpbnRlZ3JhdGVkX2RpYWdub3Npcywgc2hvcnRfaGlzdG9sb2d5LCBicm9hZF9oaXN0b2xvZ3kuLi5cblxu4oS5IFVzZSBgc3BlYygpYCB0byByZXRyaWV2ZSB0aGUgZnVsbCBjb2x1bW4gc3BlY2lmaWNhdGlvbiBmb3IgdGhpcyBkYXRhLlxu4oS5IFNwZWNpZnkgdGhlIGNvbHVtbiB0eXBlcyBvciBzZXQgYHNob3dfY29sX3R5cGVzID0gRkFMU0VgIHRvIHF1aWV0IHRoaXMgbWVzc2FnZS5cbiJ9 -->
+<pre><code>Rows: 382 Columns: 98
+── Column specification ────────────────────────────────────────────────────────
 Delimiter: &quot;\t&quot;
-chr (53): Kids_First_Biospecimen_ID, sample_id, sample_id_w_appended, Kids_Firs...
-dbl (20): aliquot_id, age_at_diagnosis_days, age_at_event_days, OS_days, EFS_da...
-lgl (25): CNS_region, integrated_diagnosis, short_histology, broad_histology, b...
+chr (53): Kids_First_Biospecimen_ID, sample_id, sample_id_w_appended, Kids_F...
+dbl (20): aliquot_id, age_at_diagnosis_days, age_at_event_days, OS_days, EFS...
+lgl (25): CNS_region, integrated_diagnosis, short_histology, broad_histology...
+
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyByZWFkIGZ1c2lvbiBkYXRhXG5cbnB1dGF0aXZlT25jb2dlbmljREYgPC0gXG4gIHJlYWRfcmRzKGZpbGUucGF0aChkYXRhRGlyLCBcIkhvcGUtZnVzaW9uLXB1dGF0aXZlLW9uY29nZW5pYy5yZHNcIikpICU+JSBcbiAgcmVuYW1lKFNhbXBsZSA9IEtpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQpXG5cblxuYGBgIn0= -->
+<!-- rnb-message-end -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiMgcmVhZCBmdXNpb24gZGF0YSIsIiIsInB1dGF0aXZlT25jb2dlbmljREYgPC0gXG4gIHJlYWRfcmRzKGZpbGUucGF0aChkYXRhRGlyLCBcIkhvcGUtZnVzaW9uLXB1dGF0aXZlLW9uY29nZW5pYy5yZHNcIikpICU+JSBcbiAgcmVuYW1lKFNhbXBsZSA9IEtpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQpIl19 -->
 <pre class="r"><code># read fusion data
 
 putativeOncogenicDF &lt;- 
   read_rds(file.path(dataDir, &quot;Hope-fusion-putative-oncogenic.rds&quot;)) %&gt;% 
-  rename(Sample = Kids_First_Biospecimen_ID)
-</code></pre>
+  rename(Sample = Kids_First_Biospecimen_ID)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -1863,7 +1878,7 @@ putativeOncogenicDF &lt;-
 <h3>Output</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGdnX2hnZ0ZpbGUgPC0gZmlsZS5wYXRoKGlucHV0RGlyLCBcImZ1c2lvbl9zdW1tYXJ5X2hnZ19mb2kudHN2XCIpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoibGdnX2hnZ0ZpbGUgPC0gZmlsZS5wYXRoKGlucHV0RGlyLCBcImZ1c2lvbl9zdW1tYXJ5X2hnZ19mb2kudHN2XCIpIn0= -->
 <pre class="r"><code>lgg_hggFile &lt;- file.path(inputDir, &quot;fusion_summary_hgg_foi.tsv&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
@@ -1878,7 +1893,7 @@ putativeOncogenicDF &lt;-
 respectively, and <a href="https://github.com/AlexsLemonade/OpenPBTA-analysis/issues/808"><code>AlexsLemonade/OpenPBTA-analysis#808</code></a></p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIycgRXhhY3QgbWF0Y2ggYSBsaXN0IG9mIGZ1c2lvbnMgY29tbW9uIGluIGxvdy1ncmFkZSBnbGlvbWEgYW5kIGhpZ2gtZ3JhZGUgZ2xpb21hIHR1bW9yc1xuIycgYXMgd2VsbCBhcyBmdXNpb25zIGNvbnRhaW5pbmcgYSBwYXJ0aWN1bGFyIGdlbmUgd2l0aCBhbnkgb3RoZXIgZ2VuZVxubGdnRnVzZXMgPC0gYyhcbiAgXCJLSUFBMTU0OS0tQlJBRlwiLFxuICBcIkZHRlIxLS1UQUNDMVwiLFxuICBcIk1ZQi0tUUtJXCJcbilcbmxnZ2hnZ0dlbmVzIDwtIGMoXG4gIFwiQlJBRlwiLFxuICBcIkFMS1wiLFxuICBcIlJPUzFcIixcbiAgXCJOVFJLMVwiLFxuICBcIk5UUksyXCIsXG4gIFwiTlRSSzNcIixcbiAgXCJQREdGUkFcIixcbiAgXCJGR0ZSMlwiLFxuICBcIkZHRlIxXCIsXG4gIFwiTVlCXCIsXG4gIFwiTVlCTDFcIixcbiAgXCJSQUYxXCIsIFxuICBcIk1FVFwiXG4pXG5cbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiMnIEV4YWN0IG1hdGNoIGEgbGlzdCBvZiBmdXNpb25zIGNvbW1vbiBpbiBsb3ctZ3JhZGUgZ2xpb21hIGFuZCBoaWdoLWdyYWRlIGdsaW9tYSB0dW1vcnMiLCIjJyBhcyB3ZWxsIGFzIGZ1c2lvbnMgY29udGFpbmluZyBhIHBhcnRpY3VsYXIgZ2VuZSB3aXRoIGFueSBvdGhlciBnZW5lIiwibGdnRnVzZXMgPC0gYyhcbiAgXCJLSUFBMTU0OS0tQlJBRlwiLFxuICBcIkZHRlIxLS1UQUNDMVwiLFxuICBcIk1ZQi0tUUtJXCJcbikiLCJsZ2doZ2dHZW5lcyA8LSBjKFxuICBcIkJSQUZcIixcbiAgXCJBTEtcIixcbiAgXCJST1MxXCIsXG4gIFwiTlRSSzFcIixcbiAgXCJOVFJLMlwiLFxuICBcIk5UUkszXCIsXG4gIFwiUERHRlJBXCIsXG4gIFwiRkdGUjJcIixcbiAgXCJGR0ZSMVwiLFxuICBcIk1ZQlwiLFxuICBcIk1ZQkwxXCIsXG4gIFwiUkFGMVwiLCBcbiAgXCJNRVRcIlxuKSJdfQ== -->
 <pre class="r"><code>#&#39; Exact match a list of fusions common in low-grade glioma and high-grade glioma tumors
 #&#39; as well as fusions containing a particular gene with any other gene
 lggFuses &lt;- c(
@@ -1900,8 +1915,7 @@ lgghggGenes &lt;- c(
   &quot;MYBL1&quot;,
   &quot;RAF1&quot;, 
   &quot;MET&quot;
-)
-</code></pre>
+)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -1909,12 +1923,10 @@ lgghggGenes &lt;- c(
 <h3>Filter putative oncogenic fusions list</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5hbGxGdXNlTEdHSEdHIDwtIGZpbHRlckZ1c2lvbihkZiA9IHB1dGF0aXZlT25jb2dlbmljREYsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgIGZ1c2VzID0gbGdnRnVzZXMsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgIGdlbmVzID0gbGdnaGdnR2VuZXMpXG5cbmBgYCJ9 -->
-<pre class="r"><code>
-allFuseLGGHGG &lt;- filterFusion(df = putativeOncogenicDF,
+<!-- rnb-source-begin eyJkYXRhIjoiYWxsRnVzZUxHR0hHRyA8LSBmaWx0ZXJGdXNpb24oZGYgPSBwdXRhdGl2ZU9uY29nZW5pY0RGLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICBmdXNlcyA9IGxnZ0Z1c2VzLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICBnZW5lcyA9IGxnZ2hnZ0dlbmVzKSJ9 -->
+<pre class="r"><code>allFuseLGGHGG &lt;- filterFusion(df = putativeOncogenicDF,
                              fuses = lggFuses,
-                             genes = lgghggGenes)
-</code></pre>
+                             genes = lgghggGenes)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -1925,7 +1937,7 @@ is relevant to the subtyping tickets is not <em>missing</em> but instead
 has no evidence of the relevant fusions.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBnYXRoZXIgYW5kIGNvbWJpbmVcbnNwZWNpbWVuc1VuaW9uIDwtIGhpc3QgJT4lXG4gIGZpbHRlcihleHBlcmltZW50YWxfc3RyYXRlZ3kgPT0gXCJSTkEtU2VxXCIpICU+JVxuICBwdWxsKEtpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiMgZ2F0aGVyIGFuZCBjb21iaW5lIiwic3BlY2ltZW5zVW5pb24gPC0gaGlzdCAlPiVcbiAgZmlsdGVyKGV4cGVyaW1lbnRhbF9zdHJhdGVneSA9PSBcIlJOQS1TZXFcIikgJT4lXG4gIHB1bGwoS2lkc19GaXJzdF9CaW9zcGVjaW1lbl9JRCkiXX0= -->
 <pre class="r"><code># gather and combine
 specimensUnion &lt;- hist %&gt;%
   filter(experimental_strategy == &quot;RNA-Seq&quot;) %&gt;%
@@ -1940,7 +1952,7 @@ kinases for the final output file, since these will not need further
 interrogation.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBXaGljaCBnZW5lcy9mdXNpb25zIGFyZSBub3Qga2luYXNlcywgYnV0IGluIHRoZSBsaXN0P1xuIyBTZXBhcmF0ZSBmdXNpb25zIGludG8gZ2VuZXMsIGNvbWJpbmUgd2l0aCBnZW5lIGxpc3QsIGNoZWNrIGZvciBub3Qga2luYXNlXG5sZ2dGdXNlc19kZiA8LSBhcy5kYXRhLmZyYW1lKGxnZ0Z1c2VzKSAlPiVcbiAgc2VwYXJhdGUobGdnRnVzZXMsIGludG8gPSBjKFwiR2VuZTFBXCIsIFwiR2VuZTFCXCIpLCByZW1vdmUgPSBGKVxuXG5raW5hc2VzIDwtIGFubm90ICU+JVxuICBmaWx0ZXIodHlwZSA9PSBcIktpbmFzZVwiKSAlPiVcbiAgcHVsbChHZW5lX1N5bWJvbClcblxubGdnRnVzZXNfZGYgPC0gbGdnRnVzZXNfZGYgJT4lIFxuICBkcGx5cjo6bXV0YXRlKEdlbmUxQV9hbm5vID0gY2FzZV93aGVuKEdlbmUxQSAlaW4lIGtpbmFzZXMgfiBcIktpbmFzZVwiLCBUUlVFIH4gXCJOb24tS2luYXNlXCIpLCBcbiAgICAgICAgICAgICAgICBHZW5lMUJfYW5ubyA9IGNhc2Vfd2hlbihHZW5lMUIgJWluJSBraW5hc2VzIH4gXCJLaW5hc2VcIiwgVFJVRSB+IFwiTm9uLUtpbmFzZVwiKSlcblxuXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiMgV2hpY2ggZ2VuZXMvZnVzaW9ucyBhcmUgbm90IGtpbmFzZXMsIGJ1dCBpbiB0aGUgbGlzdD8iLCIjIFNlcGFyYXRlIGZ1c2lvbnMgaW50byBnZW5lcywgY29tYmluZSB3aXRoIGdlbmUgbGlzdCwgY2hlY2sgZm9yIG5vdCBraW5hc2UiLCJsZ2dGdXNlc19kZiA8LSBhcy5kYXRhLmZyYW1lKGxnZ0Z1c2VzKSAlPiVcbiAgc2VwYXJhdGUobGdnRnVzZXMsIGludG8gPSBjKFwiR2VuZTFBXCIsIFwiR2VuZTFCXCIpLCByZW1vdmUgPSBGKSIsIiIsImtpbmFzZXMgPC0gYW5ub3QgJT4lXG4gIGZpbHRlcih0eXBlID09IFwiS2luYXNlXCIpICU+JVxuICBwdWxsKEdlbmVfU3ltYm9sKSIsIiIsImxnZ0Z1c2VzX2RmIDwtIGxnZ0Z1c2VzX2RmICU+JSBcbiAgZHBseXI6Om11dGF0ZShHZW5lMUFfYW5ubyA9IGNhc2Vfd2hlbihHZW5lMUEgJWluJSBraW5hc2VzIH4gXCJLaW5hc2VcIiwgVFJVRSB+IFwiTm9uLUtpbmFzZVwiKSwgXG4gICAgICAgICAgICAgICAgR2VuZTFCX2Fubm8gPSBjYXNlX3doZW4oR2VuZTFCICVpbiUga2luYXNlcyB+IFwiS2luYXNlXCIsIFRSVUUgfiBcIk5vbi1LaW5hc2VcIikpIl19 -->
 <pre class="r"><code># Which genes/fusions are not kinases, but in the list?
 # Separate fusions into genes, combine with gene list, check for not kinase
 lggFuses_df &lt;- as.data.frame(lggFuses) %&gt;%
@@ -1952,8 +1964,7 @@ kinases &lt;- annot %&gt;%
 
 lggFuses_df &lt;- lggFuses_df %&gt;% 
   dplyr::mutate(Gene1A_anno = case_when(Gene1A %in% kinases ~ &quot;Kinase&quot;, TRUE ~ &quot;Non-Kinase&quot;), 
-                Gene1B_anno = case_when(Gene1B %in% kinases ~ &quot;Kinase&quot;, TRUE ~ &quot;Non-Kinase&quot;))
-</code></pre>
+                Gene1B_anno = case_when(Gene1B %in% kinases ~ &quot;Kinase&quot;, TRUE ~ &quot;Non-Kinase&quot;))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -1967,27 +1978,12 @@ retained, so I deleted the 3’ and 5’ part, and direct use</h2>
 <h4>Write LGG and HGG fusions to file</h4>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYWxsRnVzZUxHR0hHRyAlPiVcbiAgYXJyYW5nZShLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEKSAlPiVcbiAgd3JpdGVfdHN2KGxnZ19oZ2dGaWxlKVxuXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYWxsRnVzZUxHR0hHRyAlPiVcbiAgcmVuYW1lKEtpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQgPSBTYW1wbGUpICU+JVxuICBhcnJhbmdlKEtpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQpICU+JVxuICB3cml0ZV90c3YobGdnX2hnZ0ZpbGUpIn0= -->
 <pre class="r"><code>allFuseLGGHGG %&gt;%
+  rename(Kids_First_Biospecimen_ID = Sample) %&gt;%
   arrange(Kids_First_Biospecimen_ID) %&gt;%
-  write_tsv(lgg_hggFile)
-</code></pre>
+  write_tsv(lgg_hggFile)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gYGFycmFuZ2UoKWA6XG7ihLkgSW4gYXJndW1lbnQ6IGAuLjEgPSBLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEYC5cbkNhdXNlZCBieSBlcnJvcjpcbiEgb2JqZWN0ICdLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEJyBub3QgZm91bmRcbkJhY2t0cmFjZTpcbiAgMS4gYWxsRnVzZUxHR0hHRyAlPiUgYXJyYW5nZShLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lEKSAlPiUgLi4uXG4gIDcuIGRwbHlyOjo6YXJyYW5nZS5kYXRhLmZyYW1lKC4sIEtpZHNfRmlyc3RfQmlvc3BlY2ltZW5fSUQpXG4gIDguIGRwbHlyOjo6YXJyYW5nZV9yb3dzKC5kYXRhLCBkb3RzID0gZG90cywgbG9jYWxlID0gLmxvY2FsZSlcbiAxMC4gZHBseXI6OjptdXRhdGUuZGF0YS5mcmFtZShkYXRhLCBgOj1gKFwie25hbWV9XCIsICEhZG90KSwgLmtlZXAgPSBcIm5vbmVcIilcbiAxMS4gZHBseXI6OjptdXRhdGVfY29scyguZGF0YSwgZHBseXJfcXVvc3VyZXMoLi4uKSwgYnkpXG4gMTMuIGRwbHlyOjo6bXV0YXRlX2NvbChkb3RzW1tpXV0sIGRhdGEsIG1hc2ssIG5ld19jb2x1bW5zKVxuIDE0LiBtYXNrJGV2YWxfYWxsX211dGF0ZShxdW8pXG4gMTUuIGRwbHlyIChsb2NhbCkgZXZhbCgpXG4ifQ== -->
-<pre><code>Error in `arrange()`:
-ℹ In argument: `..1 = Kids_First_Biospecimen_ID`.
-Caused by error:
-! object &#39;Kids_First_Biospecimen_ID&#39; not found
-Backtrace:
-  1. allFuseLGGHGG %&gt;% arrange(Kids_First_Biospecimen_ID) %&gt;% ...
-  7. dplyr:::arrange.data.frame(., Kids_First_Biospecimen_ID)
-  8. dplyr:::arrange_rows(.data, dots = dots, locale = .locale)
- 10. dplyr:::mutate.data.frame(data, `:=`(&quot;{name}&quot;, !!dot), .keep = &quot;none&quot;)
- 11. dplyr:::mutate_cols(.data, dplyr_quosures(...), by)
- 13. dplyr:::mutate_col(dots[[i]], data, mask, new_columns)
- 14. mask$eval_all_mutate(quo)
- 15. dplyr (local) eval()</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
@@ -1996,6 +1992,42 @@ Backtrace:
 <h2>Session Info</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoic2Vzc2lvbkluZm8oKSJ9 -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiUiB2ZXJzaW9uIDQuMi4yICgyMDIyLTEwLTMxKVxuUGxhdGZvcm06IGFhcmNoNjQtYXBwbGUtZGFyd2luMjAgKDY0LWJpdClcblJ1bm5pbmcgdW5kZXI6IG1hY09TIFZlbnR1cmEgMTMuNC4xXG5cbk1hdHJpeCBwcm9kdWN0czogZGVmYXVsdFxuQkxBUzogICAvTGlicmFyeS9GcmFtZXdvcmtzL1IuZnJhbWV3b3JrL1ZlcnNpb25zLzQuMi1hcm02NC9SZXNvdXJjZXMvbGliL2xpYlJibGFzLjAuZHlsaWJcbkxBUEFDSzogL0xpYnJhcnkvRnJhbWV3b3Jrcy9SLmZyYW1ld29yay9WZXJzaW9ucy80LjItYXJtNjQvUmVzb3VyY2VzL2xpYi9saWJSbGFwYWNrLmR5bGliXG5cbmxvY2FsZTpcblsxXSBlbl9VUy5VVEYtOC9lbl9VUy5VVEYtOC9lbl9VUy5VVEYtOC9DL2VuX1VTLlVURi04L2VuX1VTLlVURi04XG5cbmF0dGFjaGVkIGJhc2UgcGFja2FnZXM6XG5bMV0gc3RhdHMgICAgIGdyYXBoaWNzICBnckRldmljZXMgdXRpbHMgICAgIGRhdGFzZXRzICBtZXRob2RzICAgYmFzZSAgICAgXG5cbm90aGVyIGF0dGFjaGVkIHBhY2thZ2VzOlxuIFsxXSBhbm5vRnVzZURhdGFfMC4xLjAgbHVicmlkYXRlXzEuOS4yICAgIGZvcmNhdHNfMS4wLjAgICAgICBzdHJpbmdyXzEuNS4wICAgICBcbiBbNV0gZHBseXJfMS4xLjIgICAgICAgIHB1cnJyXzEuMC4xICAgICAgICByZWFkcl8yLjEuNCAgICAgICAgdGlkeXJfMS4zLjAgICAgICAgXG4gWzldIHRpYmJsZV8zLjIuMSAgICAgICBnZ3Bsb3QyXzMuNC4yICAgICAgdGlkeXZlcnNlXzIuMC4wICAgXG5cbmxvYWRlZCB2aWEgYSBuYW1lc3BhY2UgKGFuZCBub3QgYXR0YWNoZWQpOlxuIFsxXSBic2xpYl8wLjUuMCAgICAgIGNvbXBpbGVyXzQuMi4yICAgcGlsbGFyXzEuOS4wICAgICBqcXVlcnlsaWJfMC4xLjQgXG4gWzVdIHRvb2xzXzQuMi4yICAgICAgYml0XzQuMC41ICAgICAgICBkaWdlc3RfMC42LjMzICAgIHRpbWVjaGFuZ2VfMC4yLjBcbiBbOV0ganNvbmxpdGVfMS44LjcgICBldmFsdWF0ZV8wLjIxICAgIGxpZmVjeWNsZV8xLjAuMyAgZ3RhYmxlXzAuMy4zICAgIFxuWzEzXSBwa2djb25maWdfMi4wLjMgIHJsYW5nXzEuMS4xICAgICAgY2xpXzMuNi4xICAgICAgICBwYXJhbGxlbF80LjIuMiAgXG5bMTddIHlhbWxfMi4zLjcgICAgICAgeGZ1bl8wLjM5ICAgICAgICBmYXN0bWFwXzEuMS4xICAgIHdpdGhyXzIuNS4wICAgICBcblsyMV0ga25pdHJfMS40MyAgICAgICBnZW5lcmljc18wLjEuMyAgIHZjdHJzXzAuNi4zICAgICAgc2Fzc18wLjQuNyAgICAgIFxuWzI1XSBobXNfMS4xLjMgICAgICAgIGJpdDY0XzQuMC41ICAgICAgZ3JpZF80LjIuMiAgICAgICB0aWR5c2VsZWN0XzEuMi4wXG5bMjldIGdsdWVfMS42LjIgICAgICAgUjZfMi41LjEgICAgICAgICBmYW5zaV8xLjAuNCAgICAgIHZyb29tXzEuNi4zICAgICBcblszM10gcm1hcmtkb3duXzIuMjMgICB0emRiXzAuNC4wICAgICAgIG1hZ3JpdHRyXzIuMC4zICAgc2NhbGVzXzEuMi4xICAgIFxuWzM3XSBodG1sdG9vbHNfMC41LjUgIGNvbG9yc3BhY2VfMi4xLTAgdXRmOF8xLjIuMyAgICAgICBzdHJpbmdpXzEuNy4xMiAgXG5bNDFdIG11bnNlbGxfMC41LjAgICAgY2FjaGVtXzEuMC44ICAgICBjcmF5b25fMS41LjIgICAgXG4ifQ== -->
+<pre><code>R version 4.2.2 (2022-10-31)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Ventura 13.4.1
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] annoFuseData_0.1.0 lubridate_1.9.2    forcats_1.0.0      stringr_1.5.0     
+ [5] dplyr_1.1.2        purrr_1.0.1        readr_2.1.4        tidyr_1.3.0       
+ [9] tibble_3.2.1       ggplot2_3.4.2      tidyverse_2.0.0   
+
+loaded via a namespace (and not attached):
+ [1] bslib_0.5.0      compiler_4.2.2   pillar_1.9.0     jquerylib_0.1.4 
+ [5] tools_4.2.2      bit_4.0.5        digest_0.6.33    timechange_0.2.0
+ [9] jsonlite_1.8.7   evaluate_0.21    lifecycle_1.0.3  gtable_0.3.3    
+[13] pkgconfig_2.0.3  rlang_1.1.1      cli_3.6.1        parallel_4.2.2  
+[17] yaml_2.3.7       xfun_0.39        fastmap_1.1.1    withr_2.5.0     
+[21] knitr_1.43       generics_0.1.3   vctrs_0.6.3      sass_0.4.7      
+[25] hms_1.1.3        bit64_4.0.5      grid_4.2.2       tidyselect_1.2.0
+[29] glue_1.6.2       R6_2.5.1         fansi_1.0.4      vroom_1.6.3     
+[33] rmarkdown_2.23   tzdb_0.4.0       magrittr_2.0.3   scales_1.2.1    
+[37] htmltools_0.5.5  colorspace_2.1-0 utf8_1.2.3       stringi_1.7.12  
+[41] munsell_0.5.0    cachem_1.0.8     crayon_1.5.2    </code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 </div>
 

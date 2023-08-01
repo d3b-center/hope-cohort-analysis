@@ -20,8 +20,7 @@ library(tidyverse)
 # Detect the ".git" folder -- this will in the project root directory.
 # Use this as the root directory to ensure proper sourcing of functions no
 # matter where this is called from
-root_dir <- "hope/"
-  #rprojroot::find_root(rpro,jroot::has_dir(".git"))
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
 scratch_dir <- file.path(root_dir, "scratch")
 

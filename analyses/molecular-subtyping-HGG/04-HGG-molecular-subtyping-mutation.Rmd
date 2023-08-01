@@ -64,7 +64,7 @@ gencode_cds_bed <- readr::read_tsv(bed_file, col_names = FALSE)
 snv_df <- readr::read_tsv(file.path(input_dir, "hgg_snv_maf.tsv.gz"))
 # Read in defining lesions file
 defining_lesions_df <- readr::read_tsv(file.path(results_dir,
-                                                 "HGG_defining_lesions.tsv"))
+                                                 "HOPE_HGG_defining_lesions.tsv"))
 subset_bsid <- read_tsv(file.path(input_dir, "hgg_metadata.tsv")) %>%
   filter(!is.na(pathology_diagnosis),
                 (experimental_strategy %in% c("WGS", "WXS", "Targeted Sequencing") & is.na(RNA_library))) %>%
@@ -278,7 +278,7 @@ idh_summary_df <- idh_snv_df %>%
   dplyr::rename(IDH1_mutation = HGVSp_Short) %>%
   dplyr::bind_rows(data.frame(
     Tumor_Sample_Barcode = setdiff(subset_bsid,
-                                   idh_snv_df$Tumor_Sample_Barcode)
+                                   idh_snv_df$Kids_First_Biospecimen_ID)
   )) %>%
   replace(is.na(.), "No R132 or R172")
 ```
@@ -292,7 +292,7 @@ braf_summary_df <- braf_snv_df %>%
   dplyr::rename(BRAF_V600E = HGVSp_Short) %>%
   dplyr::bind_rows(data.frame(
     Tumor_Sample_Barcode = setdiff(subset_bsid,
-                                   braf_snv_df$Tumor_Sample_Barcode)
+                                   braf_snv_df$Kids_First_Biospecimen_ID)
   )) %>%
   replace(is.na(.), "No V600E")
 ```

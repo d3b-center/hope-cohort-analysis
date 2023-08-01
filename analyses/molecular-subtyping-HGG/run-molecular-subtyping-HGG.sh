@@ -25,6 +25,9 @@ script_directory="$(perl -e 'use File::Basename;
   print dirname(abs_path(@ARGV[0]));' -- "$0")"
 cd "$script_directory" || exit
 
+# Adapt script from fusion-summary module in OpenPedCan to generate the fusion file needed for HGG subtyping
+Rscript -e "rmarkdown::render('00-fusion-summary.Rmd', clean = TRUE)"
+
 # Gather pathology diagnosis and pathology free text diagnosis for HGG sample selection
 Rscript 00-HGG-select-pathology-dx.R
 
@@ -71,13 +74,14 @@ Rscript -e "rmarkdown::render('06-HGG-molecular-subtyping-gene-expression.Rmd', 
 Rscript -e "rmarkdown::render('07-HGG-molecular-subtyping-combine-table.Rmd', clean = TRUE)"
 
 #### 1p/19q co-deleted oligodendrogliomas notebook -----------------------------
-
-Rscript -e "rmarkdown::render('08-1p19q-codeleted-oligodendrogliomas.Rmd', clean = TRUE)"
+## without GISTIC data, we cannot run this module
+## Rscript -e "rmarkdown::render('08-1p19q-codeleted-oligodendrogliomas.Rmd', clean = TRUE)"
 
 #### HGAT with `BRAF V600E` mutations clustering ------------------------------
 
 # Run notebook that looks at how HGAT samples with `BRAF V600E` mutations cluster
-Rscript -e "rmarkdown::render('09-HGG-with-braf-clustering.Rmd', clean = TRUE)"
+# No need to run this module for now
+# Rscript -e "rmarkdown::render('09-HGG-with-braf-clustering.Rmd', clean = TRUE)"
 
 # Add TP53 annotation
 Rscript -e "rmarkdown::render('10-HGG-TP53-annotation.Rmd',clean=TRUE)"

@@ -151,7 +151,7 @@ snv_lesions_df <- snv_consensus_hotspot_maf  %>%
 snv_lesions_df <- snv_lesions_df %>%
   dplyr::bind_rows(
     data.frame(
-      Tumor_Sample_Barcode = setdiff(dna_bsids, snv_lesions_df$Kids_First_Biospecimen_ID)
+      Kids_First_Biospecimen_ID = setdiff(dna_bsids, snv_lesions_df$Kids_First_Biospecimen_ID)
     )
   ) %>%
   dplyr::mutate_all(function(x) tidyr::replace_na(x, "No"))
