@@ -64,4 +64,4 @@ hope_cohort_fusions <- hope_cohort_fusions %>%
   inner_join(manifest, by = c("Sample" = "Kids_First_Biospecimen_ID")) 
 
 # write output
-write_tsv(hope_cohort_fusions, file = file.path(output_dir, "fusion-putative-oncogenic.tsv"))
+saveRDS(hope_cohort_fusions, file = file.path(output_dir, "Hope-fusion-putative-oncogenic.rds"))
