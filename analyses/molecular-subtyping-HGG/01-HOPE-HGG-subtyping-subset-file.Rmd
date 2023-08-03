@@ -169,7 +169,7 @@ cn_df <- readr::read_rds(file.path(root_dir, "data",
          PTEN_focal_status) %>%
   replace(is.na(.), "neutral") %>%
   distinct() %>% 
-  write_tsv(file.path(results_dir, "hgg_focal_cn.tsv"))
+  write_tsv(file.path(results_dir, "HGG_cleaned_cnv.tsv"))
 
 
 ```

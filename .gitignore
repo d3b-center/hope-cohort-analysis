@@ -21,3 +21,4 @@
 *.pptx
 code/tmb-calculation
 code/sample_manifest_for_zz.R
+scratch/*
