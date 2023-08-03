@@ -21,4 +21,9 @@
 *.pptx
 code/tmb-calculation
 code/sample_manifest_for_zz.R
+<<<<<<< HEAD
 scratch/*
+=======
+scratch/*
+data/*
+>>>>>>> origin/subtype_preparation
