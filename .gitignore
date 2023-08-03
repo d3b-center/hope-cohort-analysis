@@ -18,12 +18,22 @@
 # Ignore all bash history files
 .bash_history
 
+# ignore scratch folder
+scratch/*
+
+#.DS_Store file
+.DS_Store
+
+
 *.pptx
 code/tmb-calculation
 code/sample_manifest_for_zz.R
+<<<<<<< HEAD
 <<<<<<< HEAD
 scratch/*
 =======
 scratch/*
 data/*
 >>>>>>> origin/subtype_preparation
+=======
+>>>>>>> origin/tp53_nf1_score
