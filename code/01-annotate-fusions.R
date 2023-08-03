@@ -13,6 +13,7 @@ output_dir <- file.path(data_dir, "merged_files")
 bioMartDataPfam <- readRDS(system.file("extdata", "pfamDataBioMart.RDS", package = "annoFuseData"))
 
 # pull hope cohort fusion files
+# this file is generated in 00-create_merged_files.R
 hope_cohort_fusions <- readRDS(file.path(output_dir, "fusions_merged.rds"))
 hope_cohort_fusions <- hope_cohort_fusions %>%
   dplyr::rename("Sample" = "Kids_First_Biospecimen_ID") # to keep column names consistent with OpenPedCan repo
