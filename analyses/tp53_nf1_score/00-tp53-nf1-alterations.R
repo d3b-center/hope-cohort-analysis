@@ -20,8 +20,7 @@ root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 scratch_dir <- file.path(root_dir, "scratch")
 
 source(file.path(root_dir, 
-                 "analyses", 
-                 "until",
+                 "utils",
                  "tmb_functions.R"))
 
 #### Parse command line options ------------------------------------------------
