@@ -1,0 +1,131 @@
+---
+title: "tp53 plot"
+author: "Zhuangzhuang Geng"
+date: "2023-08-02"
+output: html_document
+---
+
+```{r libraries}
+library(tidyverse)
+library(survival)
+library(ggplot2)
+```
+
+## set directories
+
+```{r}
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+analyses_root <- file.path(root_dir, "analyses", "tp53_nf1_score")
+plots_dir <- file.path(analyses_root, "plots")
+
+```
+
+## load files
+
+```{r}
+hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies-base.tsv"))
+tp53_score <- readr::read_tsv(file.path(analyses_root, "results", "tp53_altered_status.tsv"))
+mol_subtype <- readr::read_tsv(file.path(root_dir, "analyses", "molecular-subtyping-HGG", "results", "Hope_subtype.tsv"))
+## source this script for plotting
+source(file.path(analyses_root, "utils", "survival_models.R"))
+
+## combine files together
+tp53_survival <- hist %>%
+  left_join(tp53_score, by = "sample_id") %>%
+  select(-tp53_altered, -molecular_subtype) %>%
+  left_join(mol_subtype, by = "sample_id") %>% 
+  select(sample_id, tp53_score, tp53_altered, 
+         OS_days, OS_status, EFS_days, EFS_event_type, 
+         reported_gender, race, age_at_diagnosis_days, 
+         molecular_subtype) %>% 
+  filter(!is.na(sample_id)) %>%
+  distinct()
+
+
+```
+### tp53 score and age
+
+```{r}
+tp53_survival <- tp53_survival %>%
+  mutate(binned_age = case_when(age_at_diagnosis_days >= 0 & 
+                                  age_at_diagnosis_days < as.integer(15 * 365.25) ~ "0-15", 
+                                
+                                age_at_diagnosis_days >= as.integer(15 * 365.25) & 
+                                  age_at_diagnosis_days < as.integer(26 * 365.25) ~ "15-26", 
+                                
+                                age_at_diagnosis_days >= as.integer(26 * 365.25) & 
+                                  age_at_diagnosis_days < as.integer(40 * 365.25) ~ "26-40",
+                                
+                                age_at_diagnosis_days >= as.integer(40 * 365.25)  ~ ">40", 
+                                TRUE ~ "not reported"))
+
+```
+
+```{r}
+lm_eqn <- function(df, x, y){
+    m <- lm(y ~ x, df);
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+         list(a = format(unname(coef(m)[1]), digits = 2),
+              b = format(unname(coef(m)[2]), digits = 2),
+             r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));
+}
+
+ggplot(tp53_survival, aes(x = age_at_diagnosis_days, y = tp53_score)) + 
+  geom_smooth(method = "lm") + 
+  geom_point() + 
+  geom_text(y = 0.05, x = 12000, 
+            label = lm_eqn(tp53_survival, x= tp53_survival$age_at_diagnosis_days, y = tp53_survival$tp53_score), 
+            parse = TRUE)
+  
+
+
+```
+
+## between age range and tp53 score 
+
+```{r}
+ggplot(tp53_survival, aes(x = binned_age, y = tp53_score, color = binned_age)) + 
+  geom_boxplot() +
+  geom_jitter(width = 0.3, alpha = 0.5) 
+
+```
+
+
+```{r}
+ggplot(tp53_survival, aes(x = reported_gender, y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(width = 0.3, alpha = 0.5) + 
+  stat_compare_means(comparisons = list(c("Female", "Male")))
+
+```
+
+
+```{r}
+ggplot(tp53_survival, aes(x = race, y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(width = 0.3, alpha = 0.5) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+
+```
+
+## survival analysis
+
+```{r}
+
+kap_OS <- survival_analysis(
+  metadata = tp53_survival, 
+  ind_var = "molecular_subtype",
+  test = "kap.meier",
+  metadata_sample_col = "sample_id",
+  days_col = "OS_days",
+  status_col = "OS_status"
+  )
+
+plotKM(model = list(kap_OS), 
+       variable = "molecular_subtype", 
+       combined = FALSE, 
+       title = group)
+
+```
