@@ -1512,7 +1512,7 @@ window.initializeCodeFolding = function(show) {
     $(this).detach().appendTo(div);
 
     // add a show code button right above
-    var showCodeText = $('<span>' + (showThis ? 'Hide' : 'Show') + '</span>');
+    var showCodeText = $('<span>' + (showThis ? 'Hide' : 'Code') + '</span>');
     var showCodeButton = $('<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm code-folding-btn pull-right float-right"></button>');
     showCodeButton.append(showCodeText);
     showCodeButton
@@ -1538,7 +1538,7 @@ window.initializeCodeFolding = function(show) {
     //   * Change text
     //   * add a class for intermediate states styling
     div.on('hide.bs.collapse', function () {
-      showCodeText.text('Show');
+      showCodeText.text('Code');
       showCodeButton.addClass('btn-collapsing');
     });
     div.on('hidden.bs.collapse', function () {
@@ -1767,14 +1767,14 @@ subtyping analyses</p>
 <!-- rnb-source-begin eyJkYXRhIjoibGlicmFyeSh0aWR5dmVyc2UpIn0= -->
 <pre class="r"><code>library(tidyverse)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-message-begin eyJkYXRhIjoi4pSA4pSAIEF0dGFjaGluZyBjb3JlIHRpZHl2ZXJzZSBwYWNrYWdlcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeXZlcnNlIDIuMC4wIOKUgOKUgFxu4pyUIGRwbHlyICAgICAxLjEuMiAgICAg4pyUIHJlYWRyICAgICAyLjEuNFxu4pyUIGZvcmNhdHMgICAxLjAuMCAgICAg4pyUIHN0cmluZ3IgICAxLjUuMFxu4pyUIGdncGxvdDIgICAzLjQuMiAgICAg4pyUIHRpYmJsZSAgICAzLjIuMVxu4pyUIGx1YnJpZGF0ZSAxLjkuMiAgICAg4pyUIHRpZHlyICAgICAxLjMuMFxu4pyUIHB1cnJyICAgICAxLjAuMSAgICAgXG7ilIDilIAgQ29uZmxpY3RzIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgCB0aWR5dmVyc2VfY29uZmxpY3RzKCkg4pSA4pSAXG7inJYgZHBseXI6OmZpbHRlcigpIG1hc2tzIHN0YXRzOjpmaWx0ZXIoKVxu4pyWIGRwbHlyOjpsYWcoKSAgICBtYXNrcyBzdGF0czo6bGFnKClcbuKEuSBVc2UgdGhlIGNvbmZsaWN0ZWQgcGFja2FnZSAoPGh0dHA6Ly9jb25mbGljdGVkLnItbGliLm9yZy8+KSB0byBmb3JjZSBhbGwgY29uZmxpY3RzIHRvIGJlY29tZSBlcnJvcnNcbiJ9 -->
-<pre><code>── Attaching core tidyverse packages ────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.1.2     ✔ readr     2.1.4
+<!-- rnb-message-begin eyJkYXRhIjoi4pSA4pSAIEF0dGFjaGluZyBjb3JlIHRpZHl2ZXJzZSBwYWNrYWdlcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeXZlcnNlIDIuMC4wIOKUgOKUgFxu4pyUIGRwbHlyICAgICAxLjEuMSAgICAg4pyUIHJlYWRyICAgICAyLjEuNFxu4pyUIGZvcmNhdHMgICAxLjAuMCAgICAg4pyUIHN0cmluZ3IgICAxLjUuMFxu4pyUIGdncGxvdDIgICAzLjQuMiAgICAg4pyUIHRpYmJsZSAgICAzLjIuMVxu4pyUIGx1YnJpZGF0ZSAxLjkuMiAgICAg4pyUIHRpZHlyICAgICAxLjMuMFxu4pyUIHB1cnJyICAgICAxLjAuMSAgICAgXG7ilIDilIAgQ29uZmxpY3RzIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgCB0aWR5dmVyc2VfY29uZmxpY3RzKCkg4pSA4pSAXG7inJYgZHBseXI6OmZpbHRlcigpIG1hc2tzIHN0YXRzOjpmaWx0ZXIoKVxu4pyWIGRwbHlyOjpsYWcoKSAgICBtYXNrcyBzdGF0czo6bGFnKClcbuKEuSBVc2UgdGhlIGNvbmZsaWN0ZWQgcGFja2FnZSAoPGh0dHA6Ly9jb25mbGljdGVkLnItbGliLm9yZy8+KSB0byBmb3JjZSBhbGwgY29uZmxpY3RzIHRvIGJlY29tZSBlcnJvcnNcbiJ9 -->
+<pre><code>── Attaching core tidyverse packages ─────────────────────────────────────────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.1     ✔ readr     2.1.4
 ✔ forcats   1.0.0     ✔ stringr   1.5.0
 ✔ ggplot2   3.4.2     ✔ tibble    3.2.1
 ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
 ✔ purrr     1.0.1     
-── Conflicts ──────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+── Conflicts ───────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ✖ dplyr::filter() masks stats::filter()
 ✖ dplyr::lag()    masks stats::lag()
 ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
@@ -1845,23 +1845,14 @@ annot &lt;- read.delim(system.file(&quot;extdata&quot;, &quot;genelistreference.
 #&#39; file but have been assayed - we will gather those from the histology file
 hist &lt;- read_tsv(file.path(dataDir, &quot;Hope-GBM-histologies-base.tsv&quot;))</code></pre>
 <!-- rnb-source-end -->
-<<<<<<< HEAD:analyses/molecular-subtyping-HGG/00-fusion-summary.nb.html
-<!-- rnb-message-begin eyJkYXRhIjoiUm93czogMzgyIENvbHVtbnM6IDk4XG7ilIDilIAgQ29sdW1uIHNwZWNpZmljYXRpb24g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSAXG5EZWxpbWl0ZXI6IFwiXFx0XCJcbmNociAoNTMpOiBLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lELCBzYW1wbGVfaWQsIHNhbXBsZV9pZF93X2FwcGVuZGVkLCBLaWRzX0YuLi5cbmRibCAoMjApOiBhbGlxdW90X2lkLCBhZ2VfYXRfZGlhZ25vc2lzX2RheXMsIGFnZV9hdF9ldmVudF9kYXlzLCBPU19kYXlzLCBFRlMuLi5cbmxnbCAoMjUpOiBDTlNfcmVnaW9uLCBpbnRlZ3JhdGVkX2RpYWdub3Npcywgc2hvcnRfaGlzdG9sb2d5LCBicm9hZF9oaXN0b2xvZ3kuLi5cblxu4oS5IFVzZSBgc3BlYygpYCB0byByZXRyaWV2ZSB0aGUgZnVsbCBjb2x1bW4gc3BlY2lmaWNhdGlvbiBmb3IgdGhpcyBkYXRhLlxu4oS5IFNwZWNpZnkgdGhlIGNvbHVtbiB0eXBlcyBvciBzZXQgYHNob3dfY29sX3R5cGVzID0gRkFMU0VgIHRvIHF1aWV0IHRoaXMgbWVzc2FnZS5cbiJ9 -->
-<pre><code>Rows: 382 Columns: 98
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+<!-- rnb-message-begin eyJkYXRhIjoiUm93czogNDgwIENvbHVtbnM6IDk4XG7ilIDilIAgQ29sdW1uIHNwZWNpZmljYXRpb24g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSAXG5EZWxpbWl0ZXI6IFwiXFx0XCJcbmNociAoNTYpOiBLaWRzX0ZpcnN0X0Jpb3NwZWNpbWVuX0lELCBzYW1wbGVfaWQsIHNhbXBsZV9pZF93X2FwcGVuZGVkLCBLaWRzX0YuLi5cbmRibCAoMjYpOiBhbGlxdW90X2lkLCBhZ2VfYXRfZGlhZ25vc2lzX2RheXMsIGFnZV9hdF9ldmVudF9kYXlzLCBPU19kYXlzLCBFRlMuLi5cbmxnbCAoMTYpOiBDTlNfcmVnaW9uLCBpbnRlZ3JhdGVkX2RpYWdub3Npcywgc2hvcnRfaGlzdG9sb2d5LCBicm9hZF9oaXN0b2xvZ3kuLi5cblxu4oS5IFVzZSBgc3BlYygpYCB0byByZXRyaWV2ZSB0aGUgZnVsbCBjb2x1bW4gc3BlY2lmaWNhdGlvbiBmb3IgdGhpcyBkYXRhLlxu4oS5IFNwZWNpZnkgdGhlIGNvbHVtbiB0eXBlcyBvciBzZXQgYHNob3dfY29sX3R5cGVzID0gRkFMU0VgIHRvIHF1aWV0IHRoaXMgbWVzc2FnZS5cbiJ9 -->
+<pre><code>Rows: 480 Columns: 98
+── Column specification ───────────────────────────────────────────────────────────────────────────────────────────
 Delimiter: &quot;\t&quot;
-chr (53): Kids_First_Biospecimen_ID, sample_id, sample_id_w_appended, Kids_F...
-dbl (20): aliquot_id, age_at_diagnosis_days, age_at_event_days, OS_days, EFS...
-lgl (25): CNS_region, integrated_diagnosis, short_histology, broad_histology...
+chr (56): Kids_First_Biospecimen_ID, sample_id, sample_id_w_appended, Kids_F...
+dbl (26): aliquot_id, age_at_diagnosis_days, age_at_event_days, OS_days, EFS...
+lgl (16): CNS_region, integrated_diagnosis, short_histology, broad_histology...
 
-=======
-<!-- rnb-output-begin eyJkYXRhIjoiUm93czogNDgwIENvbHVtbnM6IDk44pSA4pSAIENvbHVtbiBzcGVjaWZpY2F0aW9uIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgFxuRGVsaW1pdGVyOiBcIlxcdFwiXG5jaHIgKDU2KTogS2lkc19GaXJzdF9CaW9zcGVjaW1lbl9JRCwgc2FtcGxlX2lkLCBzYW1wbGVfaWRfd19hcHBlbmRlZCwgS2lkc19GaXJzdF9QYXJ0aWNpcGFudF9JRCwgZXhwZXJpbWVudGFsX3N0cmF0Li4uXG5kYmwgKDI2KTogYWxpcXVvdF9pZCwgYWdlX2F0X2RpYWdub3Npc19kYXlzLCBhZ2VfYXRfZXZlbnRfZGF5cywgT1NfZGF5cywgRUZTX2RheXMsIGFnZV9hdF9jaGVtb19zdGFydCwgYWdlX2F0X3JhZGlhLi4uXG5sZ2wgKDE2KTogQ05TX3JlZ2lvbiwgaW50ZWdyYXRlZF9kaWFnbm9zaXMsIHNob3J0X2hpc3RvbG9neSwgYnJvYWRfaGlzdG9sb2d5LCBicm9hZF9jb21wb3NpdGlvbiwgTm90ZXMsIGdlcm1saW5lX3NlLi4uXG7ihLkgVXNlIGBzcGVjKClgIHRvIHJldHJpZXZlIHRoZSBmdWxsIGNvbHVtbiBzcGVjaWZpY2F0aW9uIGZvciB0aGlzIGRhdGEuXG7ihLkgU3BlY2lmeSB0aGUgY29sdW1uIHR5cGVzIG9yIHNldCBgc2hvd19jb2xfdHlwZXMgPSBGQUxTRWAgdG8gcXVpZXQgdGhpcyBtZXNzYWdlLlxuIn0= -->
-<pre><code>Rows: 480 Columns: 98── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────
-Delimiter: &quot;\t&quot;
-chr (56): Kids_First_Biospecimen_ID, sample_id, sample_id_w_appended, Kids_First_Participant_ID, experimental_strat...
-dbl (26): aliquot_id, age_at_diagnosis_days, age_at_event_days, OS_days, EFS_days, age_at_chemo_start, age_at_radia...
-lgl (16): CNS_region, integrated_diagnosis, short_histology, broad_histology, broad_composition, Notes, germline_se...
->>>>>>> origin/subtype_preparation:analyses/molecular-subtyping-HGG/00-fusion0summary.nb.html
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <!-- rnb-message-end -->
@@ -1998,10 +1989,6 @@ three_prime_kinase_outframe &lt;- allFuseLGGHGG %&gt;%
 
 three_prime_kinase_outframe</code></pre>
 <!-- rnb-source-end -->
-<<<<<<< HEAD:analyses/molecular-subtyping-HGG/00-fusion-summary.nb.html
-=======
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibnJvdyI6MCwibmNvbCI6Miwic3VtbWFyeSI6eyJEZXNjcmlwdGlvbiI6WyJkZiBbMCDDlyAyXSJdfX0sInJkZiI6IlVrUllNd3BZQ2dBQUFBTUFCQUlEQUFNRkFBQUFBQVZWVkVZdE9BQUFCQUlBQUFBQkFBUUFDUUFBQUFGNEFBQURFd0FBQUFJQUFBQVFBQUFBQUFBQUFCQUFBQUFBQUFBRUFnQUFBQUVBQkFBSkFBQUFCVzVoYldWekFBQUFFQUFBQUFJQUJBQUpBQUFBQmxOaGJYQnNaUUFFQUFrQUFBQUtSblZ6YVc5dVRtRnRaUUFBQkFJQUFBQUJBQVFBQ1FBQUFBbHliM2N1Ym1GdFpYTUFBQUFOQUFBQUFBQUFCQUlBQUFBQkFBUUFDUUFBQUFWamJHRnpjd0FBQUJBQUFBQUJBQVFBQ1FBQUFBcGtZWFJoTG1aeVlXMWxBQUFBL2dBQUJBSUFBQUFCQUFRQUNRQUFBQWR2Y0hScGIyNXpBQUFDRXdBQUFBVUFBQUFRQUFBQUFRQUVBQWtBQUFBQmNnQUFBQkFBQUFBQkFBUUFDUUFBQUJCMWJtNWhiV1ZrTFdOb2RXNXJMVEkwQUFBQUNnQUFBQUVBQUFBQUFBQUFEUUFBQUFFQUFBQUFBQUFBRFFBQUFBRUFBQUFDQUFBRUFnQUFBdjhBQUFBUUFBQUFCUUFFQUFrQUFBQUdaVzVuYVc1bEFBUUFDUUFBQUFWc1lXSmxiQUFFQUFrQUFBQU9jbTkzYm1GdFpYTXVjSEpwYm5RQUJBQUpBQUFBQ25KdmQzTXVkRzkwWVd3QUJBQUpBQUFBQ21OdmJITXVkRzkwWVd3QUFBRCtBQUFBL2c9PSJ9 -->
->>>>>>> origin/subtype_preparation:analyses/molecular-subtyping-HGG/00-fusion0summary.nb.html
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["Sample"],"name":[1],"type":["chr"],"align":["left"]},{"label":["FusionName"],"name":[2],"type":["chr"],"align":["left"]}],"data":[],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
@@ -2016,10 +2003,6 @@ three_prime_kinase_outframe</code></pre>
 <pre class="r"><code># `BS_KE56MMY0 ARHGEF2--NTRK1` one does and will be captured in the `three_prime_kinase_inframe` list, but `BS_B1C6GZ84 CHIC2--PDGFRA2` does not retain the kinase domain, so we do not want to add it.
 intersect(three_prime_kinase_outframe[,c(&quot;Sample&quot;, &quot;FusionName&quot;)], three_prime_kinase_inframe[,c(&quot;Sample&quot;, &quot;FusionName&quot;)])</code></pre>
 <!-- rnb-source-end -->
-<<<<<<< HEAD:analyses/molecular-subtyping-HGG/00-fusion-summary.nb.html
-=======
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibnJvdyI6MCwibmNvbCI6Miwic3VtbWFyeSI6eyJEZXNjcmlwdGlvbiI6WyJkZiBbMCDDlyAyXSJdfX0sInJkZiI6IlVrUllNd3BZQ2dBQUFBTUFCQUlEQUFNRkFBQUFBQVZWVkVZdE9BQUFCQUlBQUFBQkFBUUFDUUFBQUFGNEFBQURFd0FBQUFJQUFBQVFBQUFBQUFBQUFCQUFBQUFBQUFBRUFnQUFBQUVBQkFBSkFBQUFCVzVoYldWekFBQUFFQUFBQUFJQUJBQUpBQUFBQmxOaGJYQnNaUUFFQUFrQUFBQUtSblZ6YVc5dVRtRnRaUUFBQkFJQUFBQUJBQVFBQ1FBQUFBbHliM2N1Ym1GdFpYTUFBQUFOQUFBQUFBQUFCQUlBQUFBQkFBUUFDUUFBQUFWamJHRnpjd0FBQUJBQUFBQUJBQVFBQ1FBQUFBcGtZWFJoTG1aeVlXMWxBQUFBL2dBQUJBSUFBQUFCQUFRQUNRQUFBQWR2Y0hScGIyNXpBQUFDRXdBQUFBVUFBQUFRQUFBQUFRQUVBQWtBQUFBQmNnQUFBQkFBQUFBQkFBUUFDUUFBQUJCMWJtNWhiV1ZrTFdOb2RXNXJMVEkxQUFBQUNnQUFBQUVBQUFBQUFBQUFEUUFBQUFFQUFBQUFBQUFBRFFBQUFBRUFBQUFDQUFBRUFnQUFBdjhBQUFBUUFBQUFCUUFFQUFrQUFBQUdaVzVuYVc1bEFBUUFDUUFBQUFWc1lXSmxiQUFFQUFrQUFBQU9jbTkzYm1GdFpYTXVjSEpwYm5RQUJBQUpBQUFBQ25KdmQzTXVkRzkwWVd3QUJBQUpBQUFBQ21OdmJITXVkRzkwWVd3QUFBRCtBQUFBL2c9PSJ9 -->
->>>>>>> origin/subtype_preparation:analyses/molecular-subtyping-HGG/00-fusion0summary.nb.html
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["Sample"],"name":[1],"type":["chr"],"align":["left"]},{"label":["FusionName"],"name":[2],"type":["chr"],"align":["left"]}],"data":[],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
@@ -2131,64 +2114,44 @@ subsetFuseLGGHGG %&gt;%
 <!-- rnb-source-begin eyJkYXRhIjoic2Vzc2lvbkluZm8oKSJ9 -->
 <pre class="r"><code>sessionInfo()</code></pre>
 <!-- rnb-source-end -->
-<<<<<<< HEAD:analyses/molecular-subtyping-HGG/00-fusion-summary.nb.html
-<!-- rnb-output-begin eyJkYXRhIjoiUiB2ZXJzaW9uIDQuMi4yICgyMDIyLTEwLTMxKVxuUGxhdGZvcm06IGFhcmNoNjQtYXBwbGUtZGFyd2luMjAgKDY0LWJpdClcblJ1bm5pbmcgdW5kZXI6IG1hY09TIFZlbnR1cmEgMTMuNC4xXG5cbk1hdHJpeCBwcm9kdWN0czogZGVmYXVsdFxuQkxBUzogICAvTGlicmFyeS9GcmFtZXdvcmtzL1IuZnJhbWV3b3JrL1ZlcnNpb25zLzQuMi1hcm02NC9SZXNvdXJjZXMvbGliL2xpYlJibGFzLjAuZHlsaWJcbkxBUEFDSzogL0xpYnJhcnkvRnJhbWV3b3Jrcy9SLmZyYW1ld29yay9WZXJzaW9ucy80LjItYXJtNjQvUmVzb3VyY2VzL2xpYi9saWJSbGFwYWNrLmR5bGliXG5cbmxvY2FsZTpcblsxXSBlbl9VUy5VVEYtOC9lbl9VUy5VVEYtOC9lbl9VUy5VVEYtOC9DL2VuX1VTLlVURi04L2VuX1VTLlVURi04XG5cbmF0dGFjaGVkIGJhc2UgcGFja2FnZXM6XG5bMV0gc3RhdHMgICAgIGdyYXBoaWNzICBnckRldmljZXMgdXRpbHMgICAgIGRhdGFzZXRzICBtZXRob2RzICAgYmFzZSAgICAgXG5cbm90aGVyIGF0dGFjaGVkIHBhY2thZ2VzOlxuIFsxXSBhbm5vRnVzZURhdGFfMC4xLjAgbHVicmlkYXRlXzEuOS4yICAgIGZvcmNhdHNfMS4wLjAgICAgICBzdHJpbmdyXzEuNS4wICAgICBcbiBbNV0gZHBseXJfMS4xLjIgICAgICAgIHB1cnJyXzEuMC4xICAgICAgICByZWFkcl8yLjEuNCAgICAgICAgdGlkeXJfMS4zLjAgICAgICAgXG4gWzldIHRpYmJsZV8zLjIuMSAgICAgICBnZ3Bsb3QyXzMuNC4yICAgICAgdGlkeXZlcnNlXzIuMC4wICAgXG5cbmxvYWRlZCB2aWEgYSBuYW1lc3BhY2UgKGFuZCBub3QgYXR0YWNoZWQpOlxuIFsxXSBSY3BwXzEuMC4xMSAgICAgIHBseXJfMS44LjggICAgICAgYnNsaWJfMC41LjAgICAgICBjb21waWxlcl80LjIuMiAgXG4gWzVdIHBpbGxhcl8xLjkuMCAgICAganF1ZXJ5bGliXzAuMS40ICB0b29sc180LjIuMiAgICAgIGJpdF80LjAuNSAgICAgICBcbiBbOV0gZGlnZXN0XzAuNi4zMyAgICB0aW1lY2hhbmdlXzAuMi4wIGpzb25saXRlXzEuOC43ICAgZXZhbHVhdGVfMC4yMSAgIFxuWzEzXSBsaWZlY3ljbGVfMS4wLjMgIGd0YWJsZV8wLjMuMyAgICAgcGtnY29uZmlnXzIuMC4zICBybGFuZ18xLjEuMSAgICAgXG5bMTddIGNsaV8zLjYuMSAgICAgICAgcGFyYWxsZWxfNC4yLjIgICB5YW1sXzIuMy43ICAgICAgIHhmdW5fMC4zOSAgICAgICBcblsyMV0gZmFzdG1hcF8xLjEuMSAgICB3aXRocl8yLjUuMCAgICAgIGtuaXRyXzEuNDMgICAgICAgZ2VuZXJpY3NfMC4xLjMgIFxuWzI1XSB2Y3Ryc18wLjYuMyAgICAgIHNhc3NfMC40LjcgICAgICAgaG1zXzEuMS4zICAgICAgICBiaXQ2NF80LjAuNSAgICAgXG5bMjldIGdyaWRfNC4yLjIgICAgICAgdGlkeXNlbGVjdF8xLjIuMCBnbHVlXzEuNi4yICAgICAgIFI2XzIuNS4xICAgICAgICBcblszM10gZmFuc2lfMS4wLjQgICAgICB2cm9vbV8xLjYuMyAgICAgIHJtYXJrZG93bl8yLjIzICAgcmVzaGFwZTJfMS40LjQgIFxuWzM3XSB0emRiXzAuNC4wICAgICAgIG1hZ3JpdHRyXzIuMC4zICAgc2NhbGVzXzEuMi4xICAgICBodG1sdG9vbHNfMC41LjUgXG5bNDFdIGNvbG9yc3BhY2VfMi4xLTAgdXRmOF8xLjIuMyAgICAgICBzdHJpbmdpXzEuNy4xMiAgIG11bnNlbGxfMC41LjAgICBcbls0NV0gY2FjaGVtXzEuMC44ICAgICBjcmF5b25fMS41LjIgICAgXG4ifQ== -->
-<pre><code>R version 4.2.2 (2022-10-31)
-Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Ventura 13.4.1
-=======
-<!-- rnb-output-begin eyJkYXRhIjoiUiB2ZXJzaW9uIDQuMi4zICgyMDIzLTAzLTE1KVxuUGxhdGZvcm06IHg4Nl82NC1wYy1saW51eC1nbnUgKDY0LWJpdClcblJ1bm5pbmcgdW5kZXI6IFVidW50dSAyMi4wNC4yIExUU1xuXG5NYXRyaXggcHJvZHVjdHM6IGRlZmF1bHRcbkJMQVM6ICAgL3Vzci9saWIveDg2XzY0LWxpbnV4LWdudS9vcGVuYmxhcy1wdGhyZWFkL2xpYmJsYXMuc28uM1xuTEFQQUNLOiAvdXNyL2xpYi94ODZfNjQtbGludXgtZ251L29wZW5ibGFzLXB0aHJlYWQvbGlib3BlbmJsYXNwLXIwLjMuMjAuc29cblxubG9jYWxlOlxuIFsxXSBMQ19DVFlQRT1lbl9VUy5VVEYtOCAgICAgICBMQ19OVU1FUklDPUMgICAgICAgICAgICAgICBMQ19USU1FPWVuX1VTLlVURi04ICAgICAgICBMQ19DT0xMQVRFPWVuX1VTLlVURi04ICAgIFxuIFs1XSBMQ19NT05FVEFSWT1lbl9VUy5VVEYtOCAgICBMQ19NRVNTQUdFUz1lbl9VUy5VVEYtOCAgICBMQ19QQVBFUj1lbl9VUy5VVEYtOCAgICAgICBMQ19OQU1FPUMgICAgICAgICAgICAgICAgIFxuIFs5XSBMQ19BRERSRVNTPUMgICAgICAgICAgICAgICBMQ19URUxFUEhPTkU9QyAgICAgICAgICAgICBMQ19NRUFTVVJFTUVOVD1lbl9VUy5VVEYtOCBMQ19JREVOVElGSUNBVElPTj1DICAgICAgIFxuXG5hdHRhY2hlZCBiYXNlIHBhY2thZ2VzOlxuWzFdIHN0YXRzICAgICBncmFwaGljcyAgZ3JEZXZpY2VzIHV0aWxzICAgICBkYXRhc2V0cyAgbWV0aG9kcyAgIGJhc2UgICAgIFxuXG5vdGhlciBhdHRhY2hlZCBwYWNrYWdlczpcbiBbMV0gYW5ub0Z1c2VEYXRhXzAuMS4wIGx1YnJpZGF0ZV8xLjkuMiAgICBmb3JjYXRzXzEuMC4wICAgICAgc3RyaW5ncl8xLjUuMCAgICAgIGRwbHlyXzEuMS4xICAgICAgICBwdXJycl8xLjAuMSAgICAgICBcbiBbN10gcmVhZHJfMi4xLjQgICAgICAgIHRpZHlyXzEuMy4wICAgICAgICB0aWJibGVfMy4yLjEgICAgICAgZ2dwbG90Ml8zLjQuMiAgICAgIHRpZHl2ZXJzZV8yLjAuMCAgIFxuXG5sb2FkZWQgdmlhIGEgbmFtZXNwYWNlIChhbmQgbm90IGF0dGFjaGVkKTpcbiBbMV0gdGlkeXNlbGVjdF8xLjIuMCAgICAgICB4ZnVuXzAuMzggICAgICAgICAgICAgIHJlc2hhcGUyXzEuNC40ICAgICAgICAgY29sb3JzcGFjZV8yLjEtMCAgICAgICB2Y3Ryc18wLjYuMiAgICAgICAgICAgXG4gWzZdIGdlbmVyaWNzXzAuMS4zICAgICAgICAgaHRtbHRvb2xzXzAuNS41ICAgICAgICBzdGF0czRfNC4yLjMgICAgICAgICAgIHlhbWxfMi4zLjcgICAgICAgICAgICAgdXRmOF8xLjIuMyAgICAgICAgICAgIFxuWzExXSBybGFuZ18xLjEuMCAgICAgICAgICAgIHBpbGxhcl8xLjkuMCAgICAgICAgICAgZ2x1ZV8xLjYuMiAgICAgICAgICAgICB3aXRocl8yLjUuMCAgICAgICAgICAgIEJpb2NHZW5lcmljc18wLjQ0LjAgICBcblsxNl0gYml0NjRfNC4wLjUgICAgICAgICAgICBwbHlyXzEuOC44ICAgICAgICAgICAgIEdlbm9tZUluZm9EYkRhdGFfMS4yLjkgbGlmZWN5Y2xlXzEuMC4zICAgICAgICB6bGliYmlvY18xLjQ0LjAgICAgICAgXG5bMjFdIG11bnNlbGxfMC41LjAgICAgICAgICAgZ3RhYmxlXzAuMy4zICAgICAgICAgICBldmFsdWF0ZV8wLjIwICAgICAgICAgIGtuaXRyXzEuNDIgICAgICAgICAgICAgdHpkYl8wLjMuMCAgICAgICAgICAgIFxuWzI2XSBJUmFuZ2VzXzIuMzIuMCAgICAgICAgIGZhc3RtYXBfMS4xLjEgICAgICAgICAgR2Vub21lSW5mb0RiXzEuMzQuOSAgICBwYXJhbGxlbF80LjIuMyAgICAgICAgIGZhbnNpXzEuMC40ICAgICAgICAgICBcblszMV0gUmNwcF8xLjAuMTAgICAgICAgICAgICBzY2FsZXNfMS4yLjEgICAgICAgICAgIFM0VmVjdG9yc18wLjM2LjIgICAgICAgWFZlY3Rvcl8wLjM4LjAgICAgICAgICB2cm9vbV8xLjYuMSAgICAgICAgICAgXG5bMzZdIGpzb25saXRlXzEuOC40ICAgICAgICAgYml0XzQuMC41ICAgICAgICAgICAgICBobXNfMS4xLjMgICAgICAgICAgICAgIGRpZ2VzdF8wLjYuMzEgICAgICAgICAgc3RyaW5naV8xLjcuMTIgICAgICAgIFxuWzQxXSBHZW5vbWljUmFuZ2VzXzEuNTAuMiAgIGdyaWRfNC4yLjMgICAgICAgICAgICAgcnByb2pyb290XzIuMC4zICAgICAgICBjbGlfMy42LjEgICAgICAgICAgICAgIHRvb2xzXzQuMi4zICAgICAgICAgICBcbls0Nl0gYml0b3BzXzEuMC03ICAgICAgICAgICBtYWdyaXR0cl8yLjAuMyAgICAgICAgIFJDdXJsXzEuOTgtMS4xMiAgICAgICAgY3JheW9uXzEuNS4yICAgICAgICAgICBwa2djb25maWdfMi4wLjMgICAgICAgXG5bNTFdIHRpbWVjaGFuZ2VfMC4yLjAgICAgICAgcm1hcmtkb3duXzIuMjEgICAgICAgICByc3R1ZGlvYXBpXzAuMTQgICAgICAgIFI2XzIuNS4xICAgICAgICAgICAgICAgY29tcGlsZXJfNC4yLjMgICAgICAgIFxuIn0= -->
+<!-- rnb-output-begin eyJkYXRhIjoiUiB2ZXJzaW9uIDQuMi4zICgyMDIzLTAzLTE1KVxuUGxhdGZvcm06IHg4Nl82NC1wYy1saW51eC1nbnUgKDY0LWJpdClcblJ1bm5pbmcgdW5kZXI6IFVidW50dSAyMi4wNC4yIExUU1xuXG5NYXRyaXggcHJvZHVjdHM6IGRlZmF1bHRcbkJMQVM6ICAgL3Vzci9saWIveDg2XzY0LWxpbnV4LWdudS9vcGVuYmxhcy1wdGhyZWFkL2xpYmJsYXMuc28uM1xuTEFQQUNLOiAvdXNyL2xpYi94ODZfNjQtbGludXgtZ251L29wZW5ibGFzLXB0aHJlYWQvbGlib3BlbmJsYXNwLXIwLjMuMjAuc29cblxubG9jYWxlOlxuIFsxXSBMQ19DVFlQRT1lbl9VUy5VVEYtOCAgICAgICBMQ19OVU1FUklDPUMgICAgICAgICAgICAgIFxuIFszXSBMQ19USU1FPWVuX1VTLlVURi04ICAgICAgICBMQ19DT0xMQVRFPWVuX1VTLlVURi04ICAgIFxuIFs1XSBMQ19NT05FVEFSWT1lbl9VUy5VVEYtOCAgICBMQ19NRVNTQUdFUz1lbl9VUy5VVEYtOCAgIFxuIFs3XSBMQ19QQVBFUj1lbl9VUy5VVEYtOCAgICAgICBMQ19OQU1FPUMgICAgICAgICAgICAgICAgIFxuIFs5XSBMQ19BRERSRVNTPUMgICAgICAgICAgICAgICBMQ19URUxFUEhPTkU9QyAgICAgICAgICAgIFxuWzExXSBMQ19NRUFTVVJFTUVOVD1lbl9VUy5VVEYtOCBMQ19JREVOVElGSUNBVElPTj1DICAgICAgIFxuXG5hdHRhY2hlZCBiYXNlIHBhY2thZ2VzOlxuWzFdIHN0YXRzICAgICBncmFwaGljcyAgZ3JEZXZpY2VzIHV0aWxzICAgICBkYXRhc2V0cyAgbWV0aG9kcyAgIGJhc2UgICAgIFxuXG5vdGhlciBhdHRhY2hlZCBwYWNrYWdlczpcbiBbMV0gYW5ub0Z1c2VEYXRhXzAuMS4wIGx1YnJpZGF0ZV8xLjkuMiAgICBmb3JjYXRzXzEuMC4wICAgICAgc3RyaW5ncl8xLjUuMCAgICAgXG4gWzVdIGRwbHlyXzEuMS4xICAgICAgICBwdXJycl8xLjAuMSAgICAgICAgcmVhZHJfMi4xLjQgICAgICAgIHRpZHlyXzEuMy4wICAgICAgIFxuIFs5XSB0aWJibGVfMy4yLjEgICAgICAgZ2dwbG90Ml8zLjQuMiAgICAgIHRpZHl2ZXJzZV8yLjAuMCAgIFxuXG5sb2FkZWQgdmlhIGEgbmFtZXNwYWNlIChhbmQgbm90IGF0dGFjaGVkKTpcbiBbMV0gUmNwcF8xLjAuMTAgICAgICBwbHlyXzEuOC44ICAgICAgIGJzbGliXzAuNC4yICAgICAgY29tcGlsZXJfNC4yLjMgIFxuIFs1XSBwaWxsYXJfMS45LjAgICAgIGpxdWVyeWxpYl8wLjEuNCAgdG9vbHNfNC4yLjMgICAgICBiaXRfNC4wLjUgICAgICAgXG4gWzldIGRpZ2VzdF8wLjYuMzEgICAgdGltZWNoYW5nZV8wLjIuMCBqc29ubGl0ZV8xLjguNCAgIGV2YWx1YXRlXzAuMjAgICBcblsxM10gbGlmZWN5Y2xlXzEuMC4zICBndGFibGVfMC4zLjMgICAgIHBrZ2NvbmZpZ18yLjAuMyAgcmxhbmdfMS4xLjAgICAgIFxuWzE3XSBjbGlfMy42LjEgICAgICAgIHBhcmFsbGVsXzQuMi4zICAgeWFtbF8yLjMuNyAgICAgICB4ZnVuXzAuMzggICAgICAgXG5bMjFdIGZhc3RtYXBfMS4xLjEgICAgd2l0aHJfMi41LjAgICAgICBrbml0cl8xLjQyICAgICAgIGdlbmVyaWNzXzAuMS4zICBcblsyNV0gdmN0cnNfMC42LjIgICAgICBzYXNzXzAuNC41ICAgICAgIGhtc18xLjEuMyAgICAgICAgYml0NjRfNC4wLjUgICAgIFxuWzI5XSBncmlkXzQuMi4zICAgICAgIHRpZHlzZWxlY3RfMS4yLjAgZ2x1ZV8xLjYuMiAgICAgICBSNl8yLjUuMSAgICAgICAgXG5bMzNdIGZhbnNpXzEuMC40ICAgICAgdnJvb21fMS42LjEgICAgICBybWFya2Rvd25fMi4yMSAgIHJlc2hhcGUyXzEuNC40ICBcblszN10gdHpkYl8wLjMuMCAgICAgICBtYWdyaXR0cl8yLjAuMyAgIHNjYWxlc18xLjIuMSAgICAgaHRtbHRvb2xzXzAuNS41IFxuWzQxXSBjb2xvcnNwYWNlXzIuMS0wIHV0ZjhfMS4yLjMgICAgICAgc3RyaW5naV8xLjcuMTIgICBtdW5zZWxsXzAuNS4wICAgXG5bNDVdIGNhY2hlbV8xLjAuNyAgICAgY3JheW9uXzEuNS4yICAgIFxuIn0= -->
 <pre><code>R version 4.2.3 (2023-03-15)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 22.04.2 LTS
->>>>>>> origin/subtype_preparation:analyses/molecular-subtyping-HGG/00-fusion0summary.nb.html
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so
 
 locale:
-[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-<<<<<<< HEAD:analyses/molecular-subtyping-HGG/00-fusion-summary.nb.html
  [1] annoFuseData_0.1.0 lubridate_1.9.2    forcats_1.0.0      stringr_1.5.0     
- [5] dplyr_1.1.2        purrr_1.0.1        readr_2.1.4        tidyr_1.3.0       
+ [5] dplyr_1.1.1        purrr_1.0.1        readr_2.1.4        tidyr_1.3.0       
  [9] tibble_3.2.1       ggplot2_3.4.2      tidyverse_2.0.0   
 
 loaded via a namespace (and not attached):
- [1] Rcpp_1.0.11      plyr_1.8.8       bslib_0.5.0      compiler_4.2.2  
- [5] pillar_1.9.0     jquerylib_0.1.4  tools_4.2.2      bit_4.0.5       
- [9] digest_0.6.33    timechange_0.2.0 jsonlite_1.8.7   evaluate_0.21   
-[13] lifecycle_1.0.3  gtable_0.3.3     pkgconfig_2.0.3  rlang_1.1.1     
-[17] cli_3.6.1        parallel_4.2.2   yaml_2.3.7       xfun_0.39       
-[21] fastmap_1.1.1    withr_2.5.0      knitr_1.43       generics_0.1.3  
-[25] vctrs_0.6.3      sass_0.4.7       hms_1.1.3        bit64_4.0.5     
-[29] grid_4.2.2       tidyselect_1.2.0 glue_1.6.2       R6_2.5.1        
-[33] fansi_1.0.4      vroom_1.6.3      rmarkdown_2.23   reshape2_1.4.4  
-[37] tzdb_0.4.0       magrittr_2.0.3   scales_1.2.1     htmltools_0.5.5 
+ [1] Rcpp_1.0.10      plyr_1.8.8       bslib_0.4.2      compiler_4.2.3  
+ [5] pillar_1.9.0     jquerylib_0.1.4  tools_4.2.3      bit_4.0.5       
+ [9] digest_0.6.31    timechange_0.2.0 jsonlite_1.8.4   evaluate_0.20   
+[13] lifecycle_1.0.3  gtable_0.3.3     pkgconfig_2.0.3  rlang_1.1.0     
+[17] cli_3.6.1        parallel_4.2.3   yaml_2.3.7       xfun_0.38       
+[21] fastmap_1.1.1    withr_2.5.0      knitr_1.42       generics_0.1.3  
+[25] vctrs_0.6.2      sass_0.4.5       hms_1.1.3        bit64_4.0.5     
+[29] grid_4.2.3       tidyselect_1.2.0 glue_1.6.2       R6_2.5.1        
+[33] fansi_1.0.4      vroom_1.6.1      rmarkdown_2.21   reshape2_1.4.4  
+[37] tzdb_0.3.0       magrittr_2.0.3   scales_1.2.1     htmltools_0.5.5 
 [41] colorspace_2.1-0 utf8_1.2.3       stringi_1.7.12   munsell_0.5.0   
-[45] cachem_1.0.8     crayon_1.5.2    </code></pre>
-=======
- [1] annoFuseData_0.1.0 lubridate_1.9.2    forcats_1.0.0      stringr_1.5.0      dplyr_1.1.1        purrr_1.0.1       
- [7] readr_2.1.4        tidyr_1.3.0        tibble_3.2.1       ggplot2_3.4.2      tidyverse_2.0.0   
-
-loaded via a namespace (and not attached):
- [1] tidyselect_1.2.0       xfun_0.38              reshape2_1.4.4         colorspace_2.1-0       vctrs_0.6.2           
- [6] generics_0.1.3         htmltools_0.5.5        stats4_4.2.3           yaml_2.3.7             utf8_1.2.3            
-[11] rlang_1.1.0            pillar_1.9.0           glue_1.6.2             withr_2.5.0            BiocGenerics_0.44.0   
-[16] bit64_4.0.5            plyr_1.8.8             GenomeInfoDbData_1.2.9 lifecycle_1.0.3        zlibbioc_1.44.0       
-[21] munsell_0.5.0          gtable_0.3.3           evaluate_0.20          knitr_1.42             tzdb_0.3.0            
-[26] IRanges_2.32.0         fastmap_1.1.1          GenomeInfoDb_1.34.9    parallel_4.2.3         fansi_1.0.4           
-[31] Rcpp_1.0.10            scales_1.2.1           S4Vectors_0.36.2       XVector_0.38.0         vroom_1.6.1           
-[36] jsonlite_1.8.4         bit_4.0.5              hms_1.1.3              digest_0.6.31          stringi_1.7.12        
-[41] GenomicRanges_1.50.2   grid_4.2.3             rprojroot_2.0.3        cli_3.6.1              tools_4.2.3           
-[46] bitops_1.0-7           magrittr_2.0.3         RCurl_1.98-1.12        crayon_1.5.2           pkgconfig_2.0.3       
-[51] timechange_0.2.0       rmarkdown_2.21         rstudioapi_0.14        R6_2.5.1               compiler_4.2.3        </code></pre>
->>>>>>> origin/subtype_preparation:analyses/molecular-subtyping-HGG/00-fusion0summary.nb.html
+[45] cachem_1.0.7     crayon_1.5.2    </code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 </div>
