@@ -1,4 +1,23 @@
-data/
+.DS_Store
+.Rhistory
+.Rproj.user
+.snakemake
+# The dictionary of words accrued by `mdspell` for spellcheck
+.spelling
+
+
+# Ignore jupyter checkpoint folders
+.ipynb_checkpoints
+
+# Result of running docker image locally. Should not be tracked
+.rstudio/
+
+# Ignore all .pyc files
+*.pyc
+
+# Ignore all bash history files
+.bash_history
+
 *.pptx
 code/tmb-calculation
 code/sample_manifest_for_zz.R
