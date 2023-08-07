@@ -1,0 +1,129 @@
+# data availability heatmap
+
+# load libraries
+suppressPackageStartupMessages({
+  library(reshape2)
+  library(ggplot2)
+  library(tidyverse) 
+})
+
+# set directories
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+input_dir <- file.path(root_dir, "analyses", "merge-files", "input")
+analyses_dir <- file.path(root_dir, "analyses", "data-availability")
+output_dir <- file.path(analyses_dir, "results")
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+
+# updated clinical data from Mateusz
+dat <- readr::read_tsv(file.path(input_dir, "clinical", "hopeonly_clinical_table_011823.tsv"))
+dat <- dat %>%
+  dplyr::select(Sample_ID) 
+
+# these two are in 10x but not here
+# but Mateusz has asked to add them in
+dat <- rbind(dat, data.frame(Sample_ID = c("7316-3158", "7316-1464"))) 
+
+# add proteomics from Nicole's file
+proteomics <- read_tsv(file.path(input_dir, "clinical", "cluster_data101922.tsv"))
+dat$Proteomics <- dat$Sample_ID %in% proteomics$id
+
+# add phosphoproteomics from Nicole's file
+dat$Phosphoproteomics <- dat$Sample_ID %in% proteomics$id
+
+# add methylation
+methylation <- read.delim(file.path(analyses_dir, "input", "methylation_subset.tsv"), header = F)
+dat$Methylation <- dat$Sample_ID %in% methylation$V1
+
+# add RNA-seq from Cavatica manifest
+lf <- list.files(file.path(input_dir, "manifest"), full.names = T)
+rna_metadata = read_tsv(lf[grep("rna", lf)])
+# additional samples given by mateusz
+half_blocks <- c("7316UP-1962", "7316UP-2058", "7316UP-2333", "7316UP-2403", "7316-4842", "7316-4844")
+dat$RNAseq <- dat$Sample_ID %in% c(rna_metadata$sample_id, half_blocks)
+
+# add WGS from Cavatica manifest
+snv_metadata = read_tsv(lf[grep("snv", lf)])
+cnv_metadata = read_tsv(lf[grep("cnv", lf)])
+dat$WGS <- dat$Sample_ID %in% cnv_metadata$sample_id
+
+# WGS tumor-only from Cavatica manifest
+lf <- list.files(file.path(input_dir, "manifest_tumor_only"), full.names = T)
+wgs_tumor_only <- read_tsv(lf[grep("snv", lf)])
+dat$WGS_tumor_only <- dat$Sample_ID %in% wgs_tumor_only$sample_id
+
+# add 10x single cell RNAseq (two samples: "7316-1464" and "7316-3158" missing)
+single_cell_rnaseq_10x <- readxl::read_xlsx(file.path(analyses_dir, "input", "CPTAC_Project Hope cohorts.xlsx"), sheet = "Aaron's Manifest")
+colnames(single_cell_rnaseq_10x)[10] <- "Sample"
+single_cell_rnaseq_10x <- single_cell_rnaseq_10x %>%
+  filter(`10X` == "Yes",
+         !is.na(`Subject ID`)) %>%
+  dplyr::mutate(Type = ifelse(grepl("-A-|-B-|-C-", Sample), "Full", "Half"))
+dat$Single_Cell_RNAseq_10x <- dat$Sample_ID %in% single_cell_rnaseq_10x$`BioSTOR ID`
+
+# add Smart-Seq2 single cell RNAseq (this is from cavatica project)
+single_cell_rnaseq_smartseq2 <- readxl::read_xlsx(file.path(analyses_dir, "input", "single_cell_smartseq_manifest.xlsx"))
+single_cell_rnaseq_smartseq2$Name <- gsub("Sample_|-P[1-9]$", "", single_cell_rnaseq_smartseq2$Name)
+dat$Single_Cell_RNAseq_SmartSeq2 <- dat$Sample_ID %in% single_cell_rnaseq_smartseq2$Name
+
+# order samples
+sample_order <- dat %>%
+  arrange(desc(Proteomics), 
+          desc(Phosphoproteomics), 
+          desc(WGS), 
+          desc(WGS_tumor_only), 
+          desc(RNAseq), 
+          desc(Methylation),
+          desc(Single_Cell_RNAseq_SmartSeq2),
+          desc(Single_Cell_RNAseq_10x)) %>%
+  pull(Sample_ID)
+
+# plot
+dat <- melt(dat, id.vars = "Sample_ID", variable.name = "data_type", value.name = "data_availability")
+dat$data_type <- factor(dat$data_type, levels=c("Single_Cell_RNAseq_10x",
+                                                "Single_Cell_RNAseq_SmartSeq2",
+                                                "Methylation", "RNAseq", "WGS_tumor_only", "WGS", 
+                                                "Phosphoproteomics", "Proteomics"))
+dat$Sample_ID <- factor(dat$Sample_ID, levels = sample_order)
+dat <- dat %>%
+  mutate(label = ifelse(data_availability == TRUE, as.character(data_type), FALSE))
+
+# generate plot
+q <- ggplot(dat %>% filter(!data_type %in% c("WGS_tumor_only")), 
+            aes(Sample_ID, data_type, fill = label)) + 
+  geom_tile(colour = "white", aes(height = 1)) + ggpubr::theme_pubr() +
+  scale_fill_manual(values = c("FALSE" = "white", 
+                               "Proteomics" = "#08306B", 
+                               "Phosphoproteomics" = "#08519C",
+                               "WGS" = "#2171B5", 
+                               "RNAseq" = "#4292C6", 
+                               "Methylation" = "#6BAED6",
+                               "Single_Cell_RNAseq_SmartSeq2" = "#9ECAE1",
+                               "Single_Cell_RNAseq_10x" = "#C6DBEF")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
+        axis.text.y = element_text(size = 8)) + 
+  xlab("") + ylab("") +
+  theme(legend.position = "none")
+
+# add numbers for each datatype
+labs = dat %>% 
+  filter(label != FALSE,
+         label != "WGS_tumor_only") %>%
+  group_by(label) %>% 
+  summarise(n = n()) %>% 
+  mutate(label2 = paste0(label, ' (n = ', n,')')) %>%
+  dplyr::select(-c(n))
+
+q <- q + scale_y_discrete(limit = labs$label[match(setdiff(levels(dat$data_type), "WGS_tumor_only"), labs$label)],
+                     labels = labs$label2[match(setdiff(levels(dat$data_type), "WGS_tumor_only"), labs$label)])
+
+# add WGS tumor only
+dat_tmp <- dat %>%
+  filter(data_type == "WGS_tumor_only") %>%
+  mutate(data_type = "WGS", 
+         label = ifelse(label != FALSE | Sample_ID %in% snv_metadata$sample_id, "WGS", FALSE))
+q <- q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9)) +
+  theme(
+    panel.background = element_rect(fill = "white"),
+    plot.margin = margin(2, 1, 1, 1, "cm"))
+q
+ggsave(filename = file.path(output_dir, "hope_cohort_data_availability.pdf"), plot = q, width = 12, height = 4)
