@@ -1,17 +1,19 @@
 # HOPE cohort analysis
 
 Module authors: [Komal S. Rathi](https://github.com/komalsrathi/)
+                [Zhuangzhuang Geng](https://github.com/zzgeng)
+
 
 ## Run the script on docker
 
 To pull the docker image, run the command line:
 ```
-docker pull pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:last
+docker pull pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:latest
 ```
 
 To run the docker, run the command line below. For mac M1 user, add `--platform=linux/arm64`.
 ```
-docker run -e PASSWORD=pass -p 8787:8787 --name <CONTAINER_NAME> -v $PWD:/home/rstudio/HOPE pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:last
+docker run -e PASSWORD=pass -p 8787:8787 --name <CONTAINER_NAME> -v $PWD:/home/rstudio/HOPE pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:latest
 
 ```
 
