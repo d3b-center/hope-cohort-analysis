@@ -45,6 +45,7 @@ RUN ./install_bioc.r \
     data.table 
     
 # Install pip3 and low-level python installation reqs
+RUN apt-get update
 RUN apt-get -y --no-install-recommends install \
     python3-pip  python3-dev
 RUN ln -s /usr/bin/python3 /usr/bin/python    
