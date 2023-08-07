@@ -1,11 +1,14 @@
-# create data availability plots
-bash analyses/data-availability/run_data_plots.sh
-
 # create merged files
-bash analyses/merge-files/run_merge_files.sh
+cd analyses/merge-files && bash run_merge_files.sh
+cd ../..
+
+# create data availability plots
+cd analyses/data-availability && bash run_data_plots.sh
+cd ../..
 
 # create oncoplots
-bash analyses/oncoplots/run_oncoplots.sh
+cd analyses/oncoplots && bash run_oncoplots.sh
+cd ../..
 
 # survival analysis
 Rscript --vanilla analyses/survival-analysis/01-survival-analysis.R
@@ -14,4 +17,5 @@ Rscript --vanilla analyses/survival-analysis/01-survival-analysis.R
 Rscript --vanilla analyses/alt-analysis/01-correlation_alt_vs_vars.R
 
 # MSIsensor-pro analysis
-bash analyses/msi-sensor-analysis/run_msisensor_analysis.sh
+cd analyses/msi-sensor-analysis && bash run_msisensor_analysis.sh
+cd ../..
