@@ -2,6 +2,9 @@
 cd analyses/merge-files && bash run_merge_files.sh
 cd ../..
 
+# create master annotation for downstream analyses
+Rscript --vanilla analyses/master-annotation/01-create-master-annotation.R
+
 # create data availability plots
 cd analyses/data-availability && bash run_data_plots.sh
 cd ../..
