@@ -12,16 +12,6 @@ input_dir <- file.path(analyses_dir, "input")
 output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
-# histologies
-manifest <- list.files(path = file.path(input_dir, "manifest_tumor_only"), pattern = "manifest.*.tsv", full.names = T)
-manifest <- lapply(manifest, FUN = function(x) readr::read_tsv(x))
-manifest <- plyr::rbind.fill(manifest)
-colnames(manifest) <- gsub(" ", "_", colnames(manifest))
-hist <- manifest %>%
-  dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
-  mutate(file_name = gsub('.*/', '', name)) %>%
-  unique()
-
 # merge tumor-only mutations (n = 93)
 hope_cohort_mutations <- list.files(path = file.path(input_dir, "mutect_maf_tumor_only"), pattern = "public", recursive = T, full.names = T)
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::read_tsv(x, skip = 1))
@@ -29,11 +19,19 @@ hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
 length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
 saveRDS(hope_cohort_mutations, file = file.path(output_dir, "Hope-mutect2-mutation-tumor-only.maf.rds"))
 
+# manifest for cnv files
+cnv_manifest <- read_tsv(file.path(input_dir, "manifest_tumor_only", "manifest_20230501_102248_cnv.tsv"))
+colnames(cnv_manifest) <- gsub(" ", "_", colnames(cnv_manifest))
+cnv_manifest <- cnv_manifest %>%
+  dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
+  mutate(file_name = gsub('.*/', '', name)) %>%
+  unique()
+
 # function to merge cnv
 merge_cnv <- function(nm){
   print(nm)
   sample_name <- gsub(".*/", "", nm)
-  sample_name <- hist %>%
+  sample_name <- cnv_manifest %>%
     filter(file_name == sample_name) %>%
     pull(Kids_First_Biospecimen_ID) %>%
     unique()
@@ -74,6 +72,14 @@ hope_cohort_cnv <- hope_cohort_cnv %>%
 print(length(unique(hope_cohort_cnv$biospecimen_id)))
 saveRDS(hope_cohort_cnv, file = file.path(output_dir, "Hope-cnv-controlfreec-tumor-only.rds"))
 
+# manifest for msi files
+msi_manifest <- read_tsv(file.path(input_dir, "manifest_tumor_only", "manifest_20230504_083829_msi.tsv"))
+colnames(msi_manifest) <- gsub(" ", "_", colnames(msi_manifest))
+msi_manifest <- msi_manifest %>%
+  dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
+  mutate(file_name = gsub('.*/', '', name)) %>%
+  unique()
+
 # merge msi (n = 93)
 lf <- list.files(path = file.path(input_dir, "msisensor_pro_tumor_only"), pattern = 'msisensor_pro', recursive = T, full.names = T)
 hope_cohort_msi <- lapply(lf, read_tsv)
@@ -83,7 +89,7 @@ hope_cohort_msi$name <- gsub('.*/', '', lf)
 
 # add identifiers 
 hope_cohort_msi <- hope_cohort_msi %>%
-  inner_join(hist %>% dplyr::select(-c(name)), by = c("name" = "file_name")) %>%
+  inner_join(msi_manifest %>% dplyr::select(-c(name)), by = c("name" = "file_name")) %>%
   dplyr::select(Kids_First_Biospecimen_ID, case_id, sample_id, Total_Number_of_Sites, Number_of_Somatic_Sites, Percent)
 hope_cohort_msi <- unique(hope_cohort_msi)
 print(length(unique(hope_cohort_msi$Kids_First_Biospecimen_ID)))

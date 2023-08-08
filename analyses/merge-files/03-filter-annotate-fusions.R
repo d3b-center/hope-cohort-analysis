@@ -73,15 +73,14 @@ hope_cohort_fusions <- hope_cohort_fusions %>%
                 "caller.count" = "caller_count") %>%
   dplyr::select(-c(id, SpanningFragCount, JunctionReadCount, Confidence, SpanningDelta, Caller))
 
-# add Kids_First_Participant_ID
-manifest <- list.files(path = file.path(input_dir, "manifest"), pattern = "manifest.*fusion.tsv", full.names = T)
-manifest <- readr::read_tsv(manifest)
-manifest <- manifest %>%
-  dplyr::select(`Kids First Biospecimen ID`, `Kids First Participant ID`) %>%
+# add Kids_First_Participant_ID using manifest for fusion files
+fusion_manifest <- readr::read_tsv(file.path(input_dir, "manifest", "manifest_20230427_144736_fusion.tsv"))
+colnames(fusion_manifest) <- gsub(" ", "_", colnames(fusion_manifest))
+fusion_manifest <- fusion_manifest %>%
+  dplyr::select(Kids_First_Biospecimen_ID, Kids_First_Participant_ID) %>%
   unique()
-colnames(manifest) <- gsub(" ", "_", colnames(manifest))
 hope_cohort_fusions <- hope_cohort_fusions %>%
-  inner_join(manifest, by = c("Sample" = "Kids_First_Biospecimen_ID")) 
+  inner_join(fusion_manifest, by = c("Sample" = "Kids_First_Biospecimen_ID")) 
 
 # write output
 saveRDS(hope_cohort_fusions, file = file.path(output_dir, "Hope-fusion-putative-oncogenic.rds"))

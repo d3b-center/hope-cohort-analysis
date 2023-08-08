@@ -16,12 +16,10 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 merge_rsem <- file.path(analyses_dir, "utils", "merge_rsem.R")
 collapse_rsem <- file.path(analyses_dir, "utils", "collapse_rnaseq.R")
 
-# histologies (manifests from cavatica)
-manifest <- list.files(path = file.path(input_dir, "manifest"), pattern = "manifest.*.tsv", full.names = T)
-manifest <- lapply(manifest, FUN = function(x) readr::read_tsv(x))
-manifest <- plyr::rbind.fill(manifest)
-colnames(manifest) <- gsub(" ", "_", colnames(manifest))
-hist <- manifest %>%
+# manifest for gene expression files
+rna_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230427_144425_rna.tsv"))
+colnames(rna_manifest) <- gsub(" ", "_", colnames(rna_manifest))
+rna_manifest <- rna_manifest %>%
   dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
   mutate(file_name = gsub('.*/', '', name)) %>%
   unique()
@@ -40,7 +38,7 @@ if(!file.exists(fname)){
   tpm <- file.path(output_dir, "Hope-gene-expression-rsem-tpm.rds") %>%
     readRDS() %>%
     column_to_rownames("gene_id")
-  rna_hist <- hist %>%
+  rna_hist <- rna_manifest %>%
     mutate(file_name = gsub(".rsem.genes.results.gz", "", file_name)) %>%
     dplyr::filter(file_name %in% colnames(tpm))
   tpm <- tpm %>%
@@ -73,7 +71,7 @@ if(!file.exists(fname)){
   counts <- file.path(output_dir, "Hope-gene-counts-rsem-expected_count.rds") %>%
     readRDS() %>%
     column_to_rownames("gene_id")
-  rna_hist <- hist %>%
+  rna_hist <- rna_manifest %>%
     mutate(file_name = gsub(".rsem.genes.results.gz", "", file_name)) %>%
     dplyr::filter(file_name %in% colnames(counts))
   counts <- counts %>%
@@ -99,11 +97,19 @@ hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
 length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
 saveRDS(hope_cohort_mutations, file = file.path(output_dir, "Hope-consensus-mutation.maf.rds"))
 
+# manifest for cnv files
+cnv_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230427_150037_cnv.tsv"))
+colnames(cnv_manifest) <- gsub(" ", "_", colnames(cnv_manifest))
+cnv_manifest <- cnv_manifest %>%
+  dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
+  mutate(file_name = gsub('.*/', '', name)) %>%
+  unique()
+
 # function to merge cnv
 merge_cnv <- function(nm){
   print(nm)
   sample_name <- gsub(".*/", "", nm)
-  sample_name <- hist %>%
+  sample_name <- cnv_manifest %>%
     filter(file_name == sample_name) %>%
     pull(Kids_First_Biospecimen_ID) %>%
     unique()
@@ -144,6 +150,14 @@ hope_cohort_cnv <- hope_cohort_cnv %>%
 print(length(unique(hope_cohort_cnv$biospecimen_id)))
 saveRDS(hope_cohort_cnv, file = file.path(output_dir, "Hope-cnv-controlfreec.rds"))
 
+# manifest for msi files
+msi_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230504_084539_msi.tsv"))
+colnames(msi_manifest) <- gsub(" ", "_", colnames(msi_manifest))
+msi_manifest <- msi_manifest %>%
+  dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
+  mutate(file_name = gsub('.*/', '', name)) %>%
+  unique()
+
 # merge msi (n = 76)
 lf <- list.files(path = file.path(input_dir, "msisensor_pro"), pattern = 'msisensor_pro', recursive = T, full.names = T)
 hope_cohort_msi <- lapply(lf, read_tsv)
@@ -153,7 +167,7 @@ hope_cohort_msi$name <- gsub('.*/', '', lf)
 
 # add identifiers 
 hope_cohort_msi <- hope_cohort_msi %>%
-  inner_join(hist %>% dplyr::select(-c(name)), by = c("name" = "file_name")) %>%
+  inner_join(msi_manifest %>% dplyr::select(-c(name)), by = c("name" = "file_name")) %>%
   dplyr::select(Kids_First_Biospecimen_ID, case_id, sample_id, Total_Number_of_Sites, Number_of_Somatic_Sites, Percent)
 hope_cohort_msi <- unique(hope_cohort_msi)
 print(length(unique(hope_cohort_msi$Kids_First_Biospecimen_ID)))
