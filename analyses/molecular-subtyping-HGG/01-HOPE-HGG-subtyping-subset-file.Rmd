@@ -267,7 +267,7 @@ idh_summary_df <- filtered_snv_df %>%
 ```{r}
 braf_summary_df <- filtered_snv_df %>%
   dplyr::filter(Hugo_Symbol == "BRAF",
-                grepl("V640E", HGVSp_Short)) %>%
+                grepl("V600E", HGVSp_Short)) %>%
   rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID) %>%
   dplyr::select(Tumor_Sample_Barcode, HGVSp_Short) %>%
   dplyr::rename(BRAF_V600E = HGVSp_Short) %>%
