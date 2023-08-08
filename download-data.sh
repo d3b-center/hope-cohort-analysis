@@ -22,7 +22,7 @@ BASEDIR="$(pwd)"
 [ ! -d "$BASEDIR/data/$RELEASE/" ] && mkdir $BASEDIR/data/$RELEASE/
 
 # The md5sum file provides our single point of truth for which files are in a release.
-curl --create-dirs -k $URL/$RELEASE/md5sum.txt -o $BASEDIR/data/$RELEASE/md5sum.txt -z $BASEDIR/data/$RELEASE/md5sum.txt
+curl --create-dirs $URL/$RELEASE/md5sum.txt -o $BASEDIR/data/$RELEASE/md5sum.txt -z $BASEDIR/data/$RELEASE/md5sum.txt
 
 FILES=(`tr -s ' ' < $BASEDIR/data/$RELEASE/md5sum.txt | cut -d ' ' -f 2` release-notes.md)
 
@@ -31,15 +31,15 @@ do
   if [ ! -e "$BASEDIR/data/$RELEASE/$file" ]
   then
     echo "Downloading $file"
-    curl --create-dirs -k $URL/$RELEASE/$file -o $BASEDIR/data/$RELEASE/$file
+    curl --create-dirs $URL/$RELEASE/$file -o $BASEDIR/data/$RELEASE/$file
   fi
 done
 
 GENCODE39="ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gtf.gz"
-if [ ! -e ${GENCODE39##*/} ]
+if [ ! -e $BASEDIR/data/${GENCODE39##*/} ]
 then
   echo "Downloading ${GENCODE39##*/}"
-  curl -O $GENCODE39
+  curl $GENCODE39 -o $BASEDIR/data/gencode.v39.primary_assembly.annotation.gtf.gz
 fi
 
 #check md5sum
