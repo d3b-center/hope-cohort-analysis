@@ -188,7 +188,7 @@ We will gather values per sample_id since DNA and RNA samples can be only matche
 ```{r}
 
 tp53_alterations <- histology %>%
-  filter(experimental_strategy != "RNA-Seq") %>%
+  filter(experimental_strategy %in% c("WGS", "WES")) %>%
   # filter for Tumors
   filter(sample_type=="Tumor") %>%
   # join consensus calls overlapping hotspots
@@ -215,8 +215,8 @@ tp53_alterations_score <- tp53_alterations %>%
                                   "Kids_First_Participant_ID",
                                   "cohort")) %>%
   # select useful columns
-  dplyr::select(sample_id,Kids_First_Biospecimen_ID_RNA,Kids_First_Biospecimen_ID_DNA,
-         tp53_score,cancer_predispositions,HGVSp_Short,copy_number,SV_type,FusionName,hotspot,activating) %>%
+  dplyr::select(sample_id, Kids_First_Biospecimen_ID_RNA, Kids_First_Biospecimen_ID_DNA,
+         tp53_score, cancer_predispositions, HGVSp_Short, copy_number, SV_type, FusionName, hotspot, activating) %>%
   arrange(sample_id) %>%
   unique() %>%
   replace_na(list(hotspot = 0, activating = 0))

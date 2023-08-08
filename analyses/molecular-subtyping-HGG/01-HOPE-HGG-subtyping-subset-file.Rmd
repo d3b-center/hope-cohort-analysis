@@ -6,8 +6,7 @@ date: "2023-08-02"
 
 ```{r library}
 library(tidyverse)
-#library(annoFuseData)
-
+library(annoFuseData)
 
 ```
 
@@ -35,17 +34,11 @@ if (!dir.exists(results_dir)) {
 
 ```
 
-## load files
+## load histologies files
 
 ```{r pressure, echo=FALSE}
 hist <- readr::read_tsv(file.path(root_dir, "data", "HOPE-GBM-histologies-base.tsv"))
 
-# Read in the JSON file that contains the strings we'll use to include or
-# exclude samples for subtyping - see 00-HGG-select-pathology-dx
-path_dx_list <- jsonlite::fromJSON(
-  file.path(hgg_subset_dir,
-            "hgg_subtyping_path_dx_strings.json")
-)
 ```
 
 # Prepare Data
@@ -135,21 +128,9 @@ snv_lesions_df <- hist %>%
 
 ```
 
-```{r}
-hgg_meta_df <- hist %>%
-  filter(pathology_diagnosis %in% path_dx_list$exact_path_dx |
-         # Inclusion based on pathology free text diagnosis
-         pathology_free_text_diagnosis %in% path_dx_list$path_free_text_exact |
-         # Inclusion based on pathology free text diagnosis for IHG
-         pathology_free_text_diagnosis  %in% path_dx_list$IHG_path_free_path_dx)
-
-
-```
-
 ## cn data
 
 ```{r}
-
 cn_df <- readr::read_rds(file.path(root_dir, "data", 
                                    "Hope-cnv-controlfreec.rds")) %>%
   select(hgnc_symbol,
@@ -213,6 +194,8 @@ genes_of_interest <- unique(c(k28_genes_of_interest,
                               codeleted_genes_of_interest))
 
 ```
+
+### select the gene of interests and exclude TERT for now
 
 ```{r}
 filtered_snv_df <- snv_df %>%
@@ -284,7 +267,7 @@ idh_summary_df <- filtered_snv_df %>%
 ```{r}
 braf_summary_df <- filtered_snv_df %>%
   dplyr::filter(Hugo_Symbol == "BRAF",
-                grepl("V600E", HGVSp_Short)) %>%
+                grepl("V640E", HGVSp_Short)) %>%
   rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID) %>%
   dplyr::select(Tumor_Sample_Barcode, HGVSp_Short) %>%
   dplyr::rename(BRAF_V600E = HGVSp_Short) %>%
@@ -357,7 +340,7 @@ filter_process_expression <- function(expression_mat) {
   # Filter to HGG samples only -- we can use hgg_metadata_df because it is
   # subset to RNA-seq samples
   filtered_expression <- expression_mat %>%
-    select(intersect(hgg_meta_df$Kids_First_Biospecimen_ID,
+    select(intersect(hist$Kids_First_Biospecimen_ID,
                      colnames(expression_mat)))
 
   # Log2 transformation

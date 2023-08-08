@@ -104,9 +104,8 @@ We will also add exon and intron information to this fusion call.
 putative_onco_tp53_fusion <- putative_onco_fusion %>%
   filter(stringr::str_detect(FusionName,"^TP53--|--TP53$")) %>%
   left_join(histology,
-            by = c("Kids_First_Biospecimen_ID" = "Kids_First_Biospecimen_ID")
+            by = c("Sample" = "Kids_First_Biospecimen_ID")
   ) %>%
-  rename("Kids_First_Biospecimen_ID" = "Sample") %>%
   dplyr::select("Sample",
                 "sample_id",
                 "FusionName",
