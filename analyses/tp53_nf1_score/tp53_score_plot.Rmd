@@ -1,5 +1,5 @@
 ---
-title: "tp53 plot"
+title: "TP53 score plot"
 author: "Zhuangzhuang Geng"
 date: "2023-08-02"
 output: html_document
@@ -9,6 +9,7 @@ output: html_document
 library(tidyverse)
 library(survival)
 library(ggplot2)
+library(patchwork)
 ```
 
 ## set directories
@@ -39,6 +40,8 @@ tp53_survival <- hist %>%
          reported_gender, race, age_at_diagnosis_days, 
          molecular_subtype) %>% 
   filter(!is.na(sample_id)) %>%
+  mutate(molecular_subtype = case_when(is.na(molecular_subtype) ~ "not reported", 
+                                       TRUE ~ molecular_subtype)) %>%
   distinct()
 
 
@@ -57,7 +60,12 @@ tp53_survival <- tp53_survival %>%
                                   age_at_diagnosis_days < as.integer(40 * 365.25) ~ "26-40",
                                 
                                 age_at_diagnosis_days >= as.integer(40 * 365.25)  ~ ">40", 
-                                TRUE ~ "not reported"))
+                                TRUE ~ "not reported")) %>% 
+  mutate(binned_tp53 = case_when(tp53_score >= 0 & tp53_score < 0.25 ~ "1 quantile", 
+                                 tp53_score >= 0.25 & tp53_score < 0.5 ~ "2 quantile", 
+                                 tp53_score >= 0.5 & tp53_score < 0.75 ~ "3 quantile", 
+                                 tp53_score >= 0.75 & tp53_score <= 1 ~ "4 quantile", 
+                                 TRUE ~ "no tp53 score"))
 
 ```
 
@@ -110,22 +118,31 @@ ggplot(tp53_survival, aes(x = race, y = tp53_score)) +
 
 ```
 
-## survival analysis
+## plot the Kaplan–Meier survival curve on 
+## molecular_subtype, gender, binned age and binned tp53 score
 
 ```{r}
+var <- c("molecular_subtype", "reported_gender", "binned_age", "binned_tp53")
 
-kap_OS <- survival_analysis(
+for(i in var){
+  
+  kap_OS <- survival_analysis(
   metadata = tp53_survival, 
-  ind_var = "molecular_subtype",
+  ind_var = i,
   test = "kap.meier",
   metadata_sample_col = "sample_id",
   days_col = "OS_days",
   status_col = "OS_status"
   )
-
-plotKM(model = list(kap_OS), 
-       variable = "molecular_subtype", 
+print(i)
+  plot <- plotKM(model = kap_OS, 
+       variable = i, 
        combined = FALSE, 
-       title = group)
+       title = i)
+
+  ggsave(file.path(plots_dir, paste0(i, ".pdf")), plot, 
+       width = 10, height = 6, units = "in", 
+       device = "pdf")
+}
 
 ```

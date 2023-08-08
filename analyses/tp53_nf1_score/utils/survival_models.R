@@ -320,10 +320,28 @@ plotKM <- function(model,
     
     if ("OS_days" %in% names(model$original_data)){
       
-      event_type <- "OS"
+      variable_os <- model$original_data %>% 
+        pull(variable)
       
-      diff_obj <- survdiff(survival::Surv(OS_days, OS_status) ~ cpgPLP_status,  
-                              model$original_data)
+      event_type <- "OS"
+      diff_obj <- survdiff(survival::Surv(OS_days, OS_status) ~ variable_os
+                              , model$original_data)
+      diff_pvalue <- 1 - pchisq(diff_obj$chisq, length(diff_obj$n) - 1)
+      diff_pvalue_formatted <- format(
+        signif(diff_pvalue, 2),
+        scientific = FALSE)
+
+    }
+    
+    if ("EFS_days" %in% names(model$original_data)){
+      
+      event_type <- "EFS"
+      
+      variable_efs <- model$original_data %>% 
+        pull(variable)
+      
+      diff_obj <- survdiff(survival::Surv(EFS_days, EFS_status) ~ variable_efs,  
+                           model$original_data)
       diff_pvalue <- 1 - pchisq(diff_obj$chisq, length(diff_obj$n) - 1)
       diff_pvalue_formatted <- format(
         signif(diff_pvalue, 2),
@@ -331,18 +349,6 @@ plotKM <- function(model,
       
     }
     
-    if ("EFS_days" %in% names(model$original_data)){
-      
-      event_type <- "EFS"
-      
-      diff_obj <- survdiff(survival::Surv(EFS_days, EFS_status) ~ cpgPLP_status,  
-                               model$original_data)
-      diff_pvalue <- 1 - pchisq(diff_obj$chisq, length(diff_obj$n) - 1)
-      diff_pvalue_formatted <- format(
-        signif(diff_pvalue, 2),
-        scientific = FALSE)
-      
-    }
     
     levels <- model$original_data %>%
       pull(variable) %>%
@@ -352,7 +358,7 @@ plotKM <- function(model,
     colors <- colorblindr::palette_OkabeIto[1:length(levels)]
     lines <- c(rep("solid", length(levels)), 
               rep("dashed", length(levels)))
-    labels <- glue::glue("{event_type}:{levels}")
+    labels <- as.character(glue::glue("{event_type}:{levels}"))
     
       
     km_plot <- survminer::ggsurvplot(fit = model$model, 
@@ -441,7 +447,7 @@ plotKM <- function(model,
                                      linetype = lines,
                                      combine = TRUE,
                                      risk.table = TRUE,
-                                     xlim = c(0, 4000),
+                                     #xlim = c(0, 4000),
                                      break.time.by = 500,
                                      ggtheme = ggpubr::theme_pubr(),
                                      title = title,
@@ -469,7 +475,7 @@ plotKM <- function(model,
       plot_layout(widths = c(2, 1), 
                   heights = c(2, 0.75))
     
-    return(km_final)
+    return(km_plot_table)
     
   }
 }
