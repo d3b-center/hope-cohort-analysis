@@ -59,6 +59,7 @@ keep_cols <- c("Chromosome",
 # snv files
 snv_consensus_hotspot_maf <- readr::read_rds(
   file.path(root_dir, "data" , "Hope-consensus-mutation.maf.rds")) %>%
+  rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode") %>%
   select(all_of(keep_cols))
 
 dna_bsids <- hist %>%
@@ -270,7 +271,7 @@ braf_summary_df <- filtered_snv_df %>%
                 grepl("V600E", HGVSp_Short)) %>%
   rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID) %>%
   dplyr::select(Tumor_Sample_Barcode, HGVSp_Short) %>%
-  dplyr::rename(BRAF_V600E = HGVSp_Short) %>%
+  dplyr::rename(BRAF_V640E = HGVSp_Short) %>%
   dplyr::bind_rows(data.frame(
     Tumor_Sample_Barcode = setdiff(dna_bsids,
                                    .$Tumor_Sample_Barcode)
