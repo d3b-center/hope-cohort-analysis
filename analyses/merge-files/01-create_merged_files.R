@@ -95,7 +95,7 @@ hope_cohort_mutations <- list.files(path = file.path(input_dir, "consenus_maf"),
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::read_tsv(x, skip = 1))
 hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
 length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
-data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-consensus-plus-hotspots.maf.tsv.gz"))
+data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-snv-consensus-plus-hotspots.maf.tsv.gz"))
 
 # manifest for cnv files
 cnv_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230427_150037_cnv.tsv"))
