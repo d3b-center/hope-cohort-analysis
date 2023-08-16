@@ -17,7 +17,7 @@ hope_cohort_mutations <- list.files(path = file.path(input_dir, "mutect_maf_tumo
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::read_tsv(x, skip = 1))
 hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
 length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
-saveRDS(hope_cohort_mutations, file = file.path(output_dir, "Hope-mutect2-mutation-tumor-only.maf.rds"))
+data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-mutect2-tumor-only.maf.tsv.gz"))
 
 # manifest for cnv files
 cnv_manifest <- read_tsv(file.path(input_dir, "manifest_tumor_only", "manifest_20230501_102248_cnv.tsv"))
