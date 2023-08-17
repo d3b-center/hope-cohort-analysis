@@ -5,6 +5,8 @@ date: "2023-08-02"
 output: html_document
 ---
 
+## load libraries
+
 ```{r libraries}
 library(tidyverse)
 library(survival)
@@ -12,25 +14,26 @@ library(ggplot2)
 library(patchwork)
 ```
 
-## set directories
+## set directories adn source functions for plotting 
 
 ```{r}
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-analyses_root <- file.path(root_dir, "analyses", "tp53_nf1_score")
-plots_dir <- file.path(analyses_root, "plots")
+analyses_dir <- file.path(root_dir, "analyses", "tp53_nf1_score")
+plots_dir <- file.path(analyses_dir, "plots")
 
+## source this script for plotting
+source(file.path(analyses_dir, "utils", "survival_models.R"))
 ```
 
 ## load files
 
 ```{r}
 hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies-base.tsv"))
-tp53_score <- readr::read_tsv(file.path(analyses_root, "results", "tp53_altered_status.tsv"))
+tp53_score <- readr::read_tsv(file.path(analyses_dir, "results", "tp53_altered_status.tsv"))
 mol_subtype <- readr::read_tsv(file.path(root_dir, "analyses", "molecular-subtyping-HGG", "results", "Hope_subtype.tsv"))
-## source this script for plotting
-source(file.path(analyses_root, "utils", "survival_models.R"))
 
-## combine files together
+
+## combine histologies, tp53_score table and molecular_subtypes together
 tp53_survival <- hist %>%
   left_join(tp53_score, by = "sample_id") %>%
   select(-tp53_altered, -molecular_subtype) %>%
@@ -44,9 +47,10 @@ tp53_survival <- hist %>%
                                        TRUE ~ molecular_subtype)) %>%
   distinct()
 
+head(tp53_survival)
 
 ```
-### tp53 score and age
+### generate binned tp53 score and age and convert OS_days to OS_years for latter use
 
 ```{r}
 tp53_survival <- tp53_survival %>%
@@ -65,11 +69,16 @@ tp53_survival <- tp53_survival %>%
                                  tp53_score >= 0.25 & tp53_score < 0.5 ~ "2 quantile", 
                                  tp53_score >= 0.5 & tp53_score < 0.75 ~ "3 quantile", 
                                  tp53_score >= 0.75 & tp53_score <= 1 ~ "4 quantile", 
-                                 TRUE ~ "no tp53 score"))
+                                 TRUE ~ "no tp53 score"), 
+         OS_years = (OS_days/365.25)) 
+  
 
 ```
 
+## test if there is a correlation between age and tp53 score
+
 ```{r}
+## function to print the formula of linear regression 
 lm_eqn <- function(df, x, y){
     m <- lm(y ~ x, df);
     eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
@@ -86,19 +95,19 @@ ggplot(tp53_survival, aes(x = age_at_diagnosis_days, y = tp53_score)) +
             label = lm_eqn(tp53_survival, x= tp53_survival$age_at_diagnosis_days, y = tp53_survival$tp53_score), 
             parse = TRUE)
   
-
-
 ```
 
-## between age range and tp53 score 
+## The distribution of TP53 score between age range and tp53 score 
 
 ```{r}
 ggplot(tp53_survival, aes(x = binned_age, y = tp53_score, color = binned_age)) + 
   geom_boxplot() +
-  geom_jitter(width = 0.3, alpha = 0.5) 
+  geom_jitter(width = 0.3, alpha = 0.5) + 
+  stat_compare_means(comparisons = list(c("0-15", "15-26"), c("0-15", "26-40"), c("15-26", "26-40")))
 
 ```
 
+## The distribution of TP53 score between male and female 
 
 ```{r}
 ggplot(tp53_survival, aes(x = reported_gender, y = tp53_score)) + 
@@ -108,6 +117,7 @@ ggplot(tp53_survival, aes(x = reported_gender, y = tp53_score)) +
 
 ```
 
+## The distribution of TP53 score among different races 
 
 ```{r}
 ggplot(tp53_survival, aes(x = race, y = tp53_score)) + 
@@ -122,7 +132,7 @@ ggplot(tp53_survival, aes(x = race, y = tp53_score)) +
 ## molecular_subtype, gender, binned age and binned tp53 score
 
 ```{r}
-var <- c("molecular_subtype", "reported_gender", "binned_age", "binned_tp53")
+var <- c("reported_gender", "binned_age", "binned_tp53")
 
 for(i in var){
   
@@ -140,9 +150,184 @@ print(i)
        combined = FALSE, 
        title = i)
 
-  ggsave(file.path(plots_dir, paste0(i, ".pdf")), plot, 
+  ggsave(file.path(plots_dir, paste0("KM_", i, ".pdf")), plot, 
        width = 10, height = 6, units = "in", 
        device = "pdf")
 }
 
+```
+
+
+```{r}
+mol_sub_summary <- as.data.frame(table(tp53_survival$molecular_subtype))
+
+tp53_survival <- tp53_survival %>% 
+  mutate(broad_mol = substr(molecular_subtype, 1, regexpr(",", molecular_subtype) - 1), 
+         mol_subtype_without_tp53 = gsub(", TP53", "", molecular_subtype))
+  
+
+mol_sub_summary
+```
+
+
+```{r}
+var <- c("broad_mol", "mol_subtype_without_tp53")
+
+for(i in var){
+  
+  kap_OS <- survival_analysis(
+  metadata = tp53_survival, 
+  ind_var = i,
+  test = "kap.meier",
+  metadata_sample_col = "sample_id",
+  days_col = "OS_days",
+  status_col = "OS_status"
+  )
+print(i)
+  plot <- plotKM(model = kap_OS, 
+       variable = i, 
+       combined = FALSE, 
+       title = i)
+
+  ggsave(file.path(plots_dir, paste0("KM_", i, ".pdf")), plot, 
+       width = 10, height = 6, units = "in", 
+       device = "pdf")
+}
+
+```
+
+## calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age.
+
+```{r}
+tp53_survival_cox <- fit_save_model(tp53_survival, 
+                                    terms = "tp53_score + reported_gender + molecular_subtype + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+molecular_subtype+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+tp53_model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+molecular_subtype+binned_age.RDS"))
+
+plotForest(tp53_model)
+
+```
+
+save the plot
+
+```{r}
+ggsave(file.path(analyses_dir, "plots", "HR_tp53.pdf"), 
+       width = 10, height = 6, units = "in",
+       device = "pdf")
+```
+
+## Take a look at two subtypes, `HGG, H3 WT` and `DGM, H3 K28`
+
+```{r}
+h3_wt <- tp53_survival %>% 
+  filter(grepl("HGG, H3 wildtype", molecular_subtype))
+
+dgm <- tp53_survival %>%
+  filter(grepl("DMG, H3 K28", molecular_subtype))
+
+```
+
+## calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age in `HGG, H3 WT` samples
+
+```{r}
+h3_wt_years <- h3_wt %>%
+  mutate(OS_years = OS_days/365.25) 
+
+tp53_survival_cox <- fit_save_model(h3_wt_years, 
+                                    terms = "tp53_score + reported_gender + molecular_subtype + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "HGG_H3WT_score+reported_gender+molecular_subtype+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+HGG_H3WT_model <- read_rds(file.path(analyses_dir, "results", "HGG_H3WT_score+reported_gender+molecular_subtype+binned_age.RDS"))
+
+plotForest(HGG_H3WT_model)
+
+```
+save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "HR_HGG_H3WT_tp53.pdf"), 
+       width = 10, height = 6, units = "in",
+       device = "pdf")
+```
+
+
+### generate Kaplan–Meier plot for `HGG, H3 WT`
+
+```{r}
+kap_OS <- survival_analysis(
+metadata = h3_wt, 
+ind_var = "molecular_subtype",
+test = "kap.meier",
+metadata_sample_col = "sample_id",
+days_col = "OS_days",
+status_col = "OS_status"
+)
+
+plot <- plotKM(model = kap_OS, 
+     variable = "molecular_subtype", 
+     combined = FALSE, 
+     title = "molecular_subtype")
+
+ggsave(file.path(plots_dir, paste0("KM_HGG_H3_WT_molecular_subtype", ".pdf")), plot, 
+     width = 10, height = 6, units = "in", 
+     device = "pdf")
+
+plot
+```
+
+## calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age in `DGM, H3 K28` samples
+
+```{r}
+dgm_years <- dgm %>%
+  mutate(OS_years = OS_days/365.25) 
+
+tp53_survival_cox <- fit_save_model(dgm_years, 
+                                    terms = "tp53_score + reported_gender + molecular_subtype + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+DGM_model <- read_rds(file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype+binned_age.RDS"))
+
+plotForest(DGM_model)
+
+```
+save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "HR_DGM_tp53.pdf"), 
+       width = 10, height = 6, units = "in",
+       device = "pdf")
+```
+
+
+### generate Kaplan–Meier plot for `DMG, H3 K28`
+
+```{r}
+kap_OS <- survival_analysis(
+metadata = dgm, 
+ind_var = "molecular_subtype",
+test = "kap.meier",
+metadata_sample_col = "sample_id",
+days_col = "OS_days",
+status_col = "OS_status"
+)
+
+plot <- plotKM(model = kap_OS, 
+     variable = "molecular_subtype", 
+     combined = FALSE, 
+     title = "molecular_subtype")
+
+ggsave(file.path(plots_dir, paste0("KM_DMG_molecular_subtype", ".pdf")), plot, 
+     width = 10, height = 6, units = "in", 
+     device = "pdf")
+
+plot
+```
+## session information
+
+```{r}
+sessionInfo()
 ```
