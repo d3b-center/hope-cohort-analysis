@@ -277,7 +277,7 @@ tp53_df <- bind_rows(DNA_tp53, RNA_tp53) %>%
 ## Combine all to get final molecular subtyping results with tp53 annotation
 
 ```{r}
-hgg_subtypes_x <- hgg_subtypes %>%
+hgg_subtypes <- hgg_subtypes %>%
   left_join(select(tp53_df, c("sample_id", "tp53_altered")), 
             by = c("sample_id" = "sample_id")) %>%
   mutate(molecular_subtype= case_when(

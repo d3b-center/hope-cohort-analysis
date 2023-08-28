@@ -57,8 +57,8 @@ keep_cols <- c("Chromosome",
              "HGVSp_Short",
              "Exon_Number")
 # snv files
-snv_consensus_hotspot_maf <- readr::read_rds(
-  file.path(root_dir, "data" , "Hope-consensus-mutation.maf.rds")) %>%
+snv_consensus_hotspot_maf <- readr::read_csv(
+  file.path(root_dir, "data" , "Hope-snv-consensus-plus-hotspots.maf.tsv.gz")) %>%
   rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode") %>%
   select(all_of(keep_cols))
 
@@ -133,7 +133,7 @@ snv_lesions_df <- hist %>%
 
 ```{r}
 cn_df <- readr::read_rds(file.path(root_dir, "data", 
-                                   "Hope-cnv-controlfreec.rds")) %>%
+                                   "Hope-cnv-controlfreec-tumor-only.rds")) %>%
   select(hgnc_symbol,
          Kids_First_Biospecimen_ID,
          status) %>% 
@@ -141,7 +141,7 @@ cn_df <- readr::read_rds(file.path(root_dir, "data",
   dplyr::filter(gene_symbol %in% c("PDGFRA", "PTEN", "MYCN", "EGFR")) %>%
   # Since in Hope, there are only PTEN and EGFR cnv 
   mutate(EGFR_focal_status = case_when(gene_symbol == "EGFR" ~ status), 
-         PTEN_focal_status = case_when(gene_symbol == "PTEN" ~ status)) %>%
+         PTEN_focal_status = case_when(gene_symbol == "PTEN" ~ status, )) %>%
   full_join(hist, by = c("Kids_First_Biospecimen_ID" = "Kids_First_Biospecimen_ID")) %>%
   filter(experimental_strategy == "WGS") %>%
   select(sample_id,
@@ -271,7 +271,7 @@ braf_summary_df <- filtered_snv_df %>%
                 grepl("V600E", HGVSp_Short)) %>%
   rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID) %>%
   dplyr::select(Tumor_Sample_Barcode, HGVSp_Short) %>%
-  dplyr::rename(BRAF_V640E = HGVSp_Short) %>%
+  dplyr::rename(BRAF_V600E = HGVSp_Short) %>%
   dplyr::bind_rows(data.frame(
     Tumor_Sample_Barcode = setdiff(dna_bsids,
                                    .$Tumor_Sample_Barcode)
