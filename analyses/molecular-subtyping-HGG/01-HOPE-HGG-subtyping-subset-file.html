@@ -388,7 +388,7 @@ if (!dir.exists(results_dir)) {
 </div>
 <div id="load-histologies-files" class="section level2">
 <h2>load histologies files</h2>
-<pre><code>## Rows: 495 Columns: 94
+<pre><code>## Rows: 499 Columns: 94
 ## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (56): Kids_First_Biospecimen_ID, sample_id, Kids_First_Participant_ID, e...
@@ -640,6 +640,12 @@ coding_summary_df &lt;- snv_ranges_filter(maf_df = filtered_snv_df,
                                    .$Tumor_Sample_Barcode)
   )) %&gt;%
   replace(is.na(.), &quot;No V600E&quot;)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div id="combine-all-together-and-save" class="section level1">
+<h1>Combine all together and save</h1>
 <pre class="r"><code>final_mutations_df &lt;- list(defining_lesions_df,
                            coding_summary_df,
                            idh_summary_df,
@@ -649,9 +655,6 @@ coding_summary_df &lt;- snv_ranges_filter(maf_df = filtered_snv_df,
   dplyr::select(-defining_lesion) %&gt;%
   dplyr::arrange(Kids_First_Participant_ID, sample_id) %&gt;%
   write_tsv(file.path(results_dir, &quot;HGG_cleaned_mutation.tsv&quot;))</code></pre>
-</div>
-</div>
-</div>
 <div id="fusion-subsetting" class="section level2">
 <h2>fusion subsetting</h2>
 <pre class="r"><code>fusion_hgg &lt;- read_tsv(file.path(analyses_dir, &quot;input&quot;, &quot;fusion_summary_hgg_foi.tsv&quot;)) </code></pre>

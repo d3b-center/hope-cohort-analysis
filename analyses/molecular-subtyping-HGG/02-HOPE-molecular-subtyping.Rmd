@@ -175,7 +175,30 @@ ihg_df_biospecimen <- all_data_df %>%
                                        (!is.na(tmp_tag) & Kids_First_Biospecimen_ID_RNA %in% MET ~ "IHG, MET-altered"),
                                        (!is.na(tmp_tag) & !Kids_First_Biospecimen_ID_RNA %in% c(NTRK, ALK, MET, ROS1) & molecular_subtype_methyl == "IHG") ~ "IHG, To be classified")) %>%
   select(-c(tmp_tag, pathology_free_text_diagnosis)) %>%
+  ## change 7316-3625 as ALK fusion, as this sample has two fusion, but NTRK1 gene expession is low (TPM = 0..05)
+  mutate(molecular_subtype = case_when(sample_id == "7316-3625" ~ "IHG, ALK-altered", 
+                                       TRUE ~ molecular_subtype)) %>%
   distinct()
+
+```
+
+## PXA subtyping
+
+```{r}
+pxa_sample_id <- hgg_meta %>% 
+  filter(pathology_free_text_diagnosis %in% c("malignant pxa", "pleomorphic xanthoastrocytoma",
+                                              "anaplastic pleomorphic xanthoastrocytoma with braf p.val600glu mutation, who grade iii", 
+                                              "anaplastic pleomorphic xanthoastrocytoma, who grade 3") |
+  (dkfz_v12_methylation_subclass_score >= 0.8 &
+    dkfz_v12_methylation_subclass == "PXA")) %>% 
+  pull(sample_id)
+
+pxa_df_biospecimen <- all_data_df %>% 
+  filter(sample_id %in% pxa_sample_id) %>% 
+  ## check if these sample has BRAF V600E mutation
+  mutate(molecular_subtype = case_when(BRAF_V600E == "p.V600E" ~ "PXA", 
+                                       TRUE ~ "Susceptible PXA without BRAF mutation"))
+
 
 ```
 
@@ -185,14 +208,13 @@ ihg_df_biospecimen <- all_data_df %>%
 molecular_subtype_table <- bind_rows(h3_g35_df_biospecimen,
                                      h3_k28_df_biospecimen,
                                      idh_df_biospecimen, 
-                                     ihg_df_biospecimen) %>% 
+                                     ihg_df_biospecimen, 
+                                     pxa_df_biospecimen) %>% 
   distinct()
 
 as.data.frame(table(molecular_subtype_table$molecular_subtype)) %>%
   arrange(desc(Freq))
 ```
-
-
 
 ```{r}
 # which tumors were not yet subtyped?
@@ -274,6 +296,7 @@ tp53_df <- bind_rows(DNA_tp53, RNA_tp53) %>%
   distinct()
 
 ```
+
 ## Combine all to get final molecular subtyping results with tp53 annotation
 
 ```{r}
@@ -284,10 +307,21 @@ hgg_subtypes <- hgg_subtypes %>%
     tp53_altered %in% c("activated", "loss") ~ stringr::str_c(molecular_subtype,", TP53"),
     TRUE ~ molecular_subtype
   )) %>%
+  ## manually set 7316-3158 as DMG, H3 K28
+  ## 7316-2751 as HGG, H3 wildtype (OpenPedCan v12)
+  ## 7316-3303, keep as HGG not PXA since no BRAF
+  mutate(molecular_subtype = case_when(sample_id == "7316-3158" ~ "DMG, H3 K28, TP53",
+                                       sample_id == "7316-2751" ~ "HGG, H3 wildtype", 
+                                       sample_id == "7316-3303" ~ "HGG, H3 wildtype, TP53", 
+                                       TRUE ~ molecular_subtype)) %>%
   arrange(Kids_First_Participant_ID, sample_id) %>%
   distinct() %>% 
   write_tsv(file.path(results_dir, "Hope_subtype.tsv"))
 
 ```
 
+## session info
+```{r}
+sessionInfo()
 
+```

@@ -518,25 +518,48 @@ ihg_df_biospecimen &lt;- all_data_df %&gt;%
                                        (!is.na(tmp_tag) &amp; Kids_First_Biospecimen_ID_RNA %in% MET ~ &quot;IHG, MET-altered&quot;),
                                        (!is.na(tmp_tag) &amp; !Kids_First_Biospecimen_ID_RNA %in% c(NTRK, ALK, MET, ROS1) &amp; molecular_subtype_methyl == &quot;IHG&quot;) ~ &quot;IHG, To be classified&quot;)) %&gt;%
   select(-c(tmp_tag, pathology_free_text_diagnosis)) %&gt;%
+  ## change 7316-3625 as ALK fusion, as this sample has two fusion, but NTRK1 gene expession is low (TPM = 0..05)
+  mutate(molecular_subtype = case_when(sample_id == &quot;7316-3625&quot; ~ &quot;IHG, ALK-altered&quot;, 
+                                       TRUE ~ molecular_subtype)) %&gt;%
   distinct()</code></pre>
 <pre><code>## Joining with `by = join_by(sample_id)`</code></pre>
+</div>
+<div id="pxa-subtyping" class="section level2">
+<h2>PXA subtyping</h2>
+<pre class="r"><code>pxa_sample_id &lt;- hgg_meta %&gt;% 
+  filter(pathology_free_text_diagnosis %in% c(&quot;malignant pxa&quot;, &quot;pleomorphic xanthoastrocytoma&quot;,
+                                              &quot;anaplastic pleomorphic xanthoastrocytoma with braf p.val600glu mutation, who grade iii&quot;, 
+                                              &quot;anaplastic pleomorphic xanthoastrocytoma, who grade 3&quot;) |
+  (dkfz_v12_methylation_subclass_score &gt;= 0.8 &amp;
+    dkfz_v12_methylation_subclass == &quot;PXA&quot;)) %&gt;% 
+  pull(sample_id)
+
+pxa_df_biospecimen &lt;- all_data_df %&gt;% 
+  filter(sample_id %in% pxa_sample_id) %&gt;% 
+  ## check if these sample has BRAF V600E mutation
+  mutate(molecular_subtype = case_when(BRAF_V600E == &quot;p.V600E&quot; ~ &quot;PXA&quot;, 
+                                       TRUE ~ &quot;Susceptible PXA without BRAF mutation&quot;))</code></pre>
 </div>
 <div id="join-all-table-together" class="section level2">
 <h2>Join all table together</h2>
 <pre class="r"><code>molecular_subtype_table &lt;- bind_rows(h3_g35_df_biospecimen,
                                      h3_k28_df_biospecimen,
                                      idh_df_biospecimen, 
-                                     ihg_df_biospecimen) %&gt;% 
+                                     ihg_df_biospecimen, 
+                                     pxa_df_biospecimen) %&gt;% 
   distinct()
 
 as.data.frame(table(molecular_subtype_table$molecular_subtype)) %&gt;%
   arrange(desc(Freq))</code></pre>
-<pre><code>##                Var1 Freq
-## 1       DMG, H3 K28   21
-## 2          HGG, IDH    7
-## 3       DHG, H3 G35    4
-## 4 IHG, NTRK-altered    4
-## 5 IHG, ROS1-altered    3</code></pre>
+<pre><code>##                                    Var1 Freq
+## 1                           DMG, H3 K28   21
+## 2                              HGG, IDH    7
+## 3                                   PXA    6
+## 4                           DHG, H3 G35    4
+## 5                     IHG, NTRK-altered    3
+## 6                     IHG, ROS1-altered    3
+## 7                      IHG, ALK-altered    1
+## 8 Susceptible PXA without BRAF mutation    1</code></pre>
 <pre class="r"><code># which tumors were not yet subtyped?
 not_subtyped &lt;- setdiff(unique(all_data_df$sample_id), molecular_subtype_table$sample_id)
   
@@ -628,6 +651,13 @@ annotation</h2>
     tp53_altered %in% c(&quot;activated&quot;, &quot;loss&quot;) ~ stringr::str_c(molecular_subtype,&quot;, TP53&quot;),
     TRUE ~ molecular_subtype
   )) %&gt;%
+  ## manually set 7316-3158 as DMG, H3 K28
+  ## 7316-2751 as HGG, H3 wildtype (OpenPedCan v12)
+  ## 7316-3303, keep as HGG not PXA since no BRAF
+  mutate(molecular_subtype = case_when(sample_id == &quot;7316-3158&quot; ~ &quot;DMG, H3 K28, TP53&quot;,
+                                       sample_id == &quot;7316-2751&quot; ~ &quot;HGG, H3 wildtype&quot;, 
+                                       sample_id == &quot;7316-3303&quot; ~ &quot;HGG, H3 wildtype, TP53&quot;, 
+                                       TRUE ~ molecular_subtype)) %&gt;%
   arrange(Kids_First_Participant_ID, sample_id) %&gt;%
   distinct() %&gt;% 
   write_tsv(file.path(results_dir, &quot;Hope_subtype.tsv&quot;))</code></pre>
@@ -635,6 +665,41 @@ annotation</h2>
 ## ℹ Row 1 of `x` matches multiple rows in `y`.
 ## ℹ Row 68 of `y` matches multiple rows in `x`.
 ## ℹ If a many-to-many relationship is expected, set `relationship = &quot;many-to-many&quot;` to silence this warning.</code></pre>
+</div>
+<div id="session-info" class="section level2">
+<h2>session info</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 4.2.2 (2022-10-31)
+## Platform: aarch64-apple-darwin20 (64-bit)
+## Running under: macOS Ventura 13.5
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] lubridate_1.9.2 forcats_1.0.0   stringr_1.5.0   dplyr_1.1.2    
+##  [5] purrr_1.0.1     readr_2.1.4     tidyr_1.3.0     tibble_3.2.1   
+##  [9] ggplot2_3.4.3   tidyverse_2.0.0
+## 
+## loaded via a namespace (and not attached):
+##  [1] bslib_0.5.1      compiler_4.2.2   pillar_1.9.0     jquerylib_0.1.4 
+##  [5] tools_4.2.2      bit_4.0.5        digest_0.6.33    timechange_0.2.0
+##  [9] jsonlite_1.8.7   evaluate_0.21    lifecycle_1.0.3  gtable_0.3.4    
+## [13] pkgconfig_2.0.3  rlang_1.1.1      cli_3.6.1        parallel_4.2.2  
+## [17] yaml_2.3.7       xfun_0.39        fastmap_1.1.1    withr_2.5.0     
+## [21] knitr_1.43       generics_0.1.3   vctrs_0.6.3      sass_0.4.7      
+## [25] hms_1.1.3        bit64_4.0.5      rprojroot_2.0.3  grid_4.2.2      
+## [29] tidyselect_1.2.0 glue_1.6.2       R6_2.5.1         fansi_1.0.4     
+## [33] vroom_1.6.3      rmarkdown_2.23   tzdb_0.4.0       magrittr_2.0.3  
+## [37] scales_1.2.1     htmltools_0.5.6  colorspace_2.1-1 utf8_1.2.3      
+## [41] stringi_1.7.12   munsell_0.5.0    cachem_1.0.8     crayon_1.5.2</code></pre>
 </div>
 </div>
 
