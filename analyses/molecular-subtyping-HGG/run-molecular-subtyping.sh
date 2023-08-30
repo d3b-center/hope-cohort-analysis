@@ -12,3 +12,7 @@ Rscript -e "rmarkdown::render('01-HOPE-HGG-subtyping-subset-file.Rmd', clean = T
 ## Run 02 script for molecular subtyping
 Rscript -e "rmarkdown::render('02-HOPE-molecular-subtyping.Rmd', clean = TRUE)"
 
+## Run 03 script to add pathology based on molecular subtype
+Rscript 03-molecular-subtype-integrate.R
+
+

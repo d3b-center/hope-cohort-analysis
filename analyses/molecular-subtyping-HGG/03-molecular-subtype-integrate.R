@@ -1,7 +1,6 @@
 library(tidyverse)
 
 ## set directories and read histology file
-
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 analysis_dir <- file.path(root_dir, "analyses", "molecular-subtyping-HGG")
 results_dir <- file.path(analysis_dir, "results")
@@ -20,6 +19,7 @@ hist_with_subtype <- hist %>%
                                           grepl("DHG, H3 G35", molecular_subtype) ~ "Diffuse hemispheric glioma, H3 G35-mutant",
                                           grepl("HGG, H3 wildtype", molecular_subtype) ~ "High-grade glioma, IDH-wildtype and H3-wildtype",
                                           grepl("HGG, IDH", molecular_subtype) ~ "High-grade glioma, IDH-mutant",
+                                          molecular_subtype == "HGG, To be classified" ~ "High-grade glioma",
                                           # account for IGH subtypes
                                           grepl("IHG, NTRK-altered", molecular_subtype) ~ "Infant-type hemispheric glioma, NTRK-altered",
                                           grepl("IHG, ALK-altered", molecular_subtype) ~ "Infant-type hemispheric glioma, ALK-altered",
@@ -34,8 +34,8 @@ hist_with_subtype <- hist %>%
          short_histology = case_when(molecular_subtype == "PXA" ~ "LGAT", 
                                      grepl(paste(c("IHG", "HGG", "DHG", "DMG"), collapse = "|"), molecular_subtype) ~ "HGAT", 
                                      TRUE ~ NA_character_)) %>% 
-  mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>% 
+  mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>%
+  select(colnames(.)[c(1:51, 94:95)], starts_with("HARMONY_"), starts_with("HOPE_")) %>%
   write_tsv(file.path(results_dir, "HOPE_GBM_histologies.tsv"))
 
 
-  
