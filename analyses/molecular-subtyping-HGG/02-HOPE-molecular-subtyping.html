@@ -657,6 +657,8 @@ annotation</h2>
   mutate(molecular_subtype = case_when(sample_id == &quot;7316-3158&quot; ~ &quot;DMG, H3 K28, TP53&quot;,
                                        sample_id == &quot;7316-2751&quot; ~ &quot;HGG, H3 wildtype&quot;, 
                                        sample_id == &quot;7316-3303&quot; ~ &quot;HGG, H3 wildtype, TP53&quot;, 
+                                       ## 7316-2594 should have tp53 loss, but this sample is not included in cnv file
+                                       sample_id == &quot;7316-2594&quot; ~ &quot;DMG, H3 K28, TP53&quot;, 
                                        TRUE ~ molecular_subtype)) %&gt;%
   arrange(Kids_First_Participant_ID, sample_id) %&gt;%
   distinct() %&gt;% 
