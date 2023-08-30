@@ -37,8 +37,8 @@ data_dir="../../data"
 scratch_dir="../../scratch"
 # cds gencode bed file  
 cds_file="${data_dir}/gencode.v39.primary_assembly.annotation.bed"
-snvconsensus_file="${data_dir}/Hope-consensus-mutation.maf.rds"
-cnvconsensus_file="${data_dir}/Hope-cnv-controlfreec.rds"
+snvconsensus_file="${data_dir}/Hope-snv-consensus-plus-hotspots.maf.tsv.gz"
+cnvconsensus_file="${data_dir}/Hope-cnv-controlfreec-tumor-only.rds"
 collapsed_rna_file="${data_dir}/Hope-and-CPTAC-GBM-gene-expression-rsem-tpm-collapsed.rds"
 histology_file="${data_dir}/Hope-GBM-histologies-base.tsv" 
 
@@ -65,7 +65,7 @@ echo "### finish 00-tp53-nf1-alterations.R ###"
 
 # Define RNA library files, which result from the script above
 collapsed_stranded="${scratch_dir}/gene-expression-rsem-tpm-collapsed-stranded.rds"
-collapsed_polya="${scratch_dir}/gene-expression-rsem-tpm-collapsed-poly-A.rds"
+#collapsed_polya="${scratch_dir}/gene-expression-rsem-tpm-collapsed-poly-A.rds"
 collapsed_polya_stranded="${scratch_dir}/gene-expression-rsem-tpm-collapsed-poly-A-stranded.rds"
 collapsed_exome_capture="${scratch_dir}/gene-expression-rsem-tpm-collapsed-exome_capture.rds"
 
@@ -74,7 +74,7 @@ collapsed_exome_capture="${scratch_dir}/gene-expression-rsem-tpm-collapsed-exome
 python3 01-apply-classifier.py -f ${collapsed_stranded}
 echo "### finish 01-apply-classifier.py 01 ###"
 
-python3 01-apply-classifier.py -f ${collapsed_polya}
+#python3 01-apply-classifier.py -f ${collapsed_polya}
 echo "### finish 01-apply-classifier.py 02 ###"
 
 python3 01-apply-classifier.py -f ${collapsed_exome_capture}

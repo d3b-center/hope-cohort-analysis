@@ -59,15 +59,16 @@ if(!dir.exists(outputFolder)){
 #### Generate files with TP53, NF1 mutations -----------------------------------
 
 # read in consensus SNV files
-consensus_snv <- readr::read_rds(snvConsensusFile) %>% 
-  as.data.frame() %>%
-  select("Chromosome",
-         "Start_Position",
-         "End_Position",
-         "Strand",
-         "Variant_Classification",
-         "Kids_First_Biospecimen_ID",
-         "Hugo_Symbol")
+keep_columns <- c("Chromosome",
+                       "Start_Position",
+                       "End_Position",
+                       "Strand",
+                       "Variant_Classification",
+                       "Tumor_Sample_Barcode",
+                       "Hugo_Symbol")
+
+consensus_snv <- data.table::fread(snvConsensusFile, select = keep_columns)  
+consensus_snv <- dplyr::rename(consensus_snv, "Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode")
 
 # read in consensus CNV file
 cnvConsensus <- readr::read_rds(cnvConsensusFile) %>%
