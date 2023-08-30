@@ -17,7 +17,7 @@ merge_rsem <- file.path(analyses_dir, "utils", "merge_rsem.R")
 collapse_rsem <- file.path(analyses_dir, "utils", "collapse_rnaseq.R")
 
 # manifest for gene expression files
-rna_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230427_144425_rna.tsv"))
+rna_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230830_150931_rna.tsv"))
 colnames(rna_manifest) <- gsub(" ", "_", colnames(rna_manifest))
 rna_manifest <- rna_manifest %>%
   dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
@@ -25,70 +25,66 @@ rna_manifest <- rna_manifest %>%
   unique()
 
 # TPM
+# merge files from cavatica
 fname <- file.path(output_dir, "Hope-gene-expression-rsem-tpm-collapsed.rds")
-if(!file.exists(fname)){
-  # merge files from cavatica
-  cmd <- paste('Rscript', merge_rsem, 
-               '--sourcedir', file.path(input_dir, 'gene_expression'), 
-               '--output_file', file.path(output_dir, 'Hope-gene-expression-rsem-tpm.rds'),
-               '--type', 'TPM')
-  system(cmd)
-  
-  # add BS id to TPM (n = 90)
-  tpm <- file.path(output_dir, "Hope-gene-expression-rsem-tpm.rds") %>%
-    readRDS() %>%
-    column_to_rownames("gene_id")
-  rna_hist <- rna_manifest %>%
-    mutate(file_name = gsub(".rsem.genes.results.gz", "", file_name)) %>%
-    dplyr::filter(file_name %in% colnames(tpm))
-  tpm <- tpm %>%
-    dplyr::select(rna_hist$file_name)
-  identical(rna_hist$file_name, colnames(tpm))
-  colnames(tpm) <- rna_hist$Kids_First_Biospecimen_ID
-  tpm %>%
-    rownames_to_column("gene_id") %>%
-    saveRDS(file = file.path(output_dir, "Hope-gene-expression-rsem-tpm.rds"))
-  
-  # collapse to unique gene symbols
-  cmd <- paste('Rscript', collapse_rsem, 
-               '--mat', file.path(output_dir, 'Hope-gene-expression-rsem-tpm.rds'), 
-               '--gene_sym', 'FALSE',
-               '--outfile', file.path(output_dir, 'Hope-gene-expression-rsem-tpm-collapsed.rds'))
-  system(cmd)
-}
+cmd <- paste('Rscript', merge_rsem, 
+             '--sourcedir', file.path(input_dir, 'gene_expression'), 
+             '--output_file', file.path(output_dir, 'Hope-gene-expression-rsem-tpm.rds'),
+             '--type', 'TPM')
+system(cmd)
+
+# add BS id to TPM (n = 90)
+tpm <- file.path(output_dir, "Hope-gene-expression-rsem-tpm.rds") %>%
+  readRDS() %>%
+  column_to_rownames("gene_id")
+rna_hist <- rna_manifest %>%
+  mutate(file_name = gsub(".rsem.genes.results.gz", "", file_name)) %>%
+  dplyr::filter(file_name %in% colnames(tpm))
+tpm <- tpm %>%
+  dplyr::select(rna_hist$file_name)
+identical(rna_hist$file_name, colnames(tpm))
+colnames(tpm) <- rna_hist$Kids_First_Biospecimen_ID
+tpm %>%
+  rownames_to_column("gene_id") %>%
+  saveRDS(file = file.path(output_dir, "Hope-gene-expression-rsem-tpm.rds"))
+
+# collapse to unique gene symbols
+cmd <- paste('Rscript', collapse_rsem, 
+             '--mat', file.path(output_dir, 'Hope-gene-expression-rsem-tpm.rds'), 
+             '--gene_sym', 'FALSE',
+             '--outfile', file.path(output_dir, 'Hope-gene-expression-rsem-tpm-collapsed.rds'))
+system(cmd)
 
 # expected counts
+# merge files from cavatica
 fname <- file.path(output_dir, "Hope-gene-counts-rsem-expected_count-collapsed.rds")
-if(!file.exists(fname)){
-  # merge files from cavatica
-  cmd <- paste('Rscript', merge_rsem, 
-               '--sourcedir', file.path(input_dir, 'gene_expression'), 
-               '--output_file', file.path(output_dir, 'Hope-gene-counts-rsem-expected_count.rds'),
-               '--type', 'TPM')
-  system(cmd)
-  
-  # add BS id to counts (n = 90)
-  counts <- file.path(output_dir, "Hope-gene-counts-rsem-expected_count.rds") %>%
-    readRDS() %>%
-    column_to_rownames("gene_id")
-  rna_hist <- rna_manifest %>%
-    mutate(file_name = gsub(".rsem.genes.results.gz", "", file_name)) %>%
-    dplyr::filter(file_name %in% colnames(counts))
-  counts <- counts %>%
-    dplyr::select(rna_hist$file_name)
-  identical(rna_hist$file_name, colnames(counts))
-  colnames(counts) <- rna_hist$Kids_First_Biospecimen_ID
-  counts %>%
-    rownames_to_column("gene_id") %>%
-    saveRDS(file = file.path(output_dir, "Hope-gene-counts-rsem-expected_count.rds"))
+cmd <- paste('Rscript', merge_rsem, 
+             '--sourcedir', file.path(input_dir, 'gene_expression'), 
+             '--output_file', file.path(output_dir, 'Hope-gene-counts-rsem-expected_count.rds'),
+             '--type', 'TPM')
+system(cmd)
 
-  # collapse to unique gene symbols
-  cmd <- paste('Rscript', collapse_rsem, 
-               '--mat', file.path(output_dir, 'Hope-gene-counts-rsem-expected_count.rds'), 
-               '--gene_sym', 'FALSE',
-               '--outfile', file.path(output_dir, 'Hope-gene-counts-rsem-expected_count-collapsed.rds'))
-  system(cmd)
-}
+# add BS id to counts (n = 90)
+counts <- file.path(output_dir, "Hope-gene-counts-rsem-expected_count.rds") %>%
+  readRDS() %>%
+  column_to_rownames("gene_id")
+rna_hist <- rna_manifest %>%
+  mutate(file_name = gsub(".rsem.genes.results.gz", "", file_name)) %>%
+  dplyr::filter(file_name %in% colnames(counts))
+counts <- counts %>%
+  dplyr::select(rna_hist$file_name)
+identical(rna_hist$file_name, colnames(counts))
+colnames(counts) <- rna_hist$Kids_First_Biospecimen_ID
+counts %>%
+  rownames_to_column("gene_id") %>%
+  saveRDS(file = file.path(output_dir, "Hope-gene-counts-rsem-expected_count.rds"))
+
+# collapse to unique gene symbols
+cmd <- paste('Rscript', collapse_rsem, 
+             '--mat', file.path(output_dir, 'Hope-gene-counts-rsem-expected_count.rds'), 
+             '--gene_sym', 'FALSE',
+             '--outfile', file.path(output_dir, 'Hope-gene-counts-rsem-expected_count-collapsed.rds'))
+system(cmd)
 
 # merge mutations (n = 76)
 hope_cohort_mutations <- list.files(path = file.path(input_dir, "consenus_maf"), recursive = T, full.names = T)
@@ -98,7 +94,7 @@ length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
 data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-snv-consensus-plus-hotspots.maf.tsv.gz"))
 
 # manifest for cnv files
-cnv_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230427_150037_cnv.tsv"))
+cnv_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230830_151211_cnv.tsv"))
 colnames(cnv_manifest) <- gsub(" ", "_", colnames(cnv_manifest))
 cnv_manifest <- cnv_manifest %>%
   dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%

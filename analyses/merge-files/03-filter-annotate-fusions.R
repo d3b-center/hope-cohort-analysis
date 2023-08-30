@@ -74,7 +74,7 @@ hope_cohort_fusions <- hope_cohort_fusions %>%
   dplyr::select(-c(id, SpanningFragCount, JunctionReadCount, Confidence, SpanningDelta, Caller))
 
 # add Kids_First_Participant_ID using manifest for fusion files
-fusion_manifest <- readr::read_tsv(file.path(input_dir, "manifest", "manifest_20230427_144736_fusion.tsv"))
+fusion_manifest <- readr::read_tsv(file.path(input_dir, "manifest", "manifest_20230830_150316_fusion.tsv"))
 colnames(fusion_manifest) <- gsub(" ", "_", colnames(fusion_manifest))
 fusion_manifest <- fusion_manifest %>%
   dplyr::select(Kids_First_Biospecimen_ID, Kids_First_Participant_ID) %>%

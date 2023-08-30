@@ -16,11 +16,14 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 hope_cohort_mutations <- list.files(path = file.path(input_dir, "mutect_maf_tumor_only"), pattern = "public", recursive = T, full.names = T)
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::read_tsv(x, skip = 1))
 hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
+hope_cohort_mutations <- hope_cohort_mutations %>%
+  filter(t_alt_count != 0, 
+         t_depth > 5)
 length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
-data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-tumor-only-snv-mutect2.vep.maf.tsv.gz"))
+data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-tumor-only-snv-mutect2.maf.tsv.gz"))
 
 # manifest for cnv files
-cnv_manifest <- read_tsv(file.path(input_dir, "manifest_tumor_only", "manifest_20230501_102248_cnv.tsv"))
+cnv_manifest <- read_tsv(file.path(input_dir, "manifest_tumor_only", "manifest_20230830_152155_cnv.tsv"))
 colnames(cnv_manifest) <- gsub(" ", "_", colnames(cnv_manifest))
 cnv_manifest <- cnv_manifest %>%
   dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
