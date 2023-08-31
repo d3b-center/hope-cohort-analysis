@@ -134,10 +134,9 @@ snv_lesions_df <- hist %>%
 ```{r}
 cn_df <- readr::read_rds(file.path(root_dir, "data", 
                                    "Hope-cnv-controlfreec-tumor-only.rds")) %>%
-  select(hgnc_symbol,
+  select(gene_symbol,
          Kids_First_Biospecimen_ID,
          status) %>% 
-  rename(gene_symbol = hgnc_symbol) %>%
   dplyr::filter(gene_symbol %in% c("PDGFRA", "PTEN", "MYCN", "EGFR")) %>%
   # Since in Hope, there are only PTEN and EGFR cnv 
   mutate(EGFR_focal_status = case_when(gene_symbol == "EGFR" ~ status), 
