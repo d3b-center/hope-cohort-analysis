@@ -73,8 +73,8 @@ consensus_snv <- dplyr::rename(consensus_snv, "Kids_First_Biospecimen_ID" = "Tum
 # read in consensus CNV file
 cnvConsensus <- readr::read_rds(cnvConsensusFile) %>%
   as.data.frame() %>%
-  dplyr::filter(!grepl('chrX|chrY', chromosome)) %>%
-  dplyr::select(hgnc_symbol,
+  dplyr::filter(!grepl('chrX|chrY', chr)) %>%
+  dplyr::select(gene_symbol,
                 Kids_First_Biospecimen_ID,
                 status)
 
@@ -97,11 +97,11 @@ tp53_coding <- coding_consensus_snv %>%
 
 # subset to TP53 cnv loss and format to tp53_coding file format
 tp53_loss<-cnvConsensus %>% 
-  filter(hgnc_symbol == "TP53",
+  filter(gene_symbol == "TP53",
          status == "loss") %>%
   rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode",
          "status" = "Variant_Classification",
-         "hgnc_symbol" = "Hugo_Symbol")
+         "gene_symbol" = "Hugo_Symbol")
 
 # subset to NF1, removing silent mutations, mutations in introns, and missense
 # mutations -- we exclude missense mutations because they are not annotated
@@ -115,11 +115,11 @@ nf1_coding <- coding_consensus_snv %>%
 
 # subset to NF1 loss and format to nf1_coding file format
 nf1_loss<-cnvConsensus %>% 
-  filter(hgnc_symbol == "NF1",
+  filter(gene_symbol == "NF1",
          status == "loss") %>%
   rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode",
          "status" = "Variant_Classification",
-         "hgnc_symbol" = "Hugo_Symbol")
+         "gene_symbol" = "Hugo_Symbol")
 
 # include only the relevant columns from the MAF file and merge cnv loss dataframes as well
 tp53_nf1_coding <- tp53_coding %>%
