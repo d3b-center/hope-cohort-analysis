@@ -22,9 +22,8 @@ master-annotation/input
 
 Following is the output of this script:
 ```
-master-annotation
-└── results
-    └── master_histology_hope_cohort.tsv
+master-annotation/results
+└── master_histology_hope_cohort.tsv
 ```
 
 This module can be run using the following R script:
