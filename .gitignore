@@ -1,0 +1,30 @@
+# tmb calculation script
+analyses/tmb-calculation/*
+
+# data folder
+data/*
+
+# temp folder
+scratch/*
+
+# all intermediate files
+**/.DS_Store
+**/Rplots.pdf
+.Rhistory
+.Rproj.user
+.snakemake
+
+# The dictionary of words accrued by `mdspell` for spellcheck
+.spelling
+
+# Ignore jupyter checkpoint folders
+.ipynb_checkpoints
+
+# Result of running docker image locally. Should not be tracked
+.rstudio/
+
+# Ignore all .pyc files
+*.pyc
+
+# Ignore all bash history files
+.bash_history
