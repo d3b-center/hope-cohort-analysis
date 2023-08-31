@@ -139,11 +139,11 @@ hope_cohort_cnv <- list.files(path = file.path(input_dir, "copy_number"), patter
 hope_cohort_cnv <- lapply(hope_cohort_cnv, FUN = function(x) merge_cnv(nm = x))
 hope_cohort_cnv <- data.table::rbindlist(hope_cohort_cnv)
 hope_cohort_cnv <- hope_cohort_cnv %>%
-  dplyr::rename("biospecimen_id" = "Kids_First_Biospecimen_ID",
-                "copy_number" = "copy.number") %>%
-  dplyr::select(biospecimen_id, status,  copy_number, gene_symbol) %>%
+  dplyr::rename("copy number" = "copy.number") %>%
+  dplyr::select(Kids_First_Biospecimen_ID, chr, start, end, gene_symbol, `copy number`, status, genotype, uncertainty,
+                WilcoxonRankSumTestPvalue, KolmogorovSmirnovPvalue) %>%
   unique()
-print(length(unique(hope_cohort_cnv$biospecimen_id)))
+print(length(unique(hope_cohort_cnv$Kids_First_Biospecimen_ID)))
 saveRDS(hope_cohort_cnv, file = file.path(output_dir, "Hope-cnv-controlfreec.rds"))
 
 # manifest for msi files
