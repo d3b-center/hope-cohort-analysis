@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-input_dir <- file.path(root_dir, "data")
+input_dir <- file.path(root_dir, "analyses", "master-annotation", "results")
 analyses_dir <- file.path(root_dir, "analyses", "survival-analysis")
 output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, showWarnings = F, recursive = T)
