@@ -1,10 +1,21 @@
-.DS_Store
+# tmb calculation script
+analyses/tmb-calculation/*
+
+# data folder
+data/*
+
+# temp folder
+scratch/*
+
+# all intermediate files
+**/.DS_Store
+**/Rplots.pdf
 .Rhistory
 .Rproj.user
 .snakemake
+
 # The dictionary of words accrued by `mdspell` for spellcheck
 .spelling
-
 
 # Ignore jupyter checkpoint folders
 .ipynb_checkpoints
@@ -17,7 +28,3 @@
 
 # Ignore all bash history files
 .bash_history
-
-*.pptx
-code/tmb-calculation
-code/sample_manifest_for_zz.R
