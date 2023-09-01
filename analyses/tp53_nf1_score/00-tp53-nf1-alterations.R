@@ -44,7 +44,7 @@ option_list <- list(
 
 opt <- parse_args(OptionParser(option_list=option_list,add_help_option = FALSE))
 snvConsensusFile <- opt$snvConsensus
-snvConsensusFile <- opt$snvConsensus
+snvTumorOnlyFile <- opt$snvTumorOnly
 expFile <- opt$expr
 histologyFile <- opt$histologyFile
 outputFolder <- opt$outputFolder
@@ -67,8 +67,12 @@ keep_columns <- c("Chromosome",
                        "Tumor_Sample_Barcode",
                        "Hugo_Symbol")
 
-consensus_snv <- data.table::fread(snvConsensusFile, select = keep_columns)  
-consensus_snv <- dplyr::rename(consensus_snv, "Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode")
+tumoronly_snv <- data.table::fread(snvTumorOnlyFile, select = keep_columns) %>%
+  dplyr::rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode") 
+
+consensus_snv <- data.table::fread(snvConsensusFile, select = keep_columns) %>%
+  dplyr::rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode") %>%
+  bind_rows(tumoronly_snv)
 
 # read in consensus CNV file
 cnvConsensus <- readr::read_rds(cnvConsensusFile) %>%
