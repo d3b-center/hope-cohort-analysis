@@ -144,7 +144,7 @@ cn_df <- readr::read_rds(file.path(root_dir, "data",
   dplyr::filter(gene_symbol %in% c("PDGFRA", "PTEN", "MYCN", "EGFR")) %>%
   # Since in Hope, there are only PTEN and EGFR cnv 
   mutate(EGFR_focal_status = case_when(gene_symbol == "EGFR" ~ status), 
-         PTEN_focal_status = case_when(gene_symbol == "PTEN" ~ status)) %>%
+         PTEN_focal_status = case_when(gene_symbol == "PTEN" ~ status, )) %>%
   full_join(hist, by = c("Kids_First_Biospecimen_ID" = "Kids_First_Biospecimen_ID")) %>%
   filter(experimental_strategy == "WGS") %>%
   select(sample_id,
@@ -279,7 +279,7 @@ braf_summary_df <- filtered_snv_df %>%
 
 ```
 
-
+# Combine all together and save
 
 ```{r}
 final_mutations_df <- list(defining_lesions_df,
