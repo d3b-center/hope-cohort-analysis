@@ -6,7 +6,7 @@
   - Sequence ample:
     - 186 RNA-seq
     - 91 WGS
-    - 85 DNA methylation
+    - 81 DNA methylation
     - 29 snRNA-seq
     - 91 Proteomic
   
