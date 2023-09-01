@@ -1,7 +1,7 @@
 # Release note
 
 ## Current release (V1)
-- release date: 2023-08-31
+- release date: 2023-09-01
 - Overview: 
   - Sequence ample:
     - 186 RNA-seq
@@ -9,16 +9,6 @@
     - 81 DNA methylation
     - 29 snRNA-seq
     - 91 Proteomic
-  
-  - Analysis module
-    - alt-analysis
-    - data-availability
-    - master-annotation
-    - merge-files
-    - msi-sensor-analysis
-    - oncoplots
-    - tp53_nf1_score
-    - molecular_subtype_HGG
     
   - Files added
     - Hope-GBM-histologies-base.tsv
@@ -31,7 +21,7 @@
     - Hope-cnv-controlfreec-tumor-only.rds			   
     - Hope-sv-manta.tsv.gz
     - Hope-cnv-controlfreec.rds				   
-    - Hope-tumor-only-snv-mutect2.maf.tsv.gz
-    - Hope-fusion-putative-oncogenic.rds			   
+    - Hope-tumor-only-snv-mutect2.maf.tsv.gz (filtered to remove `t_alt_count ==0` and `t_depth < 4` )
+    - Hope-fusion-putative-oncogenic.rds
     - Hope-gene-counts-rsem-expected_count-collapsed.rds	   
     - Hope-gene-counts-rsem-expected_count.rds
