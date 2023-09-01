@@ -28,6 +28,8 @@ source(file.path(root_dir,
 option_list <- list(
   make_option(c("-s", "--snvConsensus"),type="character",
               help="Consensus snv calls (.tsv) "),
+  make_option(c("-t", "--snvTumorOnly"),type="character",
+              help="Tumor only snv calls (.tsv) "),
   make_option(c("-c","--cnvConsensus"),type="character",
                help="consensus cnv calls (.tsv) "),
   make_option(c("-e","--expr"),type="character",

@@ -33,10 +33,11 @@ export R_HOME='/usr/local/lib/R'
 export LD_LIBRARY_PATH=${R_HOME}/lib:${LD_LIBRARY_PATH}
 
 
+input_dir="input"
 data_dir="../../data"
 scratch_dir="../../scratch"
 # cds gencode bed file  
-cds_file="${data_dir}/gencode.v39.primary_assembly.annotation.bed"
+cds_file="${input_dir}/gencode.v39.primary_assembly.annotation.bed"
 snvconsensus_file="${data_dir}/Hope-snv-consensus-plus-hotspots.maf.tsv.gz"
 snvtumoronly_file="${data_dir}/Hope-tumor-only-snv-mutect2.maf.tsv.gz"
 cnvconsensus_file="${data_dir}/Hope-cnv-controlfreec-tumor-only.rds"

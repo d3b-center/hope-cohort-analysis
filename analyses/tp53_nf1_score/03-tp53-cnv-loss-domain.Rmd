@@ -50,9 +50,14 @@ if (!dir.exists(results_dir)) {
 Read in CNV files with status and location-domain overlap file
 ```{r}
 # consensus seg for file for the location of CNVs (WGS samples)
-consensus_seg <- read_rds(file.path(root_dir, 
+t_only <- read_rds(file.path(root_dir, 
                                     "data",
                                     "Hope-cnv-controlfreec-tumor-only.rds"))
+
+consensus_seg <- read_rds(file.path(root_dir, 
+                                    "data",
+                                    "Hope-cnv-controlfreec.rds")) %>%
+  bind_rows(t_only)
 
 
 # Gene location and domain overlap file 
