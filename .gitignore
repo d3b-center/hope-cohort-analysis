@@ -26,5 +26,8 @@ scratch/*
 # Ignore all .pyc files
 *.pyc
 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
 # Ignore all bash history files
 .bash_history

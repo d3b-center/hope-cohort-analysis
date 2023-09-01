@@ -8,7 +8,9 @@ COPY script/install_github.r .
 
 ### Install apt-getable packages to start
 #########################################
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils dialog
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils \
+  dialog \
+  libxt6
 
 # Install dev libraries and curl
 RUN apt update && apt install -y zlib1g-dev \
@@ -17,7 +19,6 @@ RUN apt update && apt install -y zlib1g-dev \
 	liblzma-dev \
 	libcurl4-openssl-dev \
 	libssl-dev curl
-	
 
 # install R packages
 RUN ./install_bioc.r \
@@ -33,12 +34,14 @@ RUN ./install_bioc.r \
 	ggrepel \
 	msigdbr \
 	reshape2 \
+	R.utils \
 	survival \
 	survminer
   
   
 ## R packages for tp53_nf1_score
 RUN ./install_bioc.r \
+    GenomicFeatures \
     GenomicRanges \
     optparse \
     broom \
@@ -69,6 +72,9 @@ RUN installGithub.r jokergoo/ComplexHeatmap
 
 # Specify the version of circlize, same to what we used in OpenPedCan
 RUN R -e "remotes::install_github('jokergoo/circlize', ref = 'b7d86409d7f893e881980b705ba1dbc758df847d', dependencies = TRUE)"
+
+# add annoFusedata
+RUN R -e "remotes::install_github('d3b-center/annoFusedata', ref = '321bc4f6db6e9a21358f0d09297142f6029ac7aa', dependencies = TRUE)"
     
 ADD Dockerfile .
     

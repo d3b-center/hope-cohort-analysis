@@ -2,9 +2,6 @@ sample_id	Kids_First_Biospecimen_ID	Kids_First_Participant_ID	EGFR_focal_status	
 7316-870	BS_KXGJ1HMG	PT_P5HHJJPH	Gain	neutral
 7316-1774	BS_79NQJZ09	PT_KZ04SDDS	neutral	neutral
 7316-913	BS_742CDKAS	PT_4347ZBEX	neutral	Loss
-7316-4432	BS_ZN35MFSR	PT_P1F0AHMT	Neutral	neutral
-7316-2777	BS_A0NBZQPH	PT_TPDB1WC8	Gain	neutral
-7316-1844	BS_CW9FZE4H	PT_VWZZTK38	neutral	neutral
 7316-1052	BS_3HXCGJ4J	PT_18QG3Z4H	neutral	neutral
 7316-1099	BS_EPM623G4	PT_N3205P0D	neutral	neutral
 7316-1106	BS_J4E9SW51	PT_T8V9ES93	neutral	neutral
@@ -15,6 +12,8 @@ sample_id	Kids_First_Biospecimen_ID	Kids_First_Participant_ID	EGFR_focal_status	
 7316-1746	BS_ASGBEHAX	PT_C2D4JXS1	neutral	neutral
 7316-1763	BS_WPCBK1EG	PT_Z4PJA6KT	neutral	neutral
 7316-1769	BS_KY1CTGJ3	PT_JSFBMK5V	neutral	neutral
+7316-1774	BS_79NQJZ09	PT_KZ04SDDS	neutral	neutral
+7316-1844	BS_CW9FZE4H	PT_VWZZTK38	neutral	neutral
 7316-1889	BS_7P378T0E	PT_KBDP8ZCR	neutral	neutral
 7316-194	BS_9DM8H1RX	PT_SYHB12RN	neutral	neutral
 7316-1946	BS_58X7SKJS	PT_QQZXYR4M	neutral	neutral
@@ -37,6 +36,7 @@ sample_id	Kids_First_Biospecimen_ID	Kids_First_Participant_ID	EGFR_focal_status	
 7316-2599	BS_WWV74V71	PT_4A2H0KNR	neutral	neutral
 7316-2660	BS_00TRPEQX	PT_MDWPRDBT	neutral	neutral
 7316-2737	BS_S791VC80	PT_8GN3TQRM	neutral	neutral
+7316-2777	BS_A0NBZQPH	PT_TPDB1WC8	neutral	neutral
 7316-2810	BS_E3B3926M	PT_59D00MBQ	neutral	neutral
 7316-2857	BS_QWS88QXE	PT_0DXHDZJR	neutral	neutral
 7316-287	BS_ZMM11DCC	PT_1B1Z7BRQ	neutral	neutral
@@ -59,7 +59,7 @@ sample_id	Kids_First_Biospecimen_ID	Kids_First_Participant_ID	EGFR_focal_status	
 7316-409	BS_B9QP40ER	PT_2JDDX6TJ	neutral	neutral
 7316-4215	BS_Y4CC9PKT	PT_ZH3SBJPZ	neutral	neutral
 7316-4293	BS_82KENKT0	PT_PWVX2F69	neutral	neutral
-7316-4337	BS_MB5K2C19	PT_D5KKHPAE	neutral	neutral
+7316-4432	BS_ZN35MFSR	PT_P1F0AHMT	neutral	neutral
 7316-445	BS_G9MQM1KK	PT_89XRZBSG	neutral	neutral
 7316-4466	BS_HBSA5CW2	PT_YSYNKHAE	neutral	neutral
 7316-4516	BS_GCG2PKQA	PT_C7HHJG7Z	neutral	neutral

@@ -50,14 +50,15 @@ if (!dir.exists(results_dir)) {
 Read in CNV files with status and location-domain overlap file
 ```{r}
 # consensus seg for file for the location of CNVs (WGS samples)
+t_only <- read_rds(file.path(root_dir, 
+                                    "data",
+                                    "Hope-cnv-controlfreec-tumor-only.rds"))
+
 consensus_seg <- read_rds(file.path(root_dir, 
                                     "data",
-                                    "Hope-cnv-controlfreec.rds"))
+                                    "Hope-cnv-controlfreec.rds")) %>%
+  bind_rows(t_only)
 
-# cnvkit seg for file for the location of CNVs (WXS samples)
-#cnvkit_seg<- read_tsv(file.path(root_dir, 
-#                                "data",
-#                                "cnvkit_with_status.tsv"))
 
 # Gene location and domain overlap file 
 bioMartDataPfamTp53 <- 
@@ -98,8 +99,7 @@ Generating genomics ranges for cnv and domain dataframes
 # Genomic range for cnv seg file 
 cnv_gr <- DNA_seg %>%
   mutate(strand = "+") %>%
-  dplyr::rename(gene_chromosome = chromosome, 
-                copy_number = copy.number) %>%
+  dplyr::rename(copy_number = `copy number`) %>%
   GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE,
                                           starts.in.df.are.0based = FALSE)
 
