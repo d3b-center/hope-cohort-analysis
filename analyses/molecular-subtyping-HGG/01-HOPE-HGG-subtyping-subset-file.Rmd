@@ -37,7 +37,7 @@ if (!dir.exists(results_dir)) {
 ## load histologies files
 
 ```{r pressure, echo=FALSE}
-hist <- readr::read_tsv(file.path(root_dir, "data", "HOPE-GBM-histologies-base.tsv"))
+hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies-base.tsv"))
 
 ```
 
@@ -52,14 +52,19 @@ keep_cols <- c("Chromosome",
              "Strand",
              "Variant_Classification",
              "IMPACT",
-             "Kids_First_Biospecimen_ID",
+             "Tumor_Sample_Barcode",
              "Hugo_Symbol",
              "HGVSp_Short",
              "Exon_Number")
 # snv files
-snv_consensus_hotspot_maf <- readr::read_rds(
-  file.path(root_dir, "data" , "Hope-consensus-mutation.maf.rds")) %>%
+snv_tumor_maf <- readr::read_tsv(
+  file.path(root_dir, "data" , "Hope-tumor-only-snv-mutect2.maf.tsv.gz")) %>%
   select(all_of(keep_cols))
+
+snv_consensus_hotspot_maf <- readr::read_tsv(
+  file.path(root_dir, "data" , "Hope-snv-consensus-plus-hotspots.maf.tsv.gz")) %>%
+  select(all_of(keep_cols)) %>%
+  bind_rows(snv_tumor_maf)
 
 dna_bsids <- hist %>%
   filter(!is.na(pathology_diagnosis),
