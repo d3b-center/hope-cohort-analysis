@@ -26,10 +26,11 @@ analyses
 ├── data-availability
 ├── master-annotation
 ├── merge-files
+├── molecular-subtyping-HGG
 ├── msi-sensor-analysis
 ├── oncoplots
 ├── survival-analysis
-└── tmb-calculation
+└── tp53_nf1_score
 ```
 
 1) `data-availability`: This module has scripts to create data availability plots.
