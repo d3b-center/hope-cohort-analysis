@@ -33,11 +33,13 @@ export R_HOME='/usr/local/lib/R'
 export LD_LIBRARY_PATH=${R_HOME}/lib:${LD_LIBRARY_PATH}
 
 
+input_dir="input"
 data_dir="../../data"
 scratch_dir="../../scratch"
 # cds gencode bed file  
-cds_file="${data_dir}/gencode.v39.primary_assembly.annotation.bed"
+cds_file="${input_dir}/gencode.v39.primary_assembly.annotation.bed"
 snvconsensus_file="${data_dir}/Hope-snv-consensus-plus-hotspots.maf.tsv.gz"
+snvtumoronly_file="${data_dir}/Hope-tumor-only-snv-mutect2.maf.tsv.gz"
 cnvconsensus_file="${data_dir}/Hope-cnv-controlfreec-tumor-only.rds"
 collapsed_rna_file="${data_dir}/Hope-and-CPTAC-GBM-gene-expression-rsem-tpm-collapsed.rds"
 histology_file="${data_dir}/Hope-GBM-histologies-base.tsv" 
@@ -53,6 +55,7 @@ histology_file="${data_dir}/Hope-GBM-histologies-base.tsv"
 # Prep the SNV consensus data for evaluation downstream
 Rscript --vanilla 00-tp53-nf1-alterations.R \
   --snvConsensus ${snvconsensus_file} \
+  --snvTumorOnly ${snvtumoronly_file} \
   --cnvConsensus ${cnvconsensus_file} \
   --histologyFile ${histology_file} \
   --outputFolder results \
