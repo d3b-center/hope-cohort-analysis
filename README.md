@@ -1,7 +1,8 @@
 # HOPE cohort analysis
 
-Module authors: [Komal S. Rathi](https://github.com/komalsrathi/)
-                [Zhuangzhuang Geng](https://github.com/zzgeng)
+Module authors: [Komal S. Rathi](https://github.com/komalsrathi/),
+                [Zhuangzhuang Geng](https://github.com/zzgeng),
+                [Jo Lynne Rokita](https://github.com/jharenza)
 
 
 ## Run the script on docker
