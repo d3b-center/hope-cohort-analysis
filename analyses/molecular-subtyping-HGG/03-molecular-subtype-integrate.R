@@ -37,6 +37,6 @@ hist_with_subtype <- hist %>%
   mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>%
   select(colnames(.)[!grepl(paste(c("^HARMONY_", "^HOPE_"), collapse = "|"), colnames(.))], 
          starts_with("HARMONY_"), starts_with("HOPE_")) %>%
-  write_tsv(file.path(results_dir, "HOPE-GBM-histologies.tsv"))
+  write_tsv(file.path(results_dir, "Hope-GBM-histologies.tsv"))
 
 
