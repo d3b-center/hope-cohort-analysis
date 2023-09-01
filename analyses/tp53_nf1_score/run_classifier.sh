@@ -72,7 +72,8 @@ collapsed_stranded="${scratch_dir}/gene-expression-rsem-tpm-collapsed-stranded.r
 collapsed_polya_stranded="${scratch_dir}/gene-expression-rsem-tpm-collapsed-poly-A-stranded.rds"
 collapsed_exome_capture="${scratch_dir}/gene-expression-rsem-tpm-collapsed-exome_capture.rds"
 
-# Run classifier and ROC plotting for RNA data - currently, we have 4 types of RNA libraries. 
+# Run classifier and ROC plotting for RNA data - currently, we have 3 types of RNA libraries. 
+# No polyA in Hope cohort
 # We should add to this if we get more types.
 python3 01-apply-classifier.py -f ${collapsed_stranded}
 echo "### finish 01-apply-classifier.py 01 ###"
