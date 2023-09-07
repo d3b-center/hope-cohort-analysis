@@ -9,7 +9,9 @@ COPY script/install_github.r .
 ### Install apt-getable packages to start
 #########################################
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils dialog
-RUN apt-get install -y --no-install-recommends libxt6
+RUN apt-get install -y --no-install-recommends \
+  libxt6 \
+  bzip2 
 
 # Install dev libraries and curl
 RUN apt update && apt install -y zlib1g-dev \
@@ -17,7 +19,8 @@ RUN apt update && apt install -y zlib1g-dev \
 	libbz2-dev \
 	liblzma-dev \
 	libcurl4-openssl-dev \
-	libssl-dev curl
+	libssl-dev \
+	curl
 	
 
 # install R packages
@@ -77,6 +80,12 @@ RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.28.0/bedtools-2
     make && \
     mv bin/* /usr/local/bin && \
     cd .. && rm -rf bedtools2
+
+# Add bedops per the BEDOPS documentation
+RUN wget https://github.com/bedops/bedops/releases/download/v2.4.37/bedops_linux_x86_64-v2.4.37.tar.bz2 && \
+    tar -jxvf bedops_linux_x86_64-v2.4.37.tar.bz2 && \
+    rm -f bedops_linux_x86_64-v2.4.37.tar.bz2 && \
+    mv bin/* /usr/local/bin
     
 # add annoFusedata
 RUN R -e "remotes::install_github('d3b-center/annoFusedata', ref = '321bc4f6db6e9a21358f0d09297142f6029ac7aa', dependencies = TRUE)"
