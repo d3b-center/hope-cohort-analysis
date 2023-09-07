@@ -70,7 +70,9 @@ RUN pip3 install \
     "rpy2==3.5.0" \
     "utils==1.0.1" 
     
-RUN installGithub.r jokergoo/ComplexHeatmap 
+RUN installGithub.r \
+  jokergoo/ComplexHeatmap \
+	clauswilke/colorblindr 
 
 # Required for mapping segments to genes
 # Add bedtools
