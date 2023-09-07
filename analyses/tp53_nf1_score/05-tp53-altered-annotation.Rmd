@@ -135,17 +135,17 @@ functional_sites_tp53 %>%
 Removing Silent or Intron classified variants to capture only putative damaging mutations
 
 ```{r}
-consensus_tp53_snv_indel <- readr::read_rds(
-  file.path(data_dir,"Hope-consensus-mutation.maf.rds")) %>%
-  select("Chromosome",
+consensus_tp53_snv_indel <- data.table::fread(
+  file.path(data_dir,"Hope-snv-consensus-plus-hotspots.maf.tsv.gz"), select = 
+  c("Chromosome",
          "Start_Position",
          "End_Position",
          "Strand",
          "Variant_Classification",
-         "Kids_First_Biospecimen_ID",
+         "Tumor_Sample_Barcode",
          "SYMBOL",
-         "HGVSp_Short") %>%
-  
+         "HGVSp_Short")) %>%
+  rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode") %>%
   rename(Hugo_Symbol = SYMBOL) %>%
   filter(Hugo_Symbol == "TP53") %>%
   filter(!(Variant_Classification %in% c("Silent", "Intron",

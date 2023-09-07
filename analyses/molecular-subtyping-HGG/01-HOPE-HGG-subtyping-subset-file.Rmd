@@ -37,7 +37,7 @@ if (!dir.exists(results_dir)) {
 ## load histologies files
 
 ```{r pressure, echo=FALSE}
-hist <- readr::read_tsv(file.path(root_dir, "data", "HOPE-GBM-histologies-base.tsv"))
+hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies-base.tsv"))
 
 ```
 
@@ -52,14 +52,19 @@ keep_cols <- c("Chromosome",
              "Strand",
              "Variant_Classification",
              "IMPACT",
-             "Kids_First_Biospecimen_ID",
+             "Tumor_Sample_Barcode",
              "Hugo_Symbol",
              "HGVSp_Short",
              "Exon_Number")
 # snv files
-snv_consensus_hotspot_maf <- readr::read_rds(
-  file.path(root_dir, "data" , "Hope-consensus-mutation.maf.rds")) %>%
+snv_tumor_maf <- readr::read_tsv(
+  file.path(root_dir, "data" , "Hope-tumor-only-snv-mutect2.maf.tsv.gz")) %>%
   select(all_of(keep_cols))
+
+snv_consensus_hotspot_maf <- readr::read_tsv(
+  file.path(root_dir, "data" , "Hope-snv-consensus-plus-hotspots.maf.tsv.gz")) %>%
+  select(all_of(keep_cols)) %>%
+  bind_rows(snv_tumor_maf)
 
 dna_bsids <- hist %>%
   filter(!is.na(pathology_diagnosis),
@@ -77,7 +82,7 @@ snv_lesions_df <- snv_consensus_hotspot_maf  %>%
                                    "H3C3", "H3C14") &
                   HGVSp_Short %in% c("p.K28M", "p.G35R",
                                      "p.G35V")) %>%
-  dplyr::select(Kids_First_Biospecimen_ID, Hugo_Symbol, HGVSp_Short) %>%
+  dplyr::select(Tumor_Sample_Barcode, Hugo_Symbol, HGVSp_Short) %>%
   dplyr::mutate(
     `H3F3A_H3-3A.K28M` = dplyr::case_when(Hugo_Symbol == "H3-3A" &
                                     HGVSp_Short == "p.K28M" ~ "Yes",
@@ -108,7 +113,7 @@ snv_lesions_df <- hist %>%
                 sample_id,
                 Kids_First_Biospecimen_ID) %>%
   dplyr::full_join(snv_lesions_df,
-                    by = c("Kids_First_Biospecimen_ID" = "Kids_First_Biospecimen_ID")) %>%
+                    by = c("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode")) %>%
   filter(Kids_First_Biospecimen_ID %in% dna_bsids) %>%
   dplyr::mutate_all(function(x) tidyr::replace_na(x, "No")) %>%
   dplyr::mutate(
@@ -133,14 +138,13 @@ snv_lesions_df <- hist %>%
 ```{r}
 cn_df <- readr::read_rds(file.path(root_dir, "data", 
                                    "Hope-cnv-controlfreec.rds")) %>%
-  select(hgnc_symbol,
+  select(gene_symbol,
          Kids_First_Biospecimen_ID,
          status) %>% 
-  rename(gene_symbol = hgnc_symbol) %>%
   dplyr::filter(gene_symbol %in% c("PDGFRA", "PTEN", "MYCN", "EGFR")) %>%
   # Since in Hope, there are only PTEN and EGFR cnv 
   mutate(EGFR_focal_status = case_when(gene_symbol == "EGFR" ~ status), 
-         PTEN_focal_status = case_when(gene_symbol == "PTEN" ~ status)) %>%
+         PTEN_focal_status = case_when(gene_symbol == "PTEN" ~ status, )) %>%
   full_join(hist, by = c("Kids_First_Biospecimen_ID" = "Kids_First_Biospecimen_ID")) %>%
   filter(experimental_strategy == "WGS") %>%
   select(sample_id,
@@ -160,7 +164,7 @@ cn_df <- readr::read_rds(file.path(root_dir, "data",
 ```{r}
 gencode_cds_bed <- readr::read_tsv(file.path(root_dir, "scratch", "gencode.v39.primary_assembly.annotation.bed"),
                                    col_names = FALSE)
-defining_lesions_df <- readr::read_tsv(file.path(results_dir, "HOPE_HGG_defining_lesions.tsv")) %>% 
+defining_lesions_df <- readr::read_tsv(file.path(results_dir, "Hope_HGG_defining_lesions.tsv")) %>% 
   rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID)
 
 snv_df <- snv_consensus_hotspot_maf
@@ -206,7 +210,6 @@ coding_summary_df <- snv_ranges_filter(maf_df = filtered_snv_df,
                                    keep_ranges = gencode_cds_bed) %>%
   dplyr::filter(Variant_Classification != "Silent",
                 Hugo_Symbol != "TERT") %>% 
-  rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID) %>%
   dplyr::select(Tumor_Sample_Barcode,
                 Hugo_Symbol) %>%
   # For each tumor biospecimen, get a comma separated
@@ -230,7 +233,6 @@ tert_summary_df <- filtered_snv_df %>%
                 Variant_Classification == "5'Flank",
                 Start_Position %in% c("1295113","1295135"),
                 End_Position %in% c("1295113","1295135")) %>%
-  rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID) %>%
   dplyr::select(Tumor_Sample_Barcode,
                 Variant_Classification) %>%
   dplyr::group_by(Tumor_Sample_Barcode) %>%
@@ -251,7 +253,6 @@ tert_summary_df <- filtered_snv_df %>%
 idh_summary_df <- filtered_snv_df %>%
   dplyr::filter(Hugo_Symbol == "IDH1",
                 grepl("R132|R172", HGVSp_Short)) %>%
-  rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID) %>%
   dplyr::select(Tumor_Sample_Barcode, HGVSp_Short) %>%
   dplyr::rename(IDH1_mutation = HGVSp_Short) %>%
   dplyr::bind_rows(data.frame(
@@ -268,7 +269,6 @@ idh_summary_df <- filtered_snv_df %>%
 braf_summary_df <- filtered_snv_df %>%
   dplyr::filter(Hugo_Symbol == "BRAF",
                 grepl("V600E", HGVSp_Short)) %>%
-  rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID) %>%
   dplyr::select(Tumor_Sample_Barcode, HGVSp_Short) %>%
   dplyr::rename(BRAF_V600E = HGVSp_Short) %>%
   dplyr::bind_rows(data.frame(
@@ -279,7 +279,7 @@ braf_summary_df <- filtered_snv_df %>%
 
 ```
 
-
+# Combine all together and save
 
 ```{r}
 final_mutations_df <- list(defining_lesions_df,
@@ -290,6 +290,7 @@ final_mutations_df <- list(defining_lesions_df,
   purrr::reduce(dplyr::inner_join, by = "Tumor_Sample_Barcode") %>%
   dplyr::select(-defining_lesion) %>%
   dplyr::arrange(Kids_First_Participant_ID, sample_id) %>%
+  unique() %>%
   write_tsv(file.path(results_dir, "HGG_cleaned_mutation.tsv"))
 
 
