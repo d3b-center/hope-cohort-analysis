@@ -30,7 +30,7 @@ colnames(whole_cell_protein) <- c("ApprovedGeneSymbol", "OldSymbol", "coding_gen
                                   col_mapping[colnames(whole_cell_protein)[-c(1:3)]])
 
 ## save the file
-write_tsv(whole_cell_protein, file.path(output_dir, "Hope_proteome_imputed_data_061623.tsv"))
+write_tsv(whole_cell_protein, file.path(output_dir, "Hope_proteome_imputed_data.tsv"))
 
 
 ## add bs_id for phospho data
@@ -72,5 +72,5 @@ colnames(pho_motif) <- c(colnames(pho_motif)[1:10],
                    col_mapping[colnames(pho_motif)[-c(1:10)]])
 
 ## save the file
-write_tsv(pho_motif, file.path(output_dir, "hope_phosphosite_imputed_data_ischemia_removed_motif.tsv"))
+write_tsv(pho_motif, file.path(output_dir, "Hope_phosphosite_imputed_data_ischemia_removed_motif.tsv"))
 
