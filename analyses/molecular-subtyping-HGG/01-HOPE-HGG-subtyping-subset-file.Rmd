@@ -136,22 +136,28 @@ snv_lesions_df <- hist %>%
 ## cn data
 
 ```{r}
+cn_tumor_only_df <- readr::read_rds(file.path(root_dir, "data", 
+                                   "Hope-cnv-controlfreec-tumor-only.rds"))
+
 cn_df <- readr::read_rds(file.path(root_dir, "data", 
                                    "Hope-cnv-controlfreec.rds")) %>%
+  bind_rows(cn_tumor_only_df) %>% 
   select(gene_symbol,
          Kids_First_Biospecimen_ID,
          status) %>% 
   dplyr::filter(gene_symbol %in% c("PDGFRA", "PTEN", "MYCN", "EGFR")) %>%
-  # Since in Hope, there are only PTEN and EGFR cnv 
+  # Since in Hope, there are only PDGFRA, PTEN and EGFR cnv 
   mutate(EGFR_focal_status = case_when(gene_symbol == "EGFR" ~ status), 
-         PTEN_focal_status = case_when(gene_symbol == "PTEN" ~ status, )) %>%
+         PTEN_focal_status = case_when(gene_symbol == "PTEN" ~ status), 
+         PDGFRA_focal_status = case_when(gene_symbol == "PDGFRA" ~ status)) %>%
   full_join(hist, by = c("Kids_First_Biospecimen_ID" = "Kids_First_Biospecimen_ID")) %>%
   filter(experimental_strategy == "WGS") %>%
   select(sample_id,
          Kids_First_Biospecimen_ID,
          Kids_First_Participant_ID,
          EGFR_focal_status,
-         PTEN_focal_status) %>%
+         PTEN_focal_status, 
+         PDGFRA_focal_status) %>%
   replace(is.na(.), "neutral") %>%
   distinct() %>% 
   write_tsv(file.path(results_dir, "HGG_cleaned_cnv.tsv"))
