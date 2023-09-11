@@ -20,7 +20,7 @@ hope_cohort_mutations <- hope_cohort_mutations %>%
   filter(t_alt_count != 0, 
          t_depth > 5)
 length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
-data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-tumor-only-snv-mutect2.maf.tsv.gz"))
+data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-tumor-only-snv-mutect2.maf.tsv.gz"), sep = "\t")
 
 # manifest for cnv files
 cnv_manifest <- read_tsv(file.path(input_dir, "manifest_tumor_only", "manifest_20230830_152155_cnv.tsv"))
