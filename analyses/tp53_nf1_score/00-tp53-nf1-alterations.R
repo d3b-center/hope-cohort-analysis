@@ -30,8 +30,10 @@ option_list <- list(
               help="Consensus snv calls (.tsv) "),
   make_option(c("-t", "--snvTumorOnly"),type="character",
               help="Tumor only snv calls (.tsv) "),
-  make_option(c("-c","--cnvConsensus"),type="character",
-               help="consensus cnv calls (.tsv) "),
+  make_option(c("-n","--cnvTumorOnly"),type="character",
+               help="consensus cnv calls (.rds) "),
+  make_option(c("-c","--cnv"),type="character",
+              help="consensus cnv calls (rds) "),
   make_option(c("-e","--expr"),type="character",
               help="rna expression tpm or fpkm (.rds) "),
   make_option(c("-h","--histologyFile"),type="character",
@@ -51,8 +53,8 @@ expFile <- opt$expr
 histologyFile <- opt$histologyFile
 outputFolder <- opt$outputFolder
 gencodeBed <- opt$gencode
-cnvConsensusFile <- opt$cnvConsensus
-cohort_interest<-unlist(strsplit(opt$cohort,","))
+cnvTumorOnlyFile <- opt$cnvTumorOnly
+cnvFile <- opt$cnv
 
 if(!dir.exists(outputFolder)){
   dir.create(outputFolder)
@@ -76,14 +78,26 @@ consensus_snv <- data.table::fread(snvConsensusFile, select = keep_columns) %>%
   dplyr::rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode") %>%
   bind_rows(tumoronly_snv)
 
-# read in consensus CNV file
-cnvConsensus <- readr::read_rds(cnvConsensusFile) %>%
+# read in CNV tumor only file
+cnv_tumor_only <- readr::read_rds(cnvTumorOnlyFile) %>%
   as.data.frame() %>%
   dplyr::filter(!grepl('chrX|chrY', chr)) %>%
   dplyr::select(gene_symbol,
                 Kids_First_Biospecimen_ID,
                 status)
 
+# read in CNV file
+cnv <- readr::read_rds(cnvFile) %>%
+  as.data.frame() %>%
+  dplyr::filter(!grepl('chrX|chrY', chr)) %>%
+  dplyr::select(gene_symbol,
+                Kids_First_Biospecimen_ID,
+                status)
+
+# combine two cnv files together
+cnvConsensus <- cnv %>% 
+  bind_rows(cnv_tumor_only) %>% 
+  distinct()
 
 # gencode cds region BED file
 gencode_cds <- read_tsv(gencodeBed, col_names = FALSE)
@@ -104,7 +118,7 @@ tp53_coding <- coding_consensus_snv %>%
 # subset to TP53 cnv loss and format to tp53_coding file format
 tp53_loss<-cnvConsensus %>% 
   filter(gene_symbol == "TP53",
-         status == "loss") %>%
+         status == "Loss") %>%
   rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode",
          "status" = "Variant_Classification",
          "gene_symbol" = "Hugo_Symbol")
@@ -122,7 +136,7 @@ nf1_coding <- coding_consensus_snv %>%
 # subset to NF1 loss and format to nf1_coding file format
 nf1_loss<-cnvConsensus %>% 
   filter(gene_symbol == "NF1",
-         status == "loss") %>%
+         status == "Loss") %>%
   rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode",
          "status" = "Variant_Classification",
          "gene_symbol" = "Hugo_Symbol")
@@ -135,7 +149,6 @@ tp53_nf1_coding <- tp53_coding %>%
 bs_ids <- histology %>%
   filter(sample_type == "Tumor",
          experimental_strategy != "RNA-Seq") %>%
-  filter(cohort %in% cohort_interest) %>%
   pull(Kids_First_Biospecimen_ID)
 
 
@@ -160,8 +173,7 @@ rna <- readRDS(expFile)
 
 # subset hist for those in rna matrix
 hist_rna <- histology %>%
-  filter(Kids_First_Biospecimen_ID %in% names(rna),
-         cohort %in% cohort_interest) %>%
+  filter(Kids_First_Biospecimen_ID %in% names(rna)) %>%
   mutate(RNA_library = case_when(RNA_library == "poly-A stranded" ~ "poly-A-stranded",
                                  TRUE ~ as.character(RNA_library)))
 
