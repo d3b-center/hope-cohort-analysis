@@ -15,6 +15,9 @@ HGG_mol_subtype <- readr::read_tsv(file.path(results_dir, "Hope_subtype.tsv")) %
 ## add molecular subtype to histology-base file
 hist_with_subtype <- hist %>%
   left_join(HGG_mol_subtype) %>%
+  ## remove seven samples with wrong pathology diagnosis 
+  ## 7316-1723, 7316-1746, 7316-194, 7316-212, 7316-2151, 7316-2857, 7316-4844
+  filter(!sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212", "7316-2151", "7316-2857", "7316-4844")) %>% 
   mutate(integrated_diagnosis = case_when(grepl("DMG, H3 K28", molecular_subtype) ~ "Diffuse midline glioma, H3 K28-mutant",
                                           grepl("DHG, H3 G35", molecular_subtype) ~ "Diffuse hemispheric glioma, H3 G35-mutant",
                                           grepl("HGG, H3 wildtype", molecular_subtype) ~ "High-grade glioma, IDH-wildtype and H3-wildtype",
@@ -37,6 +40,7 @@ hist_with_subtype <- hist %>%
   mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>%
   select(colnames(.)[!grepl(paste(c("^HARMONY_", "^HOPE_"), collapse = "|"), colnames(.))], 
          starts_with("HARMONY_"), starts_with("HOPE_")) %>%
+  arrange(sample_id) %>%
   write_tsv(file.path(results_dir, "Hope-GBM-histologies.tsv"))
 
 
