@@ -37,7 +37,7 @@ input_dir="input"
 data_dir="../../data"
 scratch_dir="../../scratch"
 # cds gencode bed file  
-cds_file="${scratch_dir}/gencode.v39.primary_assembly.annotation.bed"
+cds_file="${input_dir}/gencode.v39.primary_assembly.annotation.bed"
 snvconsensus_file="${data_dir}/Hope-snv-consensus-plus-hotspots.maf.tsv.gz"
 snvtumoronly_file="${data_dir}/Hope-tumor-only-snv-mutect2.maf.tsv.gz"
 cnvconsensus_file="${data_dir}/Hope-cnv-controlfreec-tumor-only.rds"
@@ -47,10 +47,10 @@ histology_file="${data_dir}/Hope-GBM-histologies-base.tsv"
 
 # Convert GTF to BED file
 # Here we are only extracting lines with as a CDS i.e. are coded in protein
-gunzip -c ${data_dir}/gencode.v39.primary_assembly.annotation.gtf.gz \
-  | awk '$3 ~ /CDS/' \
-  | convert2bed --do-not-sort --input=gtf - \
-  > $cds_file
+#gunzip -c ${data_dir}/gencode.v39.primary_assembly.annotation.gtf.gz \
+#  | awk '$3 ~ /CDS/' \
+#  | convert2bed --do-not-sort --input=gtf - \
+#  > $cds_file
 
 # Prep the SNV consensus data for evaluation downstream
 Rscript --vanilla 00-tp53-nf1-alterations.R \
