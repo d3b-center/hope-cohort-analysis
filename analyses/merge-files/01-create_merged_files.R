@@ -16,6 +16,9 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 merge_rsem <- file.path(analyses_dir, "utils", "merge_rsem.R")
 collapse_rsem <- file.path(analyses_dir, "utils", "collapse_rnaseq.R")
 
+# histology file
+hist_df <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies-base.tsv"))
+
 # manifest for gene expression files
 rna_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230830_150931_rna.tsv"))
 colnames(rna_manifest) <- gsub(" ", "_", colnames(rna_manifest))
@@ -23,6 +26,10 @@ rna_manifest <- rna_manifest %>%
   dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
   mutate(file_name = gsub('.*/', '', name)) %>%
   unique()
+
+# filter to BS-ids in histology file only
+rna_manifest <- rna_manifest %>%
+  filter(Kids_First_Biospecimen_ID %in% hist_df$Kids_First_Biospecimen_ID)
 
 # TPM
 # merge files from cavatica
@@ -33,7 +40,7 @@ cmd <- paste('Rscript', merge_rsem,
              '--type', 'TPM')
 system(cmd)
 
-# add BS id to TPM (n = 90)
+# add BS id to TPM (n = 87)
 tpm <- file.path(output_dir, "Hope-gene-expression-rsem-tpm.rds") %>%
   readRDS() %>%
   column_to_rownames("gene_id")
@@ -64,7 +71,7 @@ cmd <- paste('Rscript', merge_rsem,
              '--type', 'TPM')
 system(cmd)
 
-# add BS id to counts (n = 90)
+# add BS id to counts (n = 87)
 counts <- file.path(output_dir, "Hope-gene-counts-rsem-expected_count.rds") %>%
   readRDS() %>%
   column_to_rownames("gene_id")
@@ -86,12 +93,14 @@ cmd <- paste('Rscript', collapse_rsem,
              '--outfile', file.path(output_dir, 'Hope-gene-counts-rsem-expected_count-collapsed.rds'))
 system(cmd)
 
-# merge mutations (n = 76)
+# merge mutations (n = 73)
 hope_cohort_mutations <- list.files(path = file.path(input_dir, "consenus_maf"), recursive = T, full.names = T)
 hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::read_tsv(x, skip = 1))
 hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
+hope_cohort_mutations <- hope_cohort_mutations %>%
+  filter(Tumor_Sample_Barcode %in% hist_df$Kids_First_Biospecimen_ID)
 length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
-data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-snv-consensus-plus-hotspots.maf.tsv.gz"))
+data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-snv-consensus-plus-hotspots.maf.tsv.gz"), sep = "\t")
 
 # manifest for cnv files
 cnv_manifest <- read_tsv(file.path(input_dir, "manifest", "manifest_20230830_151211_cnv.tsv"))
@@ -134,7 +143,7 @@ gencode_gtf <- gencode_gtf %>%
   dplyr::rename("gene_symbol" = "gene_name") %>%
   unique()
 
-# merge cnv (n = 76)
+# merge cnv (n = 73)
 hope_cohort_cnv <- list.files(path = file.path(input_dir, "copy_number"), pattern = "*.txt", recursive = TRUE, full.names = T)
 hope_cohort_cnv <- lapply(hope_cohort_cnv, FUN = function(x) merge_cnv(nm = x))
 hope_cohort_cnv <- data.table::rbindlist(hope_cohort_cnv)
@@ -143,6 +152,8 @@ hope_cohort_cnv <- hope_cohort_cnv %>%
   dplyr::select(Kids_First_Biospecimen_ID, chr, start, end, gene_symbol, `copy number`, status, genotype, uncertainty,
                 WilcoxonRankSumTestPvalue, KolmogorovSmirnovPvalue) %>%
   unique()
+hope_cohort_cnv <- hope_cohort_cnv %>%
+  filter(Kids_First_Biospecimen_ID %in% hist_df$Kids_First_Biospecimen_ID)
 print(length(unique(hope_cohort_cnv$Kids_First_Biospecimen_ID)))
 saveRDS(hope_cohort_cnv, file = file.path(output_dir, "Hope-cnv-controlfreec.rds"))
 
@@ -154,7 +165,11 @@ msi_manifest <- msi_manifest %>%
   mutate(file_name = gsub('.*/', '', name)) %>%
   unique()
 
-# merge msi (n = 76)
+# filter to BS-ids in histology file only
+msi_manifest <- msi_manifest %>%
+  filter(Kids_First_Biospecimen_ID %in% hist_df$Kids_First_Biospecimen_ID)
+
+# merge msi (n = 73)
 lf <- list.files(path = file.path(input_dir, "msisensor_pro"), pattern = 'msisensor_pro', recursive = T, full.names = T)
 hope_cohort_msi <- lapply(lf, read_tsv)
 hope_cohort_msi <- do.call(rbind, hope_cohort_msi)

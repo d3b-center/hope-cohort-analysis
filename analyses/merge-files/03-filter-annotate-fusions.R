@@ -11,10 +11,15 @@ input_dir <- file.path(analyses_dir, "input")
 output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
-# merge fusions (n = 90)
+# histology file
+hist_df <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies-base.tsv"))
+
+# merge fusions (n = 87)
 hope_cohort_fusions <- list.files(path = file.path(input_dir, "gene_fusions"), pattern = "*annoFuse_filter.tsv", recursive = TRUE, full.names = T)
 hope_cohort_fusions <- lapply(hope_cohort_fusions, FUN = function(x) readr::read_tsv(x))
 hope_cohort_fusions <- plyr::rbind.fill(hope_cohort_fusions)
+hope_cohort_fusions <- hope_cohort_fusions %>%
+  filter(Sample %in% hist_df$Kids_First_Biospecimen_ID)
 length(unique(hope_cohort_fusions$Sample))
 
 # get merged expression matrix
@@ -77,10 +82,12 @@ hope_cohort_fusions <- hope_cohort_fusions %>%
 fusion_manifest <- readr::read_tsv(file.path(input_dir, "manifest", "manifest_20230830_150316_fusion.tsv"))
 colnames(fusion_manifest) <- gsub(" ", "_", colnames(fusion_manifest))
 fusion_manifest <- fusion_manifest %>%
+  filter(Kids_First_Biospecimen_ID %in% hist_df$Kids_First_Biospecimen_ID) %>%
   dplyr::select(Kids_First_Biospecimen_ID, Kids_First_Participant_ID) %>%
   unique()
 hope_cohort_fusions <- hope_cohort_fusions %>%
   inner_join(fusion_manifest, by = c("Sample" = "Kids_First_Biospecimen_ID")) 
+length(unique(hope_cohort_fusions$Sample)) # 87
 
 # write output
 saveRDS(hope_cohort_fusions, file = file.path(output_dir, "Hope-fusion-putative-oncogenic.rds"))
