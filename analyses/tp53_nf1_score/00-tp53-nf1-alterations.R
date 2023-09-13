@@ -148,7 +148,7 @@ tp53_nf1_coding <- tp53_coding %>%
 # biospecimen IDs for tumor DNA-seq
 bs_ids <- histology %>%
   filter(sample_type == "Tumor",
-         experimental_strategy != "RNA-Seq") %>%
+         experimental_strategy %in% c("WGS", "WXS")) %>%
   pull(Kids_First_Biospecimen_ID)
 
 
