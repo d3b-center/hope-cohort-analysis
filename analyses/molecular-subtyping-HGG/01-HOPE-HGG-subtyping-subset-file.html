@@ -356,13 +356,13 @@ display: none;
 
 
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching core tidyverse packages ───────────────────────────────────────────────────── tidyverse 2.0.0 ──
+<pre><code>## ── Attaching core tidyverse packages ────────────────────────────────────────── tidyverse 2.0.0 ──
 ## ✔ dplyr     1.1.1     ✔ readr     2.1.4
 ## ✔ forcats   1.0.0     ✔ stringr   1.5.0
 ## ✔ ggplot2   3.4.2     ✔ tibble    3.2.1
 ## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
 ## ✔ purrr     1.0.1     
-## ── Conflicts ─────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
@@ -389,7 +389,7 @@ if (!dir.exists(results_dir)) {
 <div id="load-histologies-files" class="section level2">
 <h2>load histologies files</h2>
 <pre><code>## Rows: 635 Columns: 94
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ──────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (56): Kids_First_Biospecimen_ID, sample_id, Kids_First_Participant_ID, e...
 ## dbl (29): aliquot_id, age_at_diagnosis_days, age_at_event_days, age_at_chemo...
@@ -414,32 +414,16 @@ keep_cols &lt;- c(&quot;Chromosome&quot;,
              &quot;HGVSp_Short&quot;,
              &quot;Exon_Number&quot;)
 # snv files
-snv_tumor_maf &lt;- readr::read_tsv(
-  file.path(root_dir, &quot;data&quot; , &quot;Hope-tumor-only-snv-mutect2.maf.tsv.gz&quot;)) %&gt;%
-  select(all_of(keep_cols))</code></pre>
-<pre><code>## Rows: 6374614 Columns: 132
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────
-## Delimiter: &quot;\t&quot;
-## chr (63): Hugo_Symbol, Center, NCBI_Build, Chromosome, Strand, Variant_Class...
-## dbl (37): Entrez_Gene_Id, Start_Position, End_Position, t_depth, t_ref_count...
-## lgl (32): dbSNP_Val_Status, Tumor_Validation_Allele1, Tumor_Validation_Allel...
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>snv_consensus_hotspot_maf &lt;- readr::read_tsv(
-  file.path(root_dir, &quot;data&quot; , &quot;Hope-snv-consensus-plus-hotspots.maf.tsv.gz&quot;)) %&gt;%
-  select(all_of(keep_cols)) %&gt;%
-  bind_rows(snv_tumor_maf)</code></pre>
-<pre><code>## Rows: 673033 Columns: 133
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────
-## Delimiter: &quot;\t&quot;
-## chr (62): Hugo_Symbol, Center, NCBI_Build, Chromosome, Strand, Variant_Class...
-## dbl (28): Entrez_Gene_Id, Start_Position, End_Position, t_depth, t_ref_count...
-## lgl (43): dbSNP_Val_Status, Tumor_Validation_Allele1, Tumor_Validation_Allel...
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>dna_bsids &lt;- hist %&gt;%
+snv_tumor_maf &lt;- data.table::fread(
+  file.path(root_dir, &quot;data&quot; , &quot;Hope-tumor-only-snv-mutect2.maf.tsv.gz&quot;), 
+  select = keep_cols)
+
+snv_consensus_hotspot_maf &lt;- data.table::fread(
+  file.path(root_dir, &quot;data&quot; , &quot;Hope-snv-consensus-plus-hotspots.maf.tsv.gz&quot;), 
+  select = keep_cols) %&gt;%
+  bind_rows(snv_tumor_maf)
+
+dna_bsids &lt;- hist %&gt;%
   filter(!is.na(pathology_diagnosis),
                 (experimental_strategy %in% c(&quot;WGS&quot;, &quot;WXS&quot;, &quot;Targeted Sequencing&quot;) &amp; is.na(RNA_library))) %&gt;%
   pull(Kids_First_Biospecimen_ID) %&gt;% 
@@ -533,18 +517,18 @@ cn_df &lt;- readr::read_rds(file.path(root_dir, &quot;data&quot;,
 <h2>mutations</h2>
 <pre class="r"><code>gencode_cds_bed &lt;- readr::read_tsv(file.path(root_dir, &quot;scratch&quot;, &quot;gencode.v39.primary_assembly.annotation.bed&quot;),
                                    col_names = FALSE)</code></pre>
-<pre><code>## Rows: 212231 Columns: 3
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────
+<pre><code>## Rows: 840001 Columns: 10
+## ── Column specification ──────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
-## chr (1): X1
-## dbl (2): X2, X3
+## chr (7): X1, X4, X5, X6, X7, X8, X10
+## dbl (3): X2, X3, X9
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>defining_lesions_df &lt;- readr::read_tsv(file.path(results_dir, &quot;Hope_HGG_defining_lesions.tsv&quot;)) %&gt;% 
   rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID)</code></pre>
 <pre><code>## Rows: 110 Columns: 10
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ──────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (9): Kids_First_Participant_ID, sample_id, Kids_First_Biospecimen_ID, H3...
 ## lgl (1): defining_lesion
@@ -670,7 +654,7 @@ coding_summary_df &lt;- snv_ranges_filter(maf_df = filtered_snv_df,
 <h2>fusion subsetting</h2>
 <pre class="r"><code>fusion_hgg &lt;- read_tsv(file.path(analyses_dir, &quot;input&quot;, &quot;fusion_summary_hgg_foi.tsv&quot;)) </code></pre>
 <pre><code>## Rows: 87 Columns: 36
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ──────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr  (1): Kids_First_Biospecimen_ID
 ## dbl (35): BCL11A--ALK, BRAF--BRAF, BRAF--WSB1, CCDC88A--ALK, CHD7--MYBL1, CL...
@@ -790,22 +774,23 @@ cleaned_expression &lt;-
 ##  [1] tidyselect_1.2.0       xfun_0.38              bslib_0.4.2           
 ##  [4] colorspace_2.1-0       vctrs_0.6.2            generics_0.1.3        
 ##  [7] htmltools_0.5.5        stats4_4.2.3           yaml_2.3.7            
-## [10] utf8_1.2.3             rlang_1.1.0            jquerylib_0.1.4       
-## [13] pillar_1.9.0           glue_1.6.2             withr_2.5.0           
-## [16] BiocGenerics_0.44.0    bit64_4.0.5            GenomeInfoDbData_1.2.9
-## [19] lifecycle_1.0.3        zlibbioc_1.44.0        munsell_0.5.0         
-## [22] gtable_0.3.3           evaluate_0.20          knitr_1.42            
-## [25] tzdb_0.3.0             IRanges_2.32.0         fastmap_1.1.1         
-## [28] GenomeInfoDb_1.34.9    parallel_4.2.3         fansi_1.0.4           
-## [31] scales_1.2.1           cachem_1.0.7           S4Vectors_0.36.2      
-## [34] XVector_0.38.0         vroom_1.6.1            jsonlite_1.8.4        
-## [37] bit_4.0.5              hms_1.1.3              digest_0.6.31         
-## [40] stringi_1.7.12         GenomicRanges_1.50.2   grid_4.2.3            
-## [43] rprojroot_2.0.3        bitops_1.0-7           cli_3.6.1             
-## [46] tools_4.2.3            magrittr_2.0.3         sass_0.4.5            
-## [49] RCurl_1.98-1.12        crayon_1.5.2           pkgconfig_2.0.3       
-## [52] data.table_1.14.8      timechange_0.2.0       rmarkdown_2.21        
-## [55] R6_2.5.1               compiler_4.2.3</code></pre>
+## [10] utf8_1.2.3             rlang_1.1.0            R.oo_1.25.0           
+## [13] jquerylib_0.1.4        pillar_1.9.0           glue_1.6.2            
+## [16] withr_2.5.0            R.utils_2.12.2         BiocGenerics_0.44.0   
+## [19] bit64_4.0.5            GenomeInfoDbData_1.2.9 lifecycle_1.0.3       
+## [22] zlibbioc_1.44.0        munsell_0.5.0          gtable_0.3.3          
+## [25] R.methodsS3_1.8.2      evaluate_0.20          knitr_1.42            
+## [28] IRanges_2.32.0         tzdb_0.3.0             fastmap_1.1.1         
+## [31] GenomeInfoDb_1.34.9    parallel_4.2.3         fansi_1.0.4           
+## [34] scales_1.2.1           cachem_1.0.7           S4Vectors_0.36.2      
+## [37] XVector_0.38.0         vroom_1.6.1            jsonlite_1.8.4        
+## [40] bit_4.0.5              hms_1.1.3              digest_0.6.31         
+## [43] stringi_1.7.12         GenomicRanges_1.50.2   grid_4.2.3            
+## [46] rprojroot_2.0.3        bitops_1.0-7           cli_3.6.1             
+## [49] tools_4.2.3            magrittr_2.0.3         sass_0.4.5            
+## [52] RCurl_1.98-1.12        crayon_1.5.2           pkgconfig_2.0.3       
+## [55] data.table_1.14.8      timechange_0.2.0       rmarkdown_2.21        
+## [58] R6_2.5.1               compiler_4.2.3</code></pre>
 </div>
 </div>
 </div>

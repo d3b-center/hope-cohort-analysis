@@ -57,13 +57,13 @@ keep_cols <- c("Chromosome",
              "HGVSp_Short",
              "Exon_Number")
 # snv files
-snv_tumor_maf <- readr::read_tsv(
-  file.path(root_dir, "data" , "Hope-tumor-only-snv-mutect2.maf.tsv.gz")) %>%
-  select(all_of(keep_cols))
+snv_tumor_maf <- data.table::fread(
+  file.path(root_dir, "data" , "Hope-tumor-only-snv-mutect2.maf.tsv.gz"), 
+  select = keep_cols)
 
-snv_consensus_hotspot_maf <- readr::read_tsv(
-  file.path(root_dir, "data" , "Hope-snv-consensus-plus-hotspots.maf.tsv.gz")) %>%
-  select(all_of(keep_cols)) %>%
+snv_consensus_hotspot_maf <- data.table::fread(
+  file.path(root_dir, "data" , "Hope-snv-consensus-plus-hotspots.maf.tsv.gz"), 
+  select = keep_cols) %>%
   bind_rows(snv_tumor_maf)
 
 dna_bsids <- hist %>%
