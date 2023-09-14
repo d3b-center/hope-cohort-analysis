@@ -20,7 +20,7 @@ hist_with_subtype <- hist %>%
   mutate(molecular_subtype = case_when(sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212", "7316-2151", "7316-2857") ~ NA_character_, 
                                        TRUE ~ molecular_subtype), 
          Notes = case_when(sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212", "7316-2151", "7316-2857") ~ "pending pathology review as non-HGG", 
-                          TRUE ~ NA),) %>% 
+                          TRUE ~ NA_character_)) %>% 
   mutate(integrated_diagnosis = case_when(grepl("DMG, H3 K28", molecular_subtype) ~ "Diffuse midline glioma, H3 K28-mutant",
                                           grepl("DHG, H3 G35", molecular_subtype) ~ "Diffuse hemispheric glioma, H3 G35-mutant",
                                           grepl("HGG, H3 wildtype", molecular_subtype) ~ "High-grade glioma, IDH-wildtype and H3-wildtype",
