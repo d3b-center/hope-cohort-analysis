@@ -166,7 +166,8 @@ RTK_list <- c(NTRK, ALK, MET, ROS1)
 ihg_df_biospecimen <- all_data_df %>% 
   # need free text
   left_join(unique(hgg_meta[,c("pathology_free_text_diagnosis", "sample_id")])) %>%
-  filter(molecular_subtype_methyl == "IHG" | grepl("infant type hemispheric glioma with ALK fusion", pathology_free_text_diagnosis)) %>%
+  # manually add 7316-4844, later resection of 7316-4842, same initial tumor, both IHG
+  filter(molecular_subtype_methyl == "IHG" | grepl("infant type hemispheric glioma with ALK fusion", pathology_free_text_diagnosis) | sample_id == "7316-4844") %>%
   mutate(tmp_tag = "ihg_sample") %>%
   distinct() %>%
   mutate(molecular_subtype = case_when((!is.na(tmp_tag) & Kids_First_Biospecimen_ID_RNA %in% NTRK ~ "IHG, NTRK-altered"),
