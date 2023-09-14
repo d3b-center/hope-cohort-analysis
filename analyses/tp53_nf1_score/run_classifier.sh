@@ -71,17 +71,12 @@ echo "### finish 00-tp53-nf1-alterations.R ###"
 collapsed_stranded="${scratch_dir}/gene-expression-rsem-tpm-collapsed-stranded.rds"
 collapsed_polya_stranded="${scratch_dir}/gene-expression-rsem-tpm-collapsed-poly-A-stranded.rds"
 collapsed_exome_capture="${scratch_dir}/gene-expression-rsem-tpm-collapsed-exome_capture.rds"
-## CAPTAC samples
-collapsed_unknown="${scratch_dir}/gene-expression-rsem-tpm-collapsed-unknown.rds"
 
 # Run classifier and ROC plotting for RNA data - currently, we have 3 types of RNA libraries. 
 # No polyA in Hope cohort
 # We should add to this if we get more types.
 python3 01-apply-classifier.py -f ${collapsed_stranded}
 echo "### finish 01-apply-classifier.py 01 ###"
-
-python3 01-apply-classifier.py -f ${collapsed_unknown}
-echo "### finish 01-apply-classifier.py 02 ###"
 
 python3 01-apply-classifier.py -f ${collapsed_exome_capture}
 echo "### finish 01-apply-classifier.py 03 ###"
