@@ -46,10 +46,14 @@ merge_cnv <- function(nm){
   x <- data.table::fread(nm)
   
   # map to gene symbols
-  query <- with(x, GRanges(chr, IRanges(start = start, end = end)))
-  subject <- with(gencode_gtf, GRanges(seqnames, IRanges(start = start, end = end, names = gene_symbol)))
+  subject <- with(x, GRanges(chr, IRanges(start = start, end = end)))
+  query <- with(gencode_gtf, GRanges(seqnames, IRanges(start = start, end = end, names = gene_symbol)))
   output <- findOverlaps(query = query, subject = subject, type = "within")
-  output <- data.frame(x[queryHits(output),], gencode_gtf[subjectHits(output),])
+  output <- data.frame(x[subjectHits(output),], gencode_gtf[queryHits(output),])
+  output <- output %>%
+    dplyr::select(chr, start, end, gene_symbol, copy.number, status, 
+                  genotype, uncertainty,WilcoxonRankSumTestPvalue, KolmogorovSmirnovPvalue) %>%
+    unique()
   
   # modify
   output$status <- stringr::str_to_title(output$status)
@@ -60,7 +64,7 @@ merge_cnv <- function(nm){
 }
 
 # get coordinates of genes from gencode v39
-gencode_gtf <- rtracklayer::import(con = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gtf.gz")
+gencode_gtf <- rtracklayer::import(con = "data/gencode.v39.primary_assembly.annotation.gtf.gz")
 gencode_gtf <- as.data.frame(gencode_gtf)
 gencode_gtf <- gencode_gtf %>%
   dplyr::select(seqnames, start, end, gene_name) %>%
