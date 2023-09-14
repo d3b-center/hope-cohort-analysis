@@ -69,7 +69,6 @@ echo "### finish 00-tp53-nf1-alterations.R ###"
 
 # Define RNA library files, which result from the script above
 collapsed_stranded="${scratch_dir}/gene-expression-rsem-tpm-collapsed-stranded.rds"
-#collapsed_polya="${scratch_dir}/gene-expression-rsem-tpm-collapsed-poly-A.rds"
 collapsed_polya_stranded="${scratch_dir}/gene-expression-rsem-tpm-collapsed-poly-A-stranded.rds"
 collapsed_exome_capture="${scratch_dir}/gene-expression-rsem-tpm-collapsed-exome_capture.rds"
 
@@ -78,9 +77,6 @@ collapsed_exome_capture="${scratch_dir}/gene-expression-rsem-tpm-collapsed-exome
 # We should add to this if we get more types.
 python3 01-apply-classifier.py -f ${collapsed_stranded}
 echo "### finish 01-apply-classifier.py 01 ###"
-
-#python3 01-apply-classifier.py -f ${collapsed_polya}
-echo "### finish 01-apply-classifier.py 02 ###"
 
 python3 01-apply-classifier.py -f ${collapsed_exome_capture}
 echo "### finish 01-apply-classifier.py 03 ###"
