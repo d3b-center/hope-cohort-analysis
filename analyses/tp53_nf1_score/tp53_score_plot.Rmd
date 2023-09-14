@@ -28,23 +28,28 @@ source(file.path(analyses_dir, "utils", "survival_models.R"))
 ## load files
 
 ```{r}
-hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies-base.tsv"))
+hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies.tsv"))
 tp53_score <- readr::read_tsv(file.path(analyses_dir, "results", "tp53_altered_status.tsv"))
-mol_subtype <- readr::read_tsv(file.path(root_dir, "analyses", "molecular-subtyping-HGG", "results", "Hope_subtype.tsv"))
 
 
 ## combine histologies, tp53_score table and molecular_subtypes together
 tp53_survival <- hist %>%
+  ## remove seven samples with wrong HGG diagnosis
+  filter(!sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212", "7316-2151", "7316-2857", "7316-4844")) %>%
+  ## remove c3 samples as these sample does not have the tp53 score or harmonized clinical info
+  filter(!grepl("^C3", Kids_First_Biospecimen_ID)) %>%
+  ## filter out normal samples as they do not have a molecular subtype
+  filter(sample_type != "Normal") %>%
   left_join(tp53_score, by = "sample_id") %>%
-  select(-tp53_altered, -molecular_subtype) %>%
-  left_join(mol_subtype, by = "sample_id") %>% 
   select(sample_id, tp53_score, tp53_altered, 
          OS_days, OS_status, EFS_days, EFS_event_type, 
          reported_gender, race, age_at_diagnosis_days, 
          molecular_subtype) %>% 
   filter(!is.na(sample_id)) %>%
+  ## change NA in molecular_subtype and reported gender to "not reported"
   mutate(molecular_subtype = case_when(is.na(molecular_subtype) ~ "not reported", 
                                        TRUE ~ molecular_subtype)) %>%
+  mutate(reported_gender = replace_na(reported_gender, "not reported")) %>%
   distinct()
 
 head(tp53_survival)
@@ -54,23 +59,23 @@ head(tp53_survival)
 
 ```{r}
 tp53_survival <- tp53_survival %>%
-  mutate(binned_age = case_when(age_at_diagnosis_days >= 0 & 
-                                  age_at_diagnosis_days < as.integer(15 * 365.25) ~ "0-15", 
+  mutate(OS_years = (OS_days/365.25), 
+         binned_age = case_when(age_at_diagnosis_days >= 0 & 
+                                  age_at_diagnosis_days < (15 * 365.25) ~ "0-15", 
                                 
-                                age_at_diagnosis_days >= as.integer(15 * 365.25) & 
-                                  age_at_diagnosis_days < as.integer(26 * 365.25) ~ "15-26", 
+                                age_at_diagnosis_days >= (15 * 365.25) & 
+                                  age_at_diagnosis_days < (26 * 365.25) ~ "15-26", 
                                 
-                                age_at_diagnosis_days >= as.integer(26 * 365.25) & 
-                                  age_at_diagnosis_days < as.integer(40 * 365.25) ~ "26-40",
+                                age_at_diagnosis_days >= (26 * 365.25) & 
+                                  age_at_diagnosis_days < (40 * 365.25) ~ "26-40",
                                 
-                                age_at_diagnosis_days >= as.integer(40 * 365.25)  ~ ">40", 
+                                age_at_diagnosis_days >= (40 * 365.25)  ~ ">40", 
                                 TRUE ~ "not reported")) %>% 
   mutate(binned_tp53 = case_when(tp53_score >= 0 & tp53_score < 0.25 ~ "1 quantile", 
                                  tp53_score >= 0.25 & tp53_score < 0.5 ~ "2 quantile", 
                                  tp53_score >= 0.5 & tp53_score < 0.75 ~ "3 quantile", 
                                  tp53_score >= 0.75 & tp53_score <= 1 ~ "4 quantile", 
-                                 TRUE ~ "no tp53 score"), 
-         OS_years = (OS_days/365.25)) 
+                                 TRUE ~ "no tp53 score")) 
   
 
 ```
@@ -120,11 +125,43 @@ ggplot(tp53_survival, aes(x = reported_gender, y = tp53_score)) +
 ## The distribution of TP53 score among different races 
 
 ```{r}
-ggplot(tp53_survival, aes(x = race, y = tp53_score)) + 
+ggplot(tp53_survival, aes(x = factor(race, levels = c("White", "Asian", 
+                                                      "Black or African American", 
+                                                      "Native Hawaiian or Other Pacific Islander", 
+                                                      "Other", "Reported Unknown")), y = tp53_score)) + 
   geom_boxplot() +
   geom_jitter(width = 0.3, alpha = 0.5) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
+
+```
+
+## add two new columns with simplified molecular subtype
+
+```{r}
+
+tp53_survival <- tp53_survival %>% 
+  mutate(broad_mol = case_when(grepl(",", molecular_subtype) ~ 
+                                 substr(molecular_subtype, 1, regexpr(",", molecular_subtype) - 1), 
+                               TRUE ~ molecular_subtype), 
+         mol_subtype_without_tp53 = gsub(", TP53", "", molecular_subtype)) %>% 
+  mutate(broad_mol = case_when(grepl("IHG", broad_mol) ~ "IHG", 
+                               TRUE ~ broad_mol), 
+         mol_subtype_without_tp53 = case_when(grepl("IHG", mol_subtype_without_tp53) ~ "IHG", 
+                               TRUE ~ mol_subtype_without_tp53))
+  
+table(tp53_survival$broad_mol)
+```
+
+```{r}
+p1 <- ggplot(tp53_survival, aes(x = broad_mol, y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(width = 0.3, alpha = 0.5) 
+p2 <- ggplot(tp53_survival, aes(x = mol_subtype_without_tp53, y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(width = 0.3, alpha = 0.5) 
+
+p1 / p2
 
 ```
 
@@ -157,18 +194,7 @@ print(i)
 
 ```
 
-
-```{r}
-mol_sub_summary <- as.data.frame(table(tp53_survival$molecular_subtype))
-
-tp53_survival <- tp53_survival %>% 
-  mutate(broad_mol = substr(molecular_subtype, 1, regexpr(",", molecular_subtype) - 1), 
-         mol_subtype_without_tp53 = gsub(", TP53", "", molecular_subtype))
-  
-
-mol_sub_summary
-```
-
+## KM plot for broad_mol and mol_subtype_without_tp53
 
 ```{r}
 var <- c("broad_mol", "mol_subtype_without_tp53")
@@ -196,27 +222,41 @@ print(i)
 
 ```
 
-## calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age.
+## calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
 
 ```{r}
-tp53_survival_cox <- fit_save_model(tp53_survival, 
-                                    terms = "tp53_score + reported_gender + molecular_subtype + binned_age", 
-                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+molecular_subtype+binned_age.RDS"), 
+tp53_survival <- tp53_survival %>% 
+  mutate(broad_mol = factor(broad_mol, levels = c("HGG", "DMG", "DHG",  "IHG", "PXA")))
+
+survival_cox <- fit_save_model(tp53_survival, 
+                                    terms = "tp53_score + reported_gender + broad_mol + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+broad_mol+binned_age.RDS"), 
                                     model_type = "multivariate")
 
-tp53_model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+molecular_subtype+binned_age.RDS"))
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+broad_mol+binned_age.RDS"))
 
-plotForest(tp53_model)
+plotForest(model)
 
 ```
 
-save the plot
+## calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
 
 ```{r}
-ggsave(file.path(analyses_dir, "plots", "HR_tp53.pdf"), 
-       width = 10, height = 6, units = "in",
-       device = "pdf")
+tp53_survival <- tp53_survival %>% 
+  mutate(mol_subtype_without_tp53 = factor(mol_subtype_without_tp53, 
+                                           levels = c("HGG, H3 wildtype", "DMG, H3 K28", "DHG, H3 G35", "HGG, To be classified", "HGG, IDH", "IHG", "PXA")))
+
+survival_cox <- fit_save_model(tp53_survival, 
+                                    terms = "tp53_score + reported_gender + mol_subtype_without_tp53 + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype_without_tp53+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype_without_tp53+binned_age.RDS"))
+
+plotForest(model)
+
 ```
+
 
 ## Take a look at two subtypes, `HGG, H3 WT` and `DGM, H3 K28`
 
@@ -302,6 +342,19 @@ ggsave(file.path(plots_dir, "HR_DGM_tp53.pdf"),
        device = "pdf")
 ```
 
+testing the interaction between DMG and tp53 score
+
+```{r}
+tp53_survival_cox <- fit_save_model(dgm_years, 
+                                    terms = "reported_gender + molecular_subtype * tp53_score + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+DGM_model <- read_rds(file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"))
+
+plotForest(DGM_model)
+
+```
 
 ### generate Kaplan–Meier plot for `DMG, H3 K28`
 
