@@ -174,7 +174,9 @@ rna <- readRDS(expFile)
 # subset hist for those in rna matrix
 hist_rna <- histology %>%
   filter(Kids_First_Biospecimen_ID %in% names(rna)) %>%
-  mutate(RNA_library = case_when(RNA_library == "poly-A stranded" ~ "poly-A-stranded",
+  ## add RNA-library as unknown for CPTAC samples
+  mutate(RNA_library = case_when(grepl("^C3", Kids_First_Biospecimen_ID) ~ "unknown", 
+                                 RNA_library == "poly-A stranded" ~ "poly-A-stranded",
                                  TRUE ~ as.character(RNA_library)))
 
 # prepare rna-seq files
