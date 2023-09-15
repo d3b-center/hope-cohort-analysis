@@ -17,9 +17,9 @@ hist_with_subtype <- hist %>%
   left_join(HGG_mol_subtype) %>%
   ## Change the molecular subtype of these seven samples with wrong pathology diagnosis and add Note
   ## 7316-1723, 7316-1746, 7316-194, 7316-212, 7316-2151, 7316-2857
-  mutate(molecular_subtype = case_when(sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212", "7316-2151", "7316-2857") ~ NA_character_, 
+  mutate(molecular_subtype = case_when(sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212", "7316-2857") ~ NA_character_, 
                                        TRUE ~ molecular_subtype), 
-         Notes = case_when(sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212", "7316-2151", "7316-2857") ~ "pending pathology review as non-HGG", 
+         Notes = case_when(sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212", "7316-2151", "7316-2857", "7316-4844") ~ "Final diagnoses updated based on genomic and pathology review", 
                           TRUE ~ NA_character_)) %>% 
   mutate(integrated_diagnosis = case_when(grepl("DMG, H3 K28", molecular_subtype) ~ "Diffuse midline glioma, H3 K28-mutant",
                                           grepl("DHG, H3 G35", molecular_subtype) ~ "Diffuse hemispheric glioma, H3 G35-mutant",
@@ -33,12 +33,20 @@ hist_with_subtype <- hist %>%
                                           grepl("IHG, MET-altered", molecular_subtype) ~ "Infant-type hemispheric glioma, MET-altered",
                                           molecular_subtype == "IHG, To be classified" ~ "Infant-type hemispheric glioma",
                                           molecular_subtype == "PXA" ~ "Pleomorphic xanthoastrocytoma",
+                                          sample_id == "7316-1723" ~ "CIC-rearranged sarcoma",
+                                          sample_id == "7316-1746" ~ "Primary intracranial sarcoma, DICER1-mutant",
+                                          sample_id == "7316-194" ~ "Rosette-forming glioneuronal tumor",
+                                          sample_id == "7316-2151" ~ "Neuroepithelial tumor with PATZ1 fusion",
+                                          sample_id == "7316-2857" ~ "CNS tumor with BCOR internal tandem duplication",
                                           TRUE~ NA_character_),
          broad_histology = case_when(molecular_subtype == "PXA" ~ "Pleomorphic xanthoastrocytoma", 
                                      grepl(paste(c("IHG", "HGG", "DHG", "DMG"), collapse = "|"), molecular_subtype) ~ "Diffuse astrocytic and oligodendroglial tumor", 
+                                     sample_id %in% c("7316-1723", "7316-1746") ~ "Mesenchymal non‐meningothelial tumors",
+                                     sample_id == "7316-194" ~ "Low-grade glial/glioneuronal tumors",
+                                     sample_id == "7316-2151" ~ "Diffuse astrocytic and oligodendroglial tumor",
+                                     sample_id == "7316-2857" ~ "Embryonal tumors",
                                      TRUE ~ NA_character_), 
-         short_histology = case_when(molecular_subtype == "PXA" ~ "LGAT", 
-                                     grepl(paste(c("IHG", "HGG", "DHG", "DMG"), collapse = "|"), molecular_subtype) ~ "HGAT", 
+         short_histology = case_when(grepl(paste(c("IHG", "HGG", "DHG", "DMG", "PXA"), collapse = "|"), molecular_subtype) ~ "HGAT", 
                                      TRUE ~ NA_character_)) %>% 
   mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>%
   select(colnames(.)[!grepl(paste(c("^HARMONY_", "^HOPE_"), collapse = "|"), colnames(.))], 
