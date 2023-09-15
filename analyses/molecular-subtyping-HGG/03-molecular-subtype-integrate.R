@@ -43,8 +43,8 @@ hist_with_subtype <- hist %>%
                                      grepl(paste(c("IHG", "HGG", "DHG", "DMG"), collapse = "|"), molecular_subtype) ~ "Diffuse astrocytic and oligodendroglial tumor", 
                                      sample_id %in% c("7316-1723", "7316-1746") ~ "Mesenchymal non‐meningothelial tumor",
                                      sample_id == "7316-194" ~ "Low-grade glial/glioneuronal tumors",
-                                     sample_id == "7316-2151" ~ "Diffuse astrocytic and oligodendroglial tumor",
-                                     sample_id == "7316-2857" ~ "Embryonal tumor",
+                                     sample_id == "7316-2151" ~ "High-grade neuroepithelial tumor",
+                                     sample_id == "7316-2857" ~ "High-grade neuroepithelial tumor",
                                      TRUE ~ NA_character_)) %>% 
   mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>%
   select(colnames(.)[!grepl(paste(c("^HARMONY_", "^HOPE_"), collapse = "|"), colnames(.))], 
