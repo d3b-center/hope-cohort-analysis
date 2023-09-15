@@ -192,13 +192,14 @@ pxa_sample_id <- hgg_meta %>%
                                               "anaplastic pleomorphic xanthoastrocytoma, who grade 3") |
   (dkfz_v12_methylation_subclass_score >= 0.8 &
     dkfz_v12_methylation_subclass == "PXA")) %>% 
-  pull(sample_id)
+  pull(sample_id) %>%
+  unique()
 
 pxa_df_biospecimen <- all_data_df %>% 
   filter(sample_id %in% pxa_sample_id) %>% 
   ## check if these sample has BRAF V600E mutation
   mutate(molecular_subtype = case_when(BRAF_V600E == "p.V600E" ~ "PXA", 
-                                       TRUE ~ "Susceptible PXA without BRAF mutation"))
+                                       TRUE ~ NA_character_))
 
 
 ```

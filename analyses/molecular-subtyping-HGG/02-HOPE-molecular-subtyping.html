@@ -533,13 +533,14 @@ ihg_df_biospecimen &lt;- all_data_df %&gt;%
                                               &quot;anaplastic pleomorphic xanthoastrocytoma, who grade 3&quot;) |
   (dkfz_v12_methylation_subclass_score &gt;= 0.8 &amp;
     dkfz_v12_methylation_subclass == &quot;PXA&quot;)) %&gt;% 
-  pull(sample_id)
+  pull(sample_id) %&gt;%
+  unique()
 
 pxa_df_biospecimen &lt;- all_data_df %&gt;% 
   filter(sample_id %in% pxa_sample_id) %&gt;% 
   ## check if these sample has BRAF V600E mutation
   mutate(molecular_subtype = case_when(BRAF_V600E == &quot;p.V600E&quot; ~ &quot;PXA&quot;, 
-                                       TRUE ~ &quot;Susceptible PXA without BRAF mutation&quot;))</code></pre>
+                                       TRUE ~ NA_character_))</code></pre>
 </div>
 <div id="join-all-table-together" class="section level2">
 <h2>Join all table together</h2>
@@ -552,15 +553,14 @@ pxa_df_biospecimen &lt;- all_data_df %&gt;%
 
 as.data.frame(table(molecular_subtype_table$molecular_subtype)) %&gt;%
   arrange(desc(Freq))</code></pre>
-<pre><code>##                                    Var1 Freq
-## 1                           DMG, H3 K28   22
-## 2                              HGG, IDH    7
-## 3                                   PXA    6
-## 4                           DHG, H3 G35    4
-## 5                     IHG, NTRK-altered    4
-## 6                     IHG, ROS1-altered    3
-## 7                      IHG, ALK-altered    1
-## 8 Susceptible PXA without BRAF mutation    1</code></pre>
+<pre><code>##                Var1 Freq
+## 1       DMG, H3 K28   22
+## 2          HGG, IDH    7
+## 3               PXA    6
+## 4       DHG, H3 G35    4
+## 5 IHG, NTRK-altered    4
+## 6 IHG, ROS1-altered    3
+## 7  IHG, ALK-altered    1</code></pre>
 <pre class="r"><code># which tumors were not yet subtyped?
 not_subtyped &lt;- setdiff(unique(all_data_df$sample_id), molecular_subtype_table$sample_id)
   
