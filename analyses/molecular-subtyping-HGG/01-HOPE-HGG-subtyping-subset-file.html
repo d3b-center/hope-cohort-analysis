@@ -356,13 +356,13 @@ display: none;
 
 
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching core tidyverse packages ────────────────────────────────────────── tidyverse 2.0.0 ──
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────────────────────────────────────────────────────────────── tidyverse 2.0.0 ──
 ## ✔ dplyr     1.1.1     ✔ readr     2.1.4
 ## ✔ forcats   1.0.0     ✔ stringr   1.5.0
 ## ✔ ggplot2   3.4.2     ✔ tibble    3.2.1
 ## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
 ## ✔ purrr     1.0.1     
-## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
@@ -389,7 +389,7 @@ if (!dir.exists(results_dir)) {
 <div id="load-histologies-files" class="section level2">
 <h2>load histologies files</h2>
 <pre><code>## Rows: 635 Columns: 94
-## ── Column specification ──────────────────────────────────────────────────────────────────────────
+## ── Column specification ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (56): Kids_First_Biospecimen_ID, sample_id, Kids_First_Participant_ID, e...
 ## dbl (29): aliquot_id, age_at_diagnosis_days, age_at_event_days, age_at_chemo...
@@ -518,7 +518,7 @@ cn_df &lt;- readr::read_rds(file.path(root_dir, &quot;data&quot;,
 <pre class="r"><code>gencode_cds_bed &lt;- readr::read_tsv(file.path(root_dir, &quot;scratch&quot;, &quot;gencode.v39.primary_assembly.annotation.bed&quot;),
                                    col_names = FALSE)</code></pre>
 <pre><code>## Rows: 840001 Columns: 10
-## ── Column specification ──────────────────────────────────────────────────────────────────────────
+## ── Column specification ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (7): X1, X4, X5, X6, X7, X8, X10
 ## dbl (3): X2, X3, X9
@@ -528,7 +528,7 @@ cn_df &lt;- readr::read_rds(file.path(root_dir, &quot;data&quot;,
 <pre class="r"><code>defining_lesions_df &lt;- readr::read_tsv(file.path(results_dir, &quot;Hope_HGG_defining_lesions.tsv&quot;)) %&gt;% 
   rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID)</code></pre>
 <pre><code>## Rows: 110 Columns: 10
-## ── Column specification ──────────────────────────────────────────────────────────────────────────
+## ── Column specification ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (9): Kids_First_Participant_ID, sample_id, Kids_First_Biospecimen_ID, H3...
 ## lgl (1): defining_lesion
@@ -654,7 +654,7 @@ coding_summary_df &lt;- snv_ranges_filter(maf_df = filtered_snv_df,
 <h2>fusion subsetting</h2>
 <pre class="r"><code>fusion_hgg &lt;- read_tsv(file.path(analyses_dir, &quot;input&quot;, &quot;fusion_summary_hgg_foi.tsv&quot;)) </code></pre>
 <pre><code>## Rows: 87 Columns: 36
-## ── Column specification ──────────────────────────────────────────────────────────────────────────
+## ── Column specification ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr  (1): Kids_First_Biospecimen_ID
 ## dbl (35): BCL11A--ALK, BRAF--BRAF, BRAF--WSB1, CCDC88A--ALK, CHD7--MYBL1, CL...
