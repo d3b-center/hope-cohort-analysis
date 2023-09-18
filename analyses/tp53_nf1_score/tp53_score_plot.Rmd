@@ -8,10 +8,12 @@ output: html_document
 ## load libraries
 
 ```{r libraries}
-library(tidyverse)
-library(survival)
-library(ggplot2)
-library(patchwork)
+suppressWarnings({
+  library(tidyverse)
+  library(survival)
+  library(ggplot2)
+  library(patchwork)
+})
 ```
 
 ## set directories adn source functions for plotting 
@@ -37,7 +39,7 @@ tp53_survival <- hist %>%
   ## remove seven samples with wrong HGG diagnosis
   filter(!sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212", "7316-2151", "7316-2857", "7316-4844")) %>%
   ## remove c3 samples as these sample does not have the tp53 score or harmonized clinical info
-  filter(!grepl("^C3", Kids_First_Biospecimen_ID)) %>%
+  mutate(!grepl("^C3", Kids_First_Biospecimen_ID)) %>%
   ## filter out normal samples as they do not have a molecular subtype
   filter(sample_type != "Normal") %>%
   left_join(tp53_score, by = "sample_id") %>%
@@ -53,6 +55,12 @@ tp53_survival <- hist %>%
   distinct()
 
 head(tp53_survival)
+
+GBM_survival <- hist %>% 
+  left_join(tp53_score, by = "sample_id") %>%
+  filter(grepl("^C3", Kids_First_Biospecimen_ID)) %>% 
+  select(HARMONY_Gender, HARMONY_age, tp53_score, Kids_First_Biospecimen_ID)
+  
 
 ```
 ### generate binned tp53 score and age and convert OS_days to OS_years for latter use
@@ -115,10 +123,19 @@ ggplot(tp53_survival, aes(x = binned_age, y = tp53_score, color = binned_age)) +
 ## The distribution of TP53 score between male and female 
 
 ```{r}
-ggplot(tp53_survival, aes(x = reported_gender, y = tp53_score)) + 
-  geom_boxplot() +
-  geom_jitter(width = 0.3, alpha = 0.5) + 
-  stat_compare_means(comparisons = list(c("Female", "Male")))
+p1 <- ggplot(tp53_survival, aes(x = reported_gender, y = tp53_score)) + 
+      geom_boxplot() +
+      geom_jitter(width = 0.3, alpha = 0.5) + 
+      stat_compare_means(comparisons = list(c("Female", "Male"))) + 
+      ggtitle(label = "HOPE cohort")
+
+p2 <- ggplot(GBM_survival, aes(x = HARMONY_Gender, y = tp53_score)) + 
+      geom_boxplot() +
+      geom_jitter(width = 0.3, alpha = 0.5) + 
+      stat_compare_means(comparisons = list(c("Female", "Male"))) + 
+      ggtitle(label = "CPTAC cohort")
+
+p1 + p2
 
 ```
 
@@ -154,11 +171,19 @@ table(tp53_survival$broad_mol)
 ```
 
 ```{r}
-p1 <- ggplot(tp53_survival, aes(x = broad_mol, y = tp53_score)) + 
+tp53_survival_filtered <- tp53_survival %>% 
+  filter(!is.na(tp53_score))
+
+p1 <- ggplot(tp53_survival_filtered, aes(x = broad_mol, y = tp53_score)) + 
   geom_boxplot() +
   geom_jitter(width = 0.3, alpha = 0.5) 
-p2 <- ggplot(tp53_survival, aes(x = mol_subtype_without_tp53, y = tp53_score)) + 
+
+p2 <- ggplot(tp53_survival_filtered, aes(x = factor(mol_subtype_without_tp53, 
+                                           levels = c("HGG, H3 wildtype", "HGG, IDH",
+                                                      "DMG, H3 K28", "DHG, H3 G35",  
+                                                      "IHG", "PXA")), y = tp53_score)) + 
   geom_boxplot() +
+  xlab("Molecular_subtype") +
   geom_jitter(width = 0.3, alpha = 0.5) 
 
 p1 / p2
