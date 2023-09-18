@@ -27,8 +27,8 @@ python 01-update_gene_symbols.py \
 ### phospho with motif data
 python 01-update_gene_symbols.py \
   -g input/hgnc_complete_set.txt \
-  -f output/hope_phosphosite_imputed_data_ischemia_removed_motif.tsv \
-  -o output/hope_phosphosite_imputed_data_ischemia_removed_motif_liftover.tsv.gz \
+  -f output/Hope_phosphosite_imputed_data_ischemia_removed_motif.tsv \
+  -o output/Hope_phosphosite_imputed_data_ischemia_removed_motif_liftover.tsv.gz \
   -u "ApprovedGeneSymbol" \
   --explode_records
   

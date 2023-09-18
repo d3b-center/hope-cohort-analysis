@@ -26,7 +26,7 @@ whole_cell_id <- data.frame(sample_id = colnames(whole_cell_protein)[-c(1:3)]) %
 col_mapping <- setNames(whole_cell_id$Kids_First_Biospecimen_ID, whole_cell_id$sample_id)
 
 ## assign bs_id to whole cell proteomic matrix
-colnames(whole_cell_protein) <- c("ApprovedGeneSymbol", "OldSymbol", "coding_gene", 
+colnames(whole_cell_protein) <- c(colnames(whole_cell_protein)[1:3], 
                                   col_mapping[colnames(whole_cell_protein)[-c(1:3)]])
 
 ## save the file
