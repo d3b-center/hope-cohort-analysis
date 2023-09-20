@@ -1,0 +1,235 @@
+---
+title: "tp53_score_plot_summary"
+author: "Zhuangzhuang Geng"
+date: "2023-09-19"
+output: html_document
+---
+
+## load libraries
+
+```{r libraries}
+suppressWarnings({
+  library(tidyverse)
+  library(survival)
+  library(ggplot2)
+  library(patchwork)
+  library(ggpubr)
+})
+```
+
+## set directories adn source functions for plotting 
+
+```{r}
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+analyses_dir <- file.path(root_dir, "analyses", "tp53_nf1_score")
+plots_dir <- file.path(analyses_dir, "plots")
+
+## source this script for plotting
+source(file.path(analyses_dir, "util", "theme_for_plot.R"))
+```
+
+## load files and modify the hist and tp53 score
+
+```{r}
+hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies.tsv"))
+tp53_score <- readr::read_tsv(file.path(analyses_dir, "results", "tp53_altered_status.tsv"))
+
+hist <- hist %>% 
+  ## molecular subtype as NA
+  filter(!sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212")) %>%
+  mutate(broad_mol = case_when(grepl(",", molecular_subtype) ~ substr(molecular_subtype, 1, regexpr(",", molecular_subtype) - 1), 
+                               TRUE ~ molecular_subtype), 
+         mol_subtype_without_tp53 = case_when(grepl("IHG", molecular_subtype) ~ "IHG", 
+                               TRUE ~ gsub(", TP53", "", molecular_subtype)))
+
+
+tp53_score <- tp53_score %>%
+  mutate(binned_tp53 = case_when(tp53_score >= 0 & tp53_score < 0.25 ~ "1 quantile", 
+                                 tp53_score >= 0.25 & tp53_score < 0.5 ~ "2 quantile", 
+                                 tp53_score >= 0.5 & tp53_score < 0.75 ~ "3 quantile", 
+                                 tp53_score >= 0.75 & tp53_score <= 1 ~ "4 quantile", 
+                                 TRUE ~ "no tp53 score"))
+
+
+```
+
+
+```{r}
+## extract HGG samples and combine histologies, tp53_score table, molecular_subtypes together
+HGG_survival <- hist %>%
+  left_join(tp53_score, by = "sample_id") %>%
+  ## filter out normal samples as they do not have a molecular subtype
+  filter(sample_type != "Normal") %>%
+  ## remove CPTAC samples 
+  filter(!grepl("^C3", sample_id)) %>%
+  ## generate a column for age_at_diagnosis_years
+  mutate(age_at_diagnosis_year = as.integer(age_at_diagnosis_days/365.25)) %>%
+  ## change NA in molecular_subtype and reported gender to "not reported"
+  mutate(molecular_subtype = replace_na(molecular_subtype, "Not reported")) %>%
+  mutate(reported_gender = replace_na(reported_gender, "not reported")) %>%
+  select(sample_id, tp53_score, tp53_altered, 
+         OS_days, OS_status, EFS_days, EFS_event_type, 
+         reported_gender, race, age_at_diagnosis_days, 
+         age_at_diagnosis_year, molecular_subtype, 
+         binned_tp53, broad_mol, mol_subtype_without_tp53) %>% 
+  mutate(binned_age = case_when(age_at_diagnosis_year >= 0 & 
+                                  age_at_diagnosis_year <= 15 ~ "[0,15]", 
+                                age_at_diagnosis_year > 15 & 
+                                  age_at_diagnosis_year <= 26 ~ "(15,26]", 
+                                age_at_diagnosis_year > 26 & 
+                                  age_at_diagnosis_year <= 40 ~ "(26,40]",
+                                age_at_diagnosis_year > 40 & 
+                                  age_at_diagnosis_year <= 60 ~ "(40,62]", 
+                                TRUE ~ "not reported")) %>%
+  distinct() %>% 
+  write_tsv(file.path(file.path(analyses_dir, "results", "HGG_survial_tp53.tsv")))
+
+## GBM samples
+GBM_df <- hist %>%
+    filter(grepl("^C3", sample_id)) %>%
+    left_join(tp53_score, by = "sample_id") %>%
+    ## transfer CPTAC samples age to column age_at_diagnosis_days
+    mutate(age_at_diagnosis_days = (HARMONY_age * 365.25),
+           age_at_diagnosis_year = HARMONY_age, 
+           reported_gender = HARMONY_Gender, 
+           molecular_subtype = "GBM", 
+           binned_age = HARMONY_age_class_derived, 
+           broad_mol = "GBM", 
+           mol_subtype_without_tp53 = "GBM") %>% 
+    select(sample_id, tp53_score, tp53_altered, 
+         OS_days, OS_status, EFS_days, EFS_event_type, 
+         reported_gender, race, age_at_diagnosis_days, age_at_diagnosis_year,
+         molecular_subtype, binned_age, binned_tp53, broad_mol, mol_subtype_without_tp53) %>% 
+    mutate(binned_age = case_when(age_at_diagnosis_year > 62 ~ ">62", TRUE ~ binned_age)) %>%
+    distinct() %>% 
+    write_tsv(file.path(file.path(analyses_dir, "results", "GBM_survial_tp53.tsv")))
+
+combined <- bind_rows(GBM_df, HGG_survival)
+
+```
+## test if there is a correlation between age and tp53 score
+
+```{r}
+## function to print the formula of linear regression 
+lm_eqn <- function(df, x, y){
+    m <- lm(y ~ x, df);
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+         list(a = format(unname(coef(m)[1]), digits = 2),
+              b = format(unname(coef(m)[2]), digits = 2),
+             r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));
+}
+
+ggplot(combined, aes(x = age_at_diagnosis_days, y = tp53_score)) + 
+  geom_smooth(method = "lm") + 
+  geom_point() + 
+  geom_text(y = 0.05, x = 20000, 
+            label = lm_eqn(combined, x= combined$age_at_diagnosis_days, y = combined$tp53_score), 
+            parse = TRUE)
+```
+
+## The distribution of TP53 score between age range and tp53 score 
+
+```{r}
+group_summary <- combined %>%
+  group_by(binned_age) %>%
+  summarize(count = n())
+
+# Filter the groups with at least 3 samples
+combined_filtered <- combined %>%
+  filter(binned_age %in% group_summary$binned_age[group_summary$count >= 3])
+
+ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "(40,62]", ">62", "not reported")), y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) + 
+  stat_compare_means(comparisons = list(c("[0,15]", "(15,26]"), c("[0,15]", "(26,40]"), c("[0,15]", "(40,62]"), c("[0,15]", ">62"))) + 
+  xlab("") + 
+  theme_Publication()
+
+```
+
+```{r}
+p1 <- ggplot(combined, aes(x = reported_gender, y = tp53_score)) + 
+      geom_boxplot() +
+      geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) + 
+      stat_compare_means(comparisons = list(c("Female", "Male"))) + 
+      ggtitle(label = "All samples") + 
+      xlab("") + 
+      theme_Publication()
+
+p2 <- ggplot(HGG_survival, aes(x = reported_gender, y = tp53_score)) + 
+      geom_boxplot() +
+      geom_jitter(width = 0.3, alpha = 0.5) + 
+      stat_compare_means(comparisons = list(c("Female", "Male"))) + 
+      ggtitle(label = "HOPE cohort") + 
+      xlab("") + 
+      theme_Publication()
+
+p3 <- ggplot(GBM_df, aes(x = reported_gender, y = tp53_score)) + 
+      geom_boxplot() +
+      geom_jitter(width = 0.3, alpha = 0.5) + 
+      stat_compare_means(comparisons = list(c("Female", "Male"))) + 
+      ggtitle(label = "GBM") + 
+      xlab("") + 
+      theme_Publication()
+
+p1 + p2 + p3
+
+```
+
+
+## The distribution of TP53 score among different races 
+
+```{r}
+group_summary <- HGG_survival %>%
+  group_by(race) %>%
+  summarize(count = n())
+
+# Filter the groups with at least 3 samples
+HGG_filtered <- HGG_survival %>%
+  filter(race %in% group_summary$race[group_summary$count >= 3])
+
+p1 <- HGG_filtered %>% 
+  mutate(race = fct_reorder(race, -tp53_score, .fun='median' )) %>%
+  ggplot(aes(x = race, y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(width = 0.3, alpha = 0.5) + 
+  xlab("") +
+  stat_compare_means(comparisons = list(c("Asian", "Reported Unknown"), c("Asian", "Black or African American"), c("Asian", "White"), c("Asian", "Other"))) +
+  theme_Publication() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+p1
+```
+
+```{r}
+combined_filtered <- combined %>% 
+  filter(!is.na(tp53_score)) 
+
+p1 <- combined_filtered %>% 
+  mutate(broad_mol = fct_reorder(broad_mol, -tp53_score, .fun='median')) %>%
+  ggplot(aes(x = broad_mol, y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
+  xlab("") + 
+  theme_Publication()
+
+p2 <- combined_filtered %>% 
+  mutate(mol_subtype_without_tp53 = fct_reorder(mol_subtype_without_tp53, -tp53_score, .fun='median')) %>%
+  ggplot(aes(x = mol_subtype_without_tp53, y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
+  xlab("") + 
+  theme_Publication() +   
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+
+p1 / p2
+
+
+```
+
+```{r}
+
+sessionInfo()
+```
