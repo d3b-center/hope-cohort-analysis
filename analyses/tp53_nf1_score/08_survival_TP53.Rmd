@@ -1,0 +1,231 @@
+---
+title: "tp53_survival_analysis"
+author: "Zhuangzhuang Geng"
+date: "2023-09-20"
+output: html_document
+---
+
+
+## load libraries
+
+```{r libraries}
+suppressWarnings({
+  library(tidyverse)
+  library(survival)
+  library(ggplot2)
+  library(patchwork)
+})
+```
+
+## set directories adn source functions for plotting 
+
+```{r}
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+analyses_dir <- file.path(root_dir, "analyses", "tp53_nf1_score")
+results_dir <- file.path(analyses_dir, "results")
+plots_dir <- file.path(analyses_dir, "plots")
+
+## source this script for plotting
+source(file.path(analyses_dir, "util", "survival_models.R"))
+```
+
+```{r}
+HGG_survival <- read_tsv(file.path(results_dir, "HGG_survial_tp53.tsv"))
+
+HGG_survival <- HGG_survival %>%
+  mutate(OS_years = (OS_days / 365.25), 
+         binned_tp53 = replace_na(binned_tp53, "no tp53 score"), 
+         plot_mol_subtype = case_when(grepl("IHG", molecular_subtype) ~ "IHG", 
+                                      TRUE ~ molecular_subtype))
+
+```
+
+## plot the Kaplan–Meier survival curve on 
+## broad_mol, mol_subtype_without_tp53, gender, binned age and binned tp53 score
+
+```{r}
+var <- c("reported_gender", "binned_age", "binned_tp53", "broad_mol", "mol_subtype_without_tp53", "race")
+
+for(i in var){
+  
+  kap_OS <- survival_analysis(
+  metadata = HGG_survival, 
+  ind_var = i,
+  test = "kap.meier",
+  metadata_sample_col = "sample_id",
+  days_col = "OS_days",
+  status_col = "OS_status"
+  )
+print(i)
+  plot <- plotKM(model = kap_OS, 
+       variable = i, 
+       combined = FALSE, 
+       title = i)
+
+  if(i == "race"){
+    ggsave(file.path(plots_dir, paste0("KM_", i, ".pdf")), plot, 
+       width = 16, height = 6, units = "in", 
+       device = "pdf")
+  }else{
+    ggsave(file.path(plots_dir, paste0("KM_", i, ".pdf")), plot, 
+       width = 10, height = 6, units = "in", 
+       device = "pdf")
+  }
+  
+}
+
+```
+
+##
+
+```{r}
+
+HGG_survival <- HGG_survival %>% 
+  mutate(plot_mol_subtype = factor(plot_mol_subtype, levels = c("HGG, H3 wildtype", "HGG, H3 wildtype, TP53", "HGG, IDH", "HGG, IDH, TP53", "HGG, To be classified", "DMG, H3 K28", "DMG, H3 K28, TP53", "DHG, H3 G35, TP53", "IHG", "PXA")))
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "tp53_score + reported_gender + plot_mol_subtype + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype+binned_age.RDS"))
+
+plotForest(model)
+
+```
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_molecular_subtype.png"), width = 10, height = 6)
+
+```
+
+## calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
+
+```{r}
+HGG_survival <- HGG_survival %>% 
+  mutate(broad_mol = factor(broad_mol, levels = c("HGG", "DMG", "DHG",  "IHG", "PXA")), 
+         binned_age = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "not reported")))
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "tp53_score + reported_gender + broad_mol + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+broad_mol+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+broad_mol+binned_age.RDS"))
+
+plotForest(model)
+
+```
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_broad_mol_subtype.png"), width = 10, height = 6)
+
+```
+
+## calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
+
+```{r}
+HGG_survival <- HGG_survival %>% 
+  mutate(mol_subtype_without_tp53 = factor(mol_subtype_without_tp53, 
+                                           levels = c("HGG, H3 wildtype", "DMG, H3 K28", "DHG, H3 G35", "HGG, To be classified", "HGG, IDH", "IHG", "PXA")))
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "tp53_score + reported_gender + mol_subtype_without_tp53 + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype_without_tp53+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype_without_tp53+binned_age.RDS"))
+
+plotForest(model)
+
+```
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_mol_subtype_without_tp53.png"), width = 10, height = 6)
+
+```
+
+
+## Take a look at two subtypes, `HGG, H3 WT` and `DGM, H3 K28`
+
+```{r}
+h3_wt <- HGG_survival %>% 
+  filter(grepl("HGG, H3 wildtype", molecular_subtype))
+
+dgm <- HGG_survival %>%
+  filter(grepl("DMG, H3 K28", molecular_subtype))
+
+```
+
+## calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age in `HGG, H3 WT` samples
+
+```{r}
+
+tp53_survival_cox <- fit_save_model(h3_wt, 
+                                    terms = "tp53_score + reported_gender + molecular_subtype + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "HGG_H3WT_score+reported_gender+molecular_subtype+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+HGG_H3WT_model <- read_rds(file.path(analyses_dir, "results", "HGG_H3WT_score+reported_gender+molecular_subtype+binned_age.RDS"))
+
+plotForest(HGG_H3WT_model)
+
+```
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_HGG_WT.png"), width = 10, height = 6)
+
+```
+
+
+## calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age in `DGM, H3 K28` samples
+
+```{r}
+
+tp53_survival_cox <- fit_save_model(dgm, 
+                                    terms = "tp53_score + reported_gender + molecular_subtype + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+DGM_model <- read_rds(file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype+binned_age.RDS"))
+
+plotForest(DGM_model)
+
+```
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_DGM.png"), width = 10, height = 6)
+
+```
+
+
+## testing the interaction between DMG and tp53 score
+
+```{r}
+tp53_survival_cox <- fit_save_model(dgm, 
+                                    terms = "reported_gender + molecular_subtype * tp53_score + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+DGM_model <- read_rds(file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"))
+
+plotForest(DGM_model)
+
+```
+
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_DGM_tp53_interaction.png"), width = 15, height = 6)
+
+```
+
+```{r}
+sessionInfo()
+
+```
