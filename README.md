@@ -4,6 +4,19 @@ Module authors: [Komal S. Rathi](https://github.com/komalsrathi/),
                 [Zhuangzhuang Geng](https://github.com/zzgeng),
                 [Jo Lynne Rokita](https://github.com/jharenza)
 
+## Clone the repository
+
+To clone the repository, run:
+```
+git clone git@github.com:d3b-center/hope-cohort-analysis.git
+```
+
+## Download the data
+
+To download the current data release:
+```
+bash download_data.sh
+```
 
 ## Run the script on docker
 
@@ -15,8 +28,13 @@ docker pull pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:latest
 To run the docker, run the command line below. For mac M1 user, add `--platform=linux/arm64`.
 ```
 docker run -d -e PASSWORD=pass -p 8787:8787 --name <CONTAINER_NAME> -v $PWD:/home/rstudio/HOPE pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:latest
-
 ```
+
+## Navigate to the repository root
+```
+cd /home/rstudio/d3b_hope_analysis
+```
+
 
 ## Modules
 
