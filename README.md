@@ -27,12 +27,12 @@ docker pull pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:latest
 
 To run the docker, run the command line below. For mac M1 user, add `--platform=linux/arm64`.
 ```
-docker run -d -e PASSWORD=pass -p 8787:8787 --name <CONTAINER_NAME> -v $PWD:/home/rstudio/HOPE pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:latest
+docker run -d -e PASSWORD=pass -p 8787:8787 --name <CONTAINER_NAME> -v $PWD:/home/rstudio/hope-cohort-analysis pgc-images.sbgenomics.com/zhuangzhuanggeng/d3b_hope_analysis:latest
 ```
 
 ## Navigate to the repository root
 ```
-cd /home/rstudio/d3b_hope_analysis
+cd /home/rstudio/hope-cohort-analysis
 ```
 
 
