@@ -13,23 +13,20 @@ python 01-update_gene_symbols.py \
   -g input/hgnc_complete_set.txt \
   -f output/Hope_proteome_imputed_data.tsv \
   -o output/Hope_proteome_imputed_data_liftover.tsv.gz \
-  -u "ApprovedGeneSymbol" \
-  --explode_records
+  -u "ApprovedGeneSymbol"
   
 ### phospho data
 python 01-update_gene_symbols.py \
   -g input/hgnc_complete_set.txt \
   -f output/Hope_phosphosite_imputed_data_ischemia_removed.tsv \
   -o output/Hope_phosphosite_imputed_data_ischemia_removed_liftover.tsv.gz \
-  -u "ApprovedGeneSymbol" \
-  --explode_records
+  -u "ApprovedGeneSymbol" 
 
 ### phospho with motif data
 python 01-update_gene_symbols.py \
   -g input/hgnc_complete_set.txt \
   -f output/Hope_phosphosite_imputed_data_ischemia_removed_motif.tsv \
   -o output/Hope_phosphosite_imputed_data_ischemia_removed_motif_liftover.tsv.gz \
-  -u "ApprovedGeneSymbol" \
-  --explode_records
+  -u "ApprovedGeneSymbol" 
   
   
