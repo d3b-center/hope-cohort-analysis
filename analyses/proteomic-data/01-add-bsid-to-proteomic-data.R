@@ -29,6 +29,10 @@ col_mapping <- setNames(whole_cell_id$Kids_First_Biospecimen_ID, whole_cell_id$s
 colnames(whole_cell_protein) <- c(colnames(whole_cell_protein)[1:3], 
                                   col_mapping[colnames(whole_cell_protein)[-c(1:3)]])
 
+## remove OldSymbol column
+whole_cell_protein <- whole_cell_protein %>% 
+  select(-OldSymbol)
+
 ## save the file
 write_tsv(whole_cell_protein, file.path(output_dir, "Hope_proteome_imputed_data.tsv"))
 
@@ -46,6 +50,10 @@ col_mapping <- setNames(pho_id$Kids_First_Biospecimen_ID, pho_id$sample_id)
 ## assign bs_id to whole cell proteomic matrix
 colnames(pho) <- c(colnames(pho)[1:8], 
                    col_mapping[colnames(pho)[-c(1:8)]])
+
+## remove OldSymbol column
+pho <- pho %>% 
+  select(-OldSymbol)
 
 ## save the file
 write_tsv(pho, file.path(output_dir, "Hope_phosphosite_imputed_data_ischemia_removed.tsv"))
@@ -70,6 +78,10 @@ col_mapping <- setNames(pho_motif_id$Kids_First_Biospecimen_ID, pho_motif_id$sam
 ## assign bs_id to whole cell proteomic matrix
 colnames(pho_motif) <- c(colnames(pho_motif)[1:10], 
                    col_mapping[colnames(pho_motif)[-c(1:10)]])
+
+## remove OldSymbol column
+pho_motif <- pho_motif %>% 
+  select(-OldSymbol)
 
 ## save the file
 write_tsv(pho_motif, file.path(output_dir, "Hope_phosphosite_imputed_data_ischemia_removed_motif.tsv"))
