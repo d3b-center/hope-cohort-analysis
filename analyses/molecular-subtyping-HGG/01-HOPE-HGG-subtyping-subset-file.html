@@ -492,15 +492,21 @@ snv_lesions_df &lt;- hist %&gt;%
 
 cn_df &lt;- readr::read_rds(file.path(root_dir, &quot;data&quot;, 
                                    &quot;Hope-cnv-controlfreec.rds&quot;)) %&gt;%
-  bind_rows(cn_tumor_only_df) %&gt;% 
+  bind_rows(cn_tumor_only_df) 
+
+cn_status_df &lt;- cn_df %&gt;% 
+    dplyr::filter(gene_symbol %in% c(&quot;PDGFRA&quot;, &quot;PTEN&quot;, &quot;MYCN&quot;, &quot;EGFR&quot;)) %&gt;% 
   select(gene_symbol,
          Kids_First_Biospecimen_ID,
          status) %&gt;% 
-  dplyr::filter(gene_symbol %in% c(&quot;PDGFRA&quot;, &quot;PTEN&quot;, &quot;MYCN&quot;, &quot;EGFR&quot;)) %&gt;%
-  # Since in Hope, there are only PDGFRA, PTEN and EGFR cnv 
-  mutate(EGFR_focal_status = case_when(gene_symbol == &quot;EGFR&quot; ~ status), 
-         PTEN_focal_status = case_when(gene_symbol == &quot;PTEN&quot; ~ status), 
-         PDGFRA_focal_status = case_when(gene_symbol == &quot;PDGFRA&quot; ~ status)) %&gt;%
+  distinct() %&gt;%
+  group_by(Kids_First_Biospecimen_ID, gene_symbol) %&gt;%
+  summarise(full_status = paste(status, collapse = &quot;, &quot;)) %&gt;% 
+  spread(gene_symbol, full_status) %&gt;%
+  dplyr::rename(EGFR_focal_status = EGFR, 
+                PTEN_focal_status = PTEN, 
+                PDGFRA_focal_status = PDGFRA,
+                MYCN_focal_status = MYCN) %&gt;%
   full_join(hist, by = c(&quot;Kids_First_Biospecimen_ID&quot; = &quot;Kids_First_Biospecimen_ID&quot;)) %&gt;%
   filter(experimental_strategy == &quot;WGS&quot;) %&gt;%
   select(sample_id,
@@ -508,10 +514,13 @@ cn_df &lt;- readr::read_rds(file.path(root_dir, &quot;data&quot;,
          Kids_First_Participant_ID,
          EGFR_focal_status,
          PTEN_focal_status, 
-         PDGFRA_focal_status) %&gt;%
-  replace(is.na(.), &quot;neutral&quot;) %&gt;%
+         PDGFRA_focal_status, 
+         MYCN_focal_status) %&gt;%
+  replace(is.na(.), &quot;Neutral&quot;) %&gt;%
   distinct() %&gt;% 
   write_tsv(file.path(results_dir, &quot;HGG_cleaned_cnv.tsv&quot;))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;Kids_First_Biospecimen_ID&#39;. You can
+## override using the `.groups` argument.</code></pre>
 </div>
 <div id="mutations" class="section level2">
 <h2>mutations</h2>
