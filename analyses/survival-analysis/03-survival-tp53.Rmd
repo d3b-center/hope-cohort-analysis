@@ -17,20 +17,23 @@ suppressWarnings({
 })
 ```
 
-## set directories adn source functions for plotting 
+## set directories and source functions for plotting 
 
 ```{r}
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-analyses_dir <- file.path(root_dir, "analyses", "tp53_nf1_score")
-results_dir <- file.path(analyses_dir, "results")
+analyses_dir <- file.path(root_dir, "analyses", "survival-analysis")
+input_dir <- file.path(analyses_dir, "input")
 plots_dir <- file.path(analyses_dir, "plots")
 
 ## source this script for plotting
-source(file.path(analyses_dir, "util", "survival_models.R"))
+source(file.path(analyses_dir, "utils", "survival_models.R"))
 ```
 
+### read in file and
+### transfomr OS_days to OS_years
+
 ```{r}
-HGG_survival <- read_tsv(file.path(results_dir, "HGG_survial_tp53.tsv"))
+HGG_survival <- read_tsv(file.path(input_dir, "HGG_survial_tp53.tsv"))
 
 HGG_survival <- HGG_survival %>%
   mutate(OS_years = (OS_days / 365.25), 
@@ -41,7 +44,7 @@ HGG_survival <- HGG_survival %>%
 ```
 
 ## plot the Kaplan–Meier survival curve on 
-## broad_mol, mol_subtype_without_tp53, gender, binned age and binned tp53 score
+## broad_mol, mol_subtype_without_tp53, gender, binned age, race and binned_tp53 score
 
 ```{r}
 var <- c("reported_gender", "binned_age", "binned_tp53", "broad_mol", "mol_subtype_without_tp53", "race")
@@ -76,12 +79,15 @@ print(i)
 
 ```
 
-##
+### Add a new column `plot_mol_subtype` by combining all IHG subtypes as `IHG` from `molecular_subtype` column and 
+### manually set `HGG, H3 wildtype` and `[0,15]` as controls and
+### plot forest plot with tp53_score, reported_gender, plot_mol_subtype, and binned_age
 
 ```{r}
 
 HGG_survival <- HGG_survival %>% 
-  mutate(plot_mol_subtype = factor(plot_mol_subtype, levels = c("HGG, H3 wildtype", "HGG, H3 wildtype, TP53", "HGG, IDH", "HGG, IDH, TP53", "HGG, To be classified", "DMG, H3 K28", "DMG, H3 K28, TP53", "DHG, H3 G35, TP53", "IHG", "PXA")))
+  mutate(plot_mol_subtype = factor(plot_mol_subtype, levels = c("HGG, H3 wildtype", "HGG, H3 wildtype, TP53", "HGG, IDH", "HGG, IDH, TP53", "HGG, To be classified", "DMG, H3 K28", "DMG, H3 K28, TP53", "DHG, H3 G35, TP53", "IHG", "PXA")),
+         binned_age = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "not reported")))
 
 survival_cox <- fit_save_model(HGG_survival, 
                                     terms = "tp53_score + reported_gender + plot_mol_subtype + binned_age", 
@@ -94,18 +100,20 @@ plotForest(model)
 
 ```
 
+### save plot
+
 ```{r}
 
 ggsave(file.path(plots_dir, "HR_molecular_subtype.png"), width = 10, height = 6)
 
 ```
 
-## calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
+### Set HGG and [0,15] as control and  
+### calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
 
 ```{r}
 HGG_survival <- HGG_survival %>% 
-  mutate(broad_mol = factor(broad_mol, levels = c("HGG", "DMG", "DHG",  "IHG", "PXA")), 
-         binned_age = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "not reported")))
+  mutate(broad_mol = factor(broad_mol, levels = c("HGG", "DMG", "DHG",  "IHG", "PXA")))
 
 survival_cox <- fit_save_model(HGG_survival, 
                                     terms = "tp53_score + reported_gender + broad_mol + binned_age", 
@@ -117,6 +125,8 @@ model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender
 plotForest(model)
 
 ```
+
+### save the plot
 
 ```{r}
 
@@ -142,6 +152,8 @@ plotForest(model)
 
 ```
 
+### save the plot
+
 ```{r}
 
 ggsave(file.path(plots_dir, "HR_mol_subtype_without_tp53.png"), width = 10, height = 6)
@@ -149,13 +161,13 @@ ggsave(file.path(plots_dir, "HR_mol_subtype_without_tp53.png"), width = 10, heig
 ```
 
 
-## Take a look at two subtypes, `HGG, H3 WT` and `DGM, H3 K28`
+## Take a look at two subtypes, `HGG, H3 WT` and `DMG, H3 K28`
 
 ```{r}
 h3_wt <- HGG_survival %>% 
   filter(grepl("HGG, H3 wildtype", molecular_subtype))
 
-dgm <- HGG_survival %>%
+DMG <- HGG_survival %>%
   filter(grepl("DMG, H3 K28", molecular_subtype))
 
 ```
@@ -175,6 +187,8 @@ plotForest(HGG_H3WT_model)
 
 ```
 
+### save the plot
+
 ```{r}
 
 ggsave(file.path(plots_dir, "HR_HGG_WT.png"), width = 10, height = 6)
@@ -182,24 +196,26 @@ ggsave(file.path(plots_dir, "HR_HGG_WT.png"), width = 10, height = 6)
 ```
 
 
-## calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age in `DGM, H3 K28` samples
+## calculate hazard ratio using tp53_score as continuous variant, reported gender, molecular_subtype and binned_age in `DMG, H3 K28` samples
 
 ```{r}
 
-tp53_survival_cox <- fit_save_model(dgm, 
+tp53_survival_cox <- fit_save_model(DMG, 
                                     terms = "tp53_score + reported_gender + molecular_subtype + binned_age", 
-                                    output_file = file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype+binned_age.RDS"), 
+                                    output_file = file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype+binned_age.RDS"), 
                                     model_type = "multivariate")
 
-DGM_model <- read_rds(file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype+binned_age.RDS"))
+DMG_model <- read_rds(file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype+binned_age.RDS"))
 
-plotForest(DGM_model)
+plotForest(DMG_model)
 
 ```
 
+### save the plot
+
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_DGM.png"), width = 10, height = 6)
+ggsave(file.path(plots_dir, "HR_DMG.png"), width = 10, height = 6)
 
 ```
 
@@ -207,21 +223,22 @@ ggsave(file.path(plots_dir, "HR_DGM.png"), width = 10, height = 6)
 ## testing the interaction between DMG and tp53 score
 
 ```{r}
-tp53_survival_cox <- fit_save_model(dgm, 
+tp53_survival_cox <- fit_save_model(DMG, 
                                     terms = "reported_gender + molecular_subtype * tp53_score + binned_age", 
-                                    output_file = file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"), 
+                                    output_file = file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"), 
                                     model_type = "multivariate")
 
-DGM_model <- read_rds(file.path(analyses_dir, "results", "DGM_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"))
+DMG_model <- read_rds(file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"))
 
-plotForest(DGM_model)
+plotForest(DMG_model)
 
 ```
 
+### save the plot
 
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_DGM_tp53_interaction.png"), width = 15, height = 6)
+ggsave(file.path(plots_dir, "HR_DMG_tp53_interaction.png"), width = 15, height = 6)
 
 ```
 
