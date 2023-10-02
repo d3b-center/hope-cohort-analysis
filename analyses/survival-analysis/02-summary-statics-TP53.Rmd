@@ -21,18 +21,22 @@ suppressWarnings({
 
 ```{r}
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-analyses_dir <- file.path(root_dir, "analyses", "tp53_nf1_score")
+analyses_dir <- file.path(root_dir, "analyses", "survival-analysis")
 plots_dir <- file.path(analyses_dir, "plots")
 
+if(!dir.exists(plots_dir)){
+  dir.create(plots_dir)
+}
+
 ## source this script for plotting
-source(file.path(analyses_dir, "util", "theme_for_plot.R"))
+source(file.path(analyses_dir, "utils", "theme_for_plot.R"))
 ```
 
 ## load files and modify the hist and tp53 score
 
 ```{r}
 hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies.tsv"))
-tp53_score <- readr::read_tsv(file.path(analyses_dir, "results", "tp53_altered_status.tsv"))
+tp53_score <- readr::read_tsv(file.path(root_dir, "analyses", "tp53_nf1_score", "results", "tp53_altered_status.tsv"))
 
 hist <- hist %>% 
   ## molecular subtype as NA
@@ -82,7 +86,7 @@ HGG_survival <- hist %>%
                                   age_at_diagnosis_year <= 60 ~ "(40,62]", 
                                 TRUE ~ "not reported")) %>%
   distinct() %>% 
-  write_tsv(file.path(file.path(analyses_dir, "results", "HGG_survial_tp53.tsv")))
+  write_tsv(file.path(file.path(analyses_dir, "input", "HGG_survial_tp53.tsv")))
 
 ## GBM samples
 GBM_df <- hist %>%
@@ -102,7 +106,7 @@ GBM_df <- hist %>%
          molecular_subtype, binned_age, binned_tp53, broad_mol, mol_subtype_without_tp53) %>% 
     mutate(binned_age = case_when(age_at_diagnosis_year > 62 ~ ">62", TRUE ~ binned_age)) %>%
     distinct() %>% 
-    write_tsv(file.path(file.path(analyses_dir, "results", "GBM_survial_tp53.tsv")))
+    write_tsv(file.path(file.path(analyses_dir, "input", "GBM_survial_tp53.tsv")))
 
 combined <- bind_rows(GBM_df, HGG_survival)
 
