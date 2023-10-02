@@ -21,18 +21,22 @@ suppressWarnings({
 
 ```{r}
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-analyses_dir <- file.path(root_dir, "analyses", "tp53_nf1_score")
+analyses_dir <- file.path(root_dir, "analyses", "survival-analysis")
 plots_dir <- file.path(analyses_dir, "plots")
 
+if(!dir.exists(plots_dir)){
+  dir.create(plots_dir)
+}
+
 ## source this script for plotting
-source(file.path(analyses_dir, "util", "theme_for_plot.R"))
+source(file.path(analyses_dir, "utils", "theme_for_plot.R"))
 ```
 
 ## load files and modify the hist and tp53 score
 
 ```{r}
 hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies.tsv"))
-tp53_score <- readr::read_tsv(file.path(analyses_dir, "results", "tp53_altered_status.tsv"))
+tp53_score <- readr::read_tsv(file.path(root_dir, "analyses", "tp53_nf1_score", "results", "tp53_altered_status.tsv"))
 
 hist <- hist %>% 
   ## molecular subtype as NA
@@ -82,7 +86,7 @@ HGG_survival <- hist %>%
                                   age_at_diagnosis_year <= 60 ~ "(40,62]", 
                                 TRUE ~ "not reported")) %>%
   distinct() %>% 
-  write_tsv(file.path(file.path(analyses_dir, "results", "HGG_survial_tp53.tsv")))
+  write_tsv(file.path(file.path(analyses_dir, "input", "HGG_survial_tp53.tsv")))
 
 ## GBM samples
 GBM_df <- hist %>%
@@ -102,7 +106,7 @@ GBM_df <- hist %>%
          molecular_subtype, binned_age, binned_tp53, broad_mol, mol_subtype_without_tp53) %>% 
     mutate(binned_age = case_when(age_at_diagnosis_year > 62 ~ ">62", TRUE ~ binned_age)) %>%
     distinct() %>% 
-    write_tsv(file.path(file.path(analyses_dir, "results", "GBM_survial_tp53.tsv")))
+    write_tsv(file.path(file.path(analyses_dir, "input", "GBM_survial_tp53.tsv")))
 
 combined <- bind_rows(GBM_df, HGG_survival)
 
@@ -147,6 +151,12 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
   theme_Publication()
 
 ```
+## save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age.png"))
+
+```
 
 ```{r}
 p1 <- ggplot(combined, aes(x = reported_gender, y = tp53_score)) + 
@@ -177,6 +187,13 @@ p1 + p2 + p3
 
 ```
 
+## save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "boxplot_tp53_score_gender.png"), height = 6, width = 12)
+
+```
+
 
 ## The distribution of TP53 score among different races 
 
@@ -202,6 +219,15 @@ p1 <- HGG_filtered %>%
 p1
 ```
 
+### save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "boxplot_tp53_score_race.png"))
+
+```
+
+### tp53 score distribution about different molecular subtypes 
+
 ```{r}
 combined_filtered <- combined %>% 
   filter(!is.na(tp53_score)) 
@@ -209,16 +235,16 @@ combined_filtered <- combined %>%
 p1 <- combined_filtered %>% 
   mutate(broad_mol = fct_reorder(broad_mol, -tp53_score, .fun='median')) %>%
   ggplot(aes(x = broad_mol, y = tp53_score)) + 
-  geom_boxplot() +
   geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
+  geom_boxplot() +
   xlab("") + 
   theme_Publication()
 
 p2 <- combined_filtered %>% 
   mutate(mol_subtype_without_tp53 = fct_reorder(mol_subtype_without_tp53, -tp53_score, .fun='median')) %>%
   ggplot(aes(x = mol_subtype_without_tp53, y = tp53_score)) + 
-  geom_boxplot() +
   geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
+  geom_boxplot() +
   xlab("") + 
   theme_Publication() +   
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
@@ -226,6 +252,13 @@ p2 <- combined_filtered %>%
 
 p1 / p2
 
+
+```
+
+## save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "boxplot_tp53_score_subtype.png"))
 
 ```
 
