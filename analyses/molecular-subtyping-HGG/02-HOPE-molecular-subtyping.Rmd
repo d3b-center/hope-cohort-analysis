@@ -123,6 +123,8 @@ all_data_df <-  all_data_df %>%
 h3_k28_df_biospecimen <- all_data_df %>%
   filter(`H3F3A_H3-3A.K28M` == "Yes" | HIST1H3B_H3C2.K28M == "Yes" |
            HIST1H3C_H3C3.K28M == "Yes" | HIST2H3C_H3C14.K28M == "Yes" |
+           `H3F3A_H3-3A.K28I` == "Yes" | HIST1H3B_H3C2.K28I == "Yes" |
+           HIST1H3C_H3C3.K28I == "Yes" | HIST2H3C_H3C14.K28I == "Yes" |
            molecular_subtype_methyl == "DMG, H3 K28") %>%
   mutate(molecular_subtype = "DMG, H3 K28")
 
@@ -229,6 +231,10 @@ wildtype_df <- all_data_df %>%
          HIST1H3B_H3C2.K28M == "No",
          HIST1H3C_H3C3.K28M == "No",
          HIST2H3C_H3C14.K28M == "No",
+         `H3F3A_H3-3A.K28I` == "No",
+         HIST1H3B_H3C2.K28I == "No", 
+         HIST1H3C_H3C3.K28I == "No",
+         HIST2H3C_H3C14.K28I == "No" |
          `H3F3A_H3-3A.G35R` == "No",
          `H3F3A_H3-3A.G35V` == "No",
          IDH1_mutation == "No R132 or R172", 
