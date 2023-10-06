@@ -51,7 +51,11 @@ for (file in classifier_files) {
 score_df <- bind_rows(score_df, df)
 } 
 
-score_df %>%
+score_df <-  score_df %>% 
+  rename(Kids_First_Biospecimen_ID = sample_id) %>%
+  ## add sample_id
+  left_join(clinical[, c("Kids_First_Biospecimen_ID", "sample_id")]) %>% 
+  select(Kids_First_Biospecimen_ID, sample_id, tp53_score, tp53_shuffle) %>%
   write_tsv(file.path(results_dir, "combined_scores.tsv"))
 ```
 
@@ -112,7 +116,7 @@ expression_long_df <- expressionMatrix %>%
 
 # merge score and expression file
 merge_score_exp <- expression_long_df %>%
-  left_join(score_df, by=c("Kids_First_Biospecimen_ID"="sample_id"))
+  left_join(score_df, by=c("Kids_First_Biospecimen_ID"="Kids_First_Biospecimen_ID"))
 
 return(merge_score_exp)
 }
@@ -124,7 +128,7 @@ scores_exp_list <- lapply(expression_matrix_list, function(y){
 ```
 
 
-### Correlation between RNA-expression and classifier sccore
+### Correlation between RNA-expression and classifier score
 
 ```{r}
 
