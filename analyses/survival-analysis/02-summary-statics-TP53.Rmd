@@ -61,6 +61,21 @@ tp53_score <- tp53_score %>%
 
 
 ```
+### add tp53 status
+```{r}
+
+tp53_score <- tp53_score %>% 
+  mutate(SNV_alt = case_when(!is.na(HGVSp_Short) ~ "SNV_alt", TRUE ~ "NO"),
+         CNV_alt = case_when(!is.na(CNV_loss_evidence) ~ "CNV_loss", TRUE ~ "NO"), 
+         Fusion_alt = case_when(!is.na(Fusion_evidence) ~ "Fusion", TRUE ~ "NO"), 
+         SV_alt = case_when(!is.na(SV_type) ~ "SV_alt", TRUE ~ "NO")) %>% 
+  mutate(status = paste(SNV_alt, CNV_alt, Fusion_alt, SV_alt, sep = ","), 
+         status = gsub(",NO", "", status), 
+         status = gsub("NO,", "", status))
+                                     
+
+```
+
 
 ### extract HGG samples and combine histologies, tp53_score table, molecular_subtypes together
 
@@ -81,7 +96,7 @@ HGG_survival <- hist %>%
          OS_days, OS_status, EFS_days, EFS_event_type, 
          reported_gender, race, age_at_diagnosis_days, 
          age_at_diagnosis_year, molecular_subtype, 
-         binned_tp53, broad_mol, mol_subtype_without_tp53) %>% 
+         binned_tp53, broad_mol, mol_subtype_without_tp53, status) %>% 
   mutate(binned_age = case_when(age_at_diagnosis_year >= 0 & 
                                   age_at_diagnosis_year <= 15 ~ "[0,15]", 
                                 age_at_diagnosis_year > 15 & 
@@ -109,7 +124,7 @@ GBM_df <- hist %>%
     select(sample_id, tp53_score, tp53_altered, 
          OS_days, OS_status, EFS_days, EFS_event_type, 
          reported_gender, race, age_at_diagnosis_days, age_at_diagnosis_year,
-         molecular_subtype, binned_age, binned_tp53, broad_mol, mol_subtype_without_tp53) %>% 
+         molecular_subtype, binned_age, binned_tp53, broad_mol, mol_subtype_without_tp53, status) %>% 
     mutate(binned_age = case_when(age_at_diagnosis_year > 62 ~ ">62", TRUE ~ binned_age)) %>%
     distinct() %>% 
     write_tsv(file.path(file.path(analyses_dir, "input", "GBM_survial_tp53.tsv")))
@@ -163,6 +178,24 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
 ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age.png"))
 
 ```
+
+### plot to show the tp53 alteration status
+
+```{r}
+ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "(40,62]", ">62", "not reported")), y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(aes(color = status), width = 0.3, alpha = 0.5) + 
+  xlab("") + 
+  theme_Publication() 
+```
+### save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "boxplot_tp53_score_status.png"))
+
+```
+
+
 ### test tp53 score difference between the reported gender
 ```{r}
 
