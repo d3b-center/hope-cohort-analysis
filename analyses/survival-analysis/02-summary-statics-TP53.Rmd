@@ -61,7 +61,9 @@ tp53_score <- tp53_score %>%
 
 
 ```
+
 ### add tp53 status
+
 ```{r}
 
 tp53_score <- tp53_score %>% 
@@ -167,7 +169,8 @@ combined_filtered <- combined %>%
 ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "(40,62]", ">62", "not reported")), y = tp53_score)) + 
   geom_boxplot() +
   geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) + 
-  stat_compare_means(comparisons = list(c("[0,15]", "(15,26]"), c("[0,15]", "(26,40]"), c("[0,15]", "(40,62]"), c("[0,15]", ">62"))) + 
+  stat_compare_means(method = "wilcox", comparisons = list(c("[0,15]", "(15,26]"), c("[0,15]", "(26,40]"), c("[0,15]", "(40,62]"), c("[0,15]", ">62"))) + 
+  stat_compare_means(method = "kruskal", label.y = 1.5) + 
   xlab("") + 
   theme_Publication()
 
@@ -258,7 +261,8 @@ p1 <- HGG_filtered %>%
   geom_boxplot() +
   geom_jitter(width = 0.3, alpha = 0.5) + 
   xlab("") +
-  stat_compare_means(comparisons = list(c("Asian", "Reported Unknown"), c("Asian", "Black or African American"), c("Asian", "White"), c("Asian", "Other"))) +
+  stat_compare_means(method = "wilcox", comparisons = list(c("Asian", "Reported Unknown"), c("Asian", "Black or African American"), c("Asian", "White"), c("Asian", "Other"))) +
+  stat_compare_means(method = "kruskal", label.y = 1.6) + 
   theme_Publication() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
