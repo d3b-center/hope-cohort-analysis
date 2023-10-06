@@ -5,7 +5,7 @@ date: "2023-09-19"
 output: html_document
 ---
 
-## load libraries
+### load libraries
 
 ```{r libraries}
 suppressWarnings({
@@ -17,7 +17,12 @@ suppressWarnings({
 })
 ```
 
-## set directories adn source functions for plotting 
+remove warning
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+### set directories adn source functions for plotting 
 
 ```{r}
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
@@ -32,7 +37,7 @@ if(!dir.exists(plots_dir)){
 source(file.path(analyses_dir, "utils", "theme_for_plot.R"))
 ```
 
-## load files and modify the hist and tp53 score
+### load files and modify the hist and tp53 score
 
 ```{r}
 hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies.tsv"))
@@ -57,6 +62,7 @@ tp53_score <- tp53_score %>%
 
 ```
 
+### extract HGG samples and combine histologies, tp53_score table, molecular_subtypes together
 
 ```{r}
 ## extract HGG samples and combine histologies, tp53_score table, molecular_subtypes together
@@ -111,7 +117,7 @@ GBM_df <- hist %>%
 combined <- bind_rows(GBM_df, HGG_survival)
 
 ```
-## test if there is a correlation between age and tp53 score
+### test if there is a correlation between age and tp53 score
 
 ```{r}
 ## function to print the formula of linear regression 
@@ -132,7 +138,7 @@ ggplot(combined, aes(x = age_at_diagnosis_days, y = tp53_score)) +
             parse = TRUE)
 ```
 
-## The distribution of TP53 score between age range and tp53 score 
+### The distribution of TP53 score between age range and tp53 score 
 
 ```{r}
 group_summary <- combined %>%
@@ -151,35 +157,42 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
   theme_Publication()
 
 ```
-## save the plot
+### save the plot
 
 ```{r}
 ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age.png"))
 
 ```
-
+### test tp53 score difference between the reported gender
 ```{r}
-p1 <- ggplot(combined, aes(x = reported_gender, y = tp53_score)) + 
-      geom_boxplot() +
-      geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) + 
-      stat_compare_means(comparisons = list(c("Female", "Male"))) + 
-      ggtitle(label = "All samples") + 
-      xlab("") + 
-      theme_Publication()
 
-p2 <- ggplot(HGG_survival, aes(x = reported_gender, y = tp53_score)) + 
+p1 <- ggplot(HGG_survival, aes(x = reported_gender, y = tp53_score)) + 
       geom_boxplot() +
-      geom_jitter(width = 0.3, alpha = 0.5) + 
+      geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) +
+      scale_color_manual(values = c("DHG" = "gold2", "DMG" = "red4", "HGG" = "cyan4", "IHG" = "hotpink2", "PXA"  ="olivedrab4")) +
       stat_compare_means(comparisons = list(c("Female", "Male"))) + 
       ggtitle(label = "HOPE cohort") + 
-      xlab("") + 
-      theme_Publication()
+      xlab("") +
+      theme_Publication() +
+      theme(legend.position="none")
 
-p3 <- ggplot(GBM_df, aes(x = reported_gender, y = tp53_score)) + 
+
+p2 <- ggplot(GBM_df, aes(x = reported_gender, y = tp53_score)) + 
       geom_boxplot() +
-      geom_jitter(width = 0.3, alpha = 0.5) + 
+      geom_jitter(aes(color = broad_mol),width = 0.3, alpha = 0.5) + 
+      scale_color_manual(values = c("GBM" = "purple3")) + 
       stat_compare_means(comparisons = list(c("Female", "Male"))) + 
       ggtitle(label = "GBM") + 
+      xlab("") + 
+      theme_Publication() +
+      theme(legend.position="none")
+     
+p3 <- ggplot(combined, aes(x = reported_gender, y = tp53_score)) + 
+      geom_boxplot() +
+      geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) + 
+      scale_color_manual(values = c("DHG" = "gold2", "DMG" = "red4", "GBM" = "purple3", "HGG" = "cyan4", "IHG" = "hotpink2", "PXA"  ="olivedrab4")) +
+      stat_compare_means(comparisons = list(c("Female", "Male"))) + 
+      ggtitle(label = "All samples") + 
       xlab("") + 
       theme_Publication()
 
@@ -187,7 +200,7 @@ p1 + p2 + p3
 
 ```
 
-## save the plot
+### save the plot
 
 ```{r}
 ggsave(file.path(plots_dir, "boxplot_tp53_score_gender.png"), height = 6, width = 12)
@@ -195,7 +208,7 @@ ggsave(file.path(plots_dir, "boxplot_tp53_score_gender.png"), height = 6, width 
 ```
 
 
-## The distribution of TP53 score among different races 
+### The distribution of TP53 score among different races 
 
 ```{r}
 group_summary <- HGG_survival %>%
@@ -235,16 +248,16 @@ combined_filtered <- combined %>%
 p1 <- combined_filtered %>% 
   mutate(broad_mol = fct_reorder(broad_mol, -tp53_score, .fun='median')) %>%
   ggplot(aes(x = broad_mol, y = tp53_score)) + 
-  geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
   geom_boxplot() +
+  geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
   xlab("") + 
   theme_Publication()
 
 p2 <- combined_filtered %>% 
   mutate(mol_subtype_without_tp53 = fct_reorder(mol_subtype_without_tp53, -tp53_score, .fun='median')) %>%
   ggplot(aes(x = mol_subtype_without_tp53, y = tp53_score)) + 
-  geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
   geom_boxplot() +
+  geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
   xlab("") + 
   theme_Publication() +   
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
@@ -255,13 +268,14 @@ p1 / p2
 
 ```
 
-## save the plot
+### save the plot
 
 ```{r}
 ggsave(file.path(plots_dir, "boxplot_tp53_score_subtype.png"))
 
 ```
 
+### session info
 ```{r}
 
 sessionInfo()
