@@ -7,7 +7,9 @@ results_dir <- file.path(analysis_dir, "results")
 data_dir <- file.path(root_dir, "data")
 
 hist <- readr::read_tsv(file.path(data_dir, "Hope-GBM-histologies-base.tsv")) %>% 
-  select(-c(molecular_subtype, gtex_group, gtex_subgroup))
+  select(-c(molecular_subtype, gtex_group, gtex_subgroup)) %>% 
+  ## remove 7316-212 from histology file
+  filter(sample_id != "7316-212")
 
 HGG_mol_subtype <- readr::read_tsv(file.path(results_dir, "Hope_subtype.tsv")) %>% 
   select(Kids_First_Biospecimen_ID, molecular_subtype)
@@ -46,6 +48,9 @@ hist_with_subtype <- hist %>%
                                      sample_id == "7316-2151" ~ "High-grade neuroepithelial tumor",
                                      sample_id == "7316-2857" ~ "High-grade neuroepithelial tumor",
                                      TRUE ~ NA_character_)) %>% 
+  ## Add mol_sub_broad column
+  mutate(mol_sub_broad = case_when(grepl(",", molecular_subtype) ~ substr(molecular_subtype, 1, regexpr(",", molecular_subtype) - 1), 
+                                   grepl("^C3", Kids_First_Biospecimen_ID) ~ "GBM", TRUE ~ NA_character_)) %>%
   mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>%
   select(colnames(.)[!grepl(paste(c("^HARMONY_", "^HOPE_"), collapse = "|"), colnames(.))], 
          starts_with("HARMONY_"), starts_with("HOPE_")) %>%
