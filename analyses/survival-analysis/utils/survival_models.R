@@ -353,7 +353,7 @@ plotKM <- function(model,
     levels <- model$original_data %>%
       pull(variable) %>%
       unique()
-    levels <- levels[order(levels)]
+    levels <- levels[order(levels)][!is.na(levels)]
     
     colors <- colorblindr::palette_OkabeIto[1:length(levels)]
     lines <- c(rep("solid", length(levels)), 

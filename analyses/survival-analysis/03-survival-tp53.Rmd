@@ -1,12 +1,15 @@
 ---
-title: "tp53_survival_analysis"
+title: "TP53_survival_analysis"
 author: "Zhuangzhuang Geng"
 date: "2023-09-20"
 output: html_document
 ---
 
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
 
-## load libraries
+### load libraries
 
 ```{r libraries}
 suppressWarnings({
@@ -17,7 +20,7 @@ suppressWarnings({
 })
 ```
 
-## set directories and source functions for plotting 
+### set directories and source functions for plotting 
 
 ```{r}
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
@@ -43,8 +46,8 @@ HGG_survival <- HGG_survival %>%
 
 ```
 
-## plot the Kaplan–Meier survival curve on 
-## broad_mol, mol_subtype_without_tp53, gender, binned age, race and binned_tp53 score
+### plot the Kaplan–Meier survival curve on 
+### broad_mol, mol_subtype_without_tp53, gender, binned age, race and binned_tp53 score
 
 ```{r}
 var <- c("reported_gender", "binned_age", "binned_tp53", "broad_mol", "mol_subtype_without_tp53", "race")
@@ -108,7 +111,34 @@ ggsave(file.path(plots_dir, "HR_molecular_subtype.png"), width = 10, height = 6)
 
 ```
 
-### Set HGG and [0,15] as control and  
+### manually set `White` as controls and
+### plot forest plot with tp53_score, reported_gender, race, and binned_age
+
+```{r}
+
+HGG_survival <- HGG_survival %>% 
+  mutate(race = factor(race, levels = c("White", "Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "Reported Unknown", "Other")))
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "reported_gender + race + tp53_score + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+race+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+race+binned_age.RDS"))
+
+plotForest(model)
+
+```
+
+### save plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_race.png"), width = 10, height = 6)
+
+```
+
+
 ### calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
 
 ```{r}
@@ -134,7 +164,7 @@ ggsave(file.path(plots_dir, "HR_broad_mol_subtype.png"), width = 10, height = 6)
 
 ```
 
-## calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
+### calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
 
 ```{r}
 HGG_survival <- HGG_survival %>% 
@@ -161,7 +191,7 @@ ggsave(file.path(plots_dir, "HR_mol_subtype_without_tp53.png"), width = 10, heig
 ```
 
 
-## Take a look at two subtypes, `HGG, H3 WT` and `DMG, H3 K28`
+### Take a look at two subtypes, `HGG, H3 WT` and `DMG, H3 K28`
 
 ```{r}
 h3_wt <- HGG_survival %>% 
@@ -172,7 +202,7 @@ DMG <- HGG_survival %>%
 
 ```
 
-## calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age in `HGG, H3 WT` samples
+### calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age in `HGG, H3 WT` samples
 
 ```{r}
 
@@ -196,7 +226,7 @@ ggsave(file.path(plots_dir, "HR_HGG_WT.png"), width = 10, height = 6)
 ```
 
 
-## calculate hazard ratio using tp53_score as continuous variant, reported gender, molecular_subtype and binned_age in `DMG, H3 K28` samples
+### calculate hazard ratio using tp53_score as continuous variant, reported gender, molecular_subtype and binned_age in `DMG, H3 K28` samples
 
 ```{r}
 
@@ -220,7 +250,7 @@ ggsave(file.path(plots_dir, "HR_DMG.png"), width = 10, height = 6)
 ```
 
 
-## testing the interaction between DMG and tp53 score
+### testing the interaction between DMG and tp53 score
 
 ```{r}
 tp53_survival_cox <- fit_save_model(DMG, 
