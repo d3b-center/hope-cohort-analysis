@@ -1,67 +1,76 @@
+## Author: Komal S. Rathi
+ 
+### Purpose
 
-### Introduction
+The goal of this module is to generate circular and linear heatmaps representing clinical and sample data availability.
 
-The goal of this module is to generate circular and linear heatmaps representing clinical variables and sample availability.
-
-### Input files 
-
-The input files for this module are files obtained from various sources: 
-
-```
-data-availability/input
-├── CPTAC_Project Hope cohorts.xlsx
-├── methylation_subset.tsv
-└── single_cell_smartseq_manifest.xlsx
-```
-
-### Scripts
-
-`01-clinical_data_availability_diagnosis.R`: This script generates a circular heatmap with clinical variables like `Age`, `Sex`, `Diagnosis`, `Diagnosis Type`, `Annotation`, `Tumor Location`. There are two plots generated, one with Age divided into two categorical groups and another with Age divided into three categorical groups. 
-
-Following are the output files for this script:
+### Data version  
 
 ```
-data-availability/results
-├── hope_cohort_data_availability_clinical_three_groups.pdf
-└── hope_cohort_data_availability_clinical_two_groups.pdf
+data/v1
+└── Hope-GBM-histologies.tsv
 ```
 
-`02-clinical_data_availability_diagnosis_v2.R`:  This script generates a circular heatmap with clinical variables like `Age`, `Sex`, `Diagnosis`, `Diagnosis Type`, `Annotation`, `Tumor Location`. In this heatmap, `Age` is represented as a continuous variable.
+### 1. Clinical data with diagnosis and Age as category
 
-Following are the output files for this script:
+`01-clinical_data_availability_diagnosis_age_category.R`: This script generates a circular heatmap with clinical variables like `Age`, `Sex`, `Diagnosis`, `Diagnosis Type`, `Annotation`, `Tumor Location`. There are two plots generated, one with Age divided into two categorical groups and another with Age divided into three categorical groups. 
 
-```
-data-availability/results
-└── hope_cohort_data_availability_clinical_v2.pdf
-```
-
-`03-clinical_data_availability_WHO.R`:  This script generates a circular heatmap with clinical variables like `Age`, `Sex`, `WHO Grade`, `Diagnosis Type`, `Annotation`, `Tumor Location`. There are two plots generated, one with Age divided into two categorical groups and another with Age divided into three categorical groups. 
-
-Following are the output files for this script:
+#### Output
 
 ```
-data-availability/results
-├── hope_cohort_data_availability_clinical_with_WHOGrade_three_groups.pdf
-└── hope_cohort_data_availability_clinical_with_WHOGrade_two_groups.pdf
+results
+├── hope_clinical_data_availability_diagnosis_age_three_groups.pdf
+└── hope_clinical_data_availability_diagnosis_age_two_groups.pdf
 ```
 
-`04-clinical_data_availability_WHO_v2.R`: This script generates a circular heatmap with clinical variables like `Age`, `Sex`, `WHO Grade`, `Diagnosis Type`, `Annotation`, `Tumor Location`. In this heatmap, `Age` is represented as a continuous variable.
+### 2. Clinical data with diagnosis and Age as continuous variable
 
-Following are the output files for this script:
+`02-clinical_data_availability_diagnosis_age_continuous.R`:  This script generates a circular heatmap with clinical variables like `Age`, `Sex`, `Diagnosis`, `Diagnosis Type`, `Annotation`, `Tumor Location`. In this heatmap, `Age` is represented as a continuous variable.
 
-```
-data-availability/results
-└── hope_cohort_data_availability_clinical_with_WHOGrade_v2.pdf
-```
-
-`05-plot_data_availability.R`:  This script generates a linear heatmap with sample availability of various data types like `Proteomics`, `Phosphoproteomics`, `WGS`, `RNAseq`, `Methylation`, `Single Cell RNAseq (SmartSeq2)` and `Single Cell RNAseq (10x)`.
-
-Following are the output files for this script:
+#### Output
 
 ```
-data-availability/results
-└── hope_cohort_data_availability.pdf
+results
+└── hope_clinical_data_availability_diagnosis_age_continuous.pdf
 ```
+
+### 3. Clinical data with WHO grade and Age as category
+
+`03-clinical_data_availability_WHO_age_category.R`:  This script generates a circular heatmap with clinical variables like `Age`, `Sex`, `WHO Grade`, `Diagnosis Type`, `Annotation`, `Tumor Location`. There are two plots generated, one with Age divided into two categorical groups and another with Age divided into three categorical groups. 
+
+#### Output
+
+```
+results
+├── hope_clinical_data_availability_who_grade_age_three_groups.pdf
+└── hope_clinical_data_availability_who_grade_age_two_groups.pdf
+```
+
+### 4. Clinical data with WHO grade and Age as continuous variable
+
+
+`04-clinical_data_availability_WHO_age_continuous.R`: This script generates a circular heatmap with clinical variables like `Age`, `Sex`, `WHO Grade`, `Diagnosis Type`, `Annotation`, `Tumor Location`. In this heatmap, `Age` is represented as a continuous variable.
+
+#### Output
+
+```
+results
+└── hope_clinical_data_availability_who_grade_age_continuous.pdf
+```
+
+### 5. Sample data availability
+
+
+`05-sample_data_availability.R`:  This script generates a linear heatmap with sample availability of various data types like `Proteomics`, `Phosphoproteomics`, `WGS` (`WGS tumor-only` as smaller blocks within), `RNAseq`, `Methylation`, and `snRNASeq`.
+
+#### Output
+
+```
+results
+└── hope_sample_availability.pdf
+```
+
+### Run module
 
 This module can be run using the following bash script:
 

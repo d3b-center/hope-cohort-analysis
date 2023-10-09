@@ -1,4 +1,6 @@
-# data availability heatmap (with Age as continuous variable)
+# Function: data availability heatmap with diagnosis as top level annotation (with Age as continuous variable)
+
+# load libraries
 suppressPackageStartupMessages({
   library(reshape2)
   library(tidyverse) 
@@ -8,38 +10,44 @@ suppressPackageStartupMessages({
 
 # set directories
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-input_dir <- file.path(root_dir, "analyses", "merge-files", "input", "clinical")
+data_dir <- file.path(root_dir, "data", "v1")
 analyses_dir <- file.path(root_dir, "analyses", "data-availability")
 output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
-# updated clinical data from Mateusz
-annot <- readr::read_tsv(file.path(input_dir, "hopeonly_clinical_table_011823.tsv"))
-annot$diagnosis_type[annot$diagnosis_type == "Recurrent"] = "Recurrence"
-annot$diagnosis_type[annot$diagnosis_type == "recurrent"] = "Recurrence"
-annot$diagnosis_type[annot$diagnosis_type == "Recurrent, residual"] = "Recurrence"
-annot$diagnosis_type[annot$diagnosis_type == "Primary"] = "Initial CNS Tumor"
+# read histologies
+annot <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
 
-# get Age from Nicole's file
-age_info <- readxl::read_xlsx(file.path(input_dir, "clini_m_030722-for_Komal.xlsx"))
-annot <- annot %>%
-  inner_join(age_info %>% dplyr::select(age.class, id), by = c("Sample_ID" = "id")) %>%
-  dplyr::rename("Age" = "age.class")
-annot$Age <- factor(annot$Age, levels = c("[0,15]", "(15,40]"))
+# remove redundancy
+annot$HOPE_diagnosis_type[annot$HOPE_diagnosis_type == "Recurrent"] = "Recurrence"
+annot$HOPE_diagnosis_type[annot$HOPE_diagnosis_type == "recurrent"] = "Recurrence"
+annot$HOPE_diagnosis_type[annot$HOPE_diagnosis_type == "Recurrent, residual"] = "Recurrence"
+annot$HOPE_diagnosis_type[annot$HOPE_diagnosis_type == "Primary"] = "Initial CNS Tumor"
 
-# select columns of interest
+# subset to columns of interest
 annot <- annot %>%
-  dplyr::select(Sample_ID, Age, Age_at_Initial_Diagnosis, Gender, diagnosis, diagnosis_type, sample_annotation, Tumor.Location.condensed) %>%
+  filter(!is.na(molecular_subtype),
+         !is.na(HARMONY_age_class_derived)) %>%
+  dplyr::rename("Age" = "HARMONY_age_class_derived",
+                "Age_at_Initial_Diagnosis" = "HOPE_Age_at_Initial_Diagnosis",
+                "Gender" = "HARMONY_Gender",
+                "Diagnosis" = "HOPE_diagnosis",
+                "Diagnosis Type" = "HOPE_diagnosis_type",
+                "Annotation" = "HOPE_sample_annotation",
+                "Tumor Location" = "HOPE_Tumor.Location.condensed") %>%
   dplyr::mutate(Age_at_Initial_Diagnosis = Age_at_Initial_Diagnosis/365) %>%
-  dplyr::rename("Diagnosis" = "diagnosis",
-                "Diagnosis Type" = "diagnosis_type",
-                "Annotation" = "sample_annotation",
-                "Tumor Location" = "Tumor.Location.condensed") %>%
-  column_to_rownames('Sample_ID') %>%
+  dplyr::select(sample_id, Age, Age_at_Initial_Diagnosis, Gender, Diagnosis, `Diagnosis Type`, Annotation, `Tumor Location`) %>%
+  unique() %>%
+  column_to_rownames('sample_id') %>%
   dplyr::arrange(Age, Age_at_Initial_Diagnosis, Gender, Diagnosis, `Diagnosis Type`, Annotation, `Tumor Location`)
 
+# merge age into 2 groups
+plot_df <- annot %>%
+  mutate(Age = as.character(Age)) %>%
+  mutate(Age = ifelse(Age %in% c("(15,26]", "(26,40]"), "(15,40]", Age))
+
 # variable for splitting the circular heatmap
-split <- factor(annot$Age, levels = c("[0,15]", "(15,40]"))
+split <- factor(plot_df$Age, levels = c("[0,15]", "(15,40]"))
 
 # colour mapping for factor variables
 col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseagreen",
@@ -64,25 +72,26 @@ col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseag
                  "Midline" = "purple",
                  "Cerebellar" = "navy")
 
-# color mapping for numeric variable
-col_fun_age <- colorRamp2(breaks = c(min(annot$Age_at_Initial_Diagnosis), median(annot$Age_at_Initial_Diagnosis), max(annot$Age_at_Initial_Diagnosis)),
+# color mapping for numeric age variable
+col_fun_age <- colorRamp2(breaks = c(min(plot_df$Age_at_Initial_Diagnosis, na.rm = T), median(plot_df$Age_at_Initial_Diagnosis, na.rm = T), max(plot_df$Age_at_Initial_Diagnosis, na.rm = T)),
                           colors = c("lightskyblue1","skyblue","dodgerblue4"))
 
-pdf(file = file.path(output_dir, "hope_cohort_data_availability_clinical_v2.pdf"), width = 10, height = 10)
+# generate plot 
 circos.clear()
+pdf(file = file.path(output_dir, "hope_clinical_data_availability_diagnosis_age_continuous.pdf"), width = 10, height = 10)
 circos.par(start.degree = 30, gap.degree = 1, points.overflow.warning = FALSE)
-circos.heatmap(mat = annot %>% dplyr::select(Age), 
+circos.heatmap(mat = plot_df %>% dplyr::select(Age), 
                split = split,
                col = list("[0,15]" = "white", "(15,40]" = "white"), 
                track.height = 0.001, 
                cell.border = "white",
                bg.lwd = 2, cell.lwd = 2)
-circos.heatmap(mat = annot %>% dplyr::select(Age_at_Initial_Diagnosis), 
+circos.heatmap(mat = plot_df %>% dplyr::select(Age_at_Initial_Diagnosis), 
                col = col_fun_age, 
                track.height = 0.06, 
                cell.border = "white",
                bg.lwd = 2, cell.lwd = 2)
-circos.heatmap(annot %>% 
+circos.heatmap(plot_df %>% 
                  dplyr::select(-c(Age, Age_at_Initial_Diagnosis)), 
                col = unlist(col_fun1),
                track.height = 0.3, 

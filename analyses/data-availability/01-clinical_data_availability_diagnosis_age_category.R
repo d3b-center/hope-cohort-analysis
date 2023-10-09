@@ -1,5 +1,6 @@
-# data availability heatmap
+# Function: data availability heatmap with diagnosis as top level annotation
 
+# load libraries
 suppressPackageStartupMessages({
   library(reshape2)
   library(tidyverse) 
@@ -9,42 +10,44 @@ suppressPackageStartupMessages({
 
 # set directories
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-input_dir <- file.path(root_dir, "analyses", "merge-files", "input", "clinical")
+data_dir <- file.path(root_dir, "data", "v1")
 analyses_dir <- file.path(root_dir, "analyses", "data-availability")
 output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
+# read histologies
+annot <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
+
+# remove redundancy
+annot$HOPE_diagnosis_type[annot$HOPE_diagnosis_type == "Recurrent"] = "Recurrence"
+annot$HOPE_diagnosis_type[annot$HOPE_diagnosis_type == "recurrent"] = "Recurrence"
+annot$HOPE_diagnosis_type[annot$HOPE_diagnosis_type == "Recurrent, residual"] = "Recurrence"
+annot$HOPE_diagnosis_type[annot$HOPE_diagnosis_type == "Primary"] = "Initial CNS Tumor"
+
+# subset to columns of interest
+annot <- annot %>%
+  filter(!is.na(molecular_subtype),
+         !is.na(HARMONY_age_class_derived)) %>%
+  dplyr::rename("Age" = "HARMONY_age_class_derived",
+                "Gender" = "HARMONY_Gender",
+                "Diagnosis" = "HOPE_diagnosis",
+                "Diagnosis Type" = "HOPE_diagnosis_type",
+                "Annotation" = "HOPE_sample_annotation",
+                "Tumor Location" = "HOPE_Tumor.Location.condensed") %>%
+  dplyr::select(sample_id, Age, Gender, Diagnosis, `Diagnosis Type`, Annotation, `Tumor Location`) %>%
+  unique() %>%
+  column_to_rownames('sample_id') %>%
+  dplyr::arrange(Age, Gender, Diagnosis, `Diagnosis Type`, Annotation, `Tumor Location`)
+
 # 1) Two age groups
 
-# updated clinical data from Mateusz
-annot <- readr::read_tsv(file.path(input_dir, "hopeonly_clinical_table_011823.tsv"))
-annot$diagnosis_type[annot$diagnosis_type == "Recurrent"] = "Recurrence"
-annot$diagnosis_type[annot$diagnosis_type == "recurrent"] = "Recurrence"
-annot$diagnosis_type[annot$diagnosis_type == "Recurrent, residual"] = "Recurrence"
-annot$diagnosis_type[annot$diagnosis_type == "Primary"] = "Initial CNS Tumor"
+# merge age into 2 groups
+plot_df <- annot %>%
+  mutate(Age = as.character(Age)) %>%
+  mutate(Age = ifelse(Age %in% c("(15,26]", "(26,40]"), "(15,40]", Age))
 
-# get Age from Nicole's file
-age_info <- readxl::read_xlsx(file.path(input_dir, "clini_m_030722-for_Komal.xlsx"))
-annot <- annot %>%
-  inner_join(age_info %>% dplyr::select(age.class, id), by = c("Sample_ID" = "id")) %>%
-  dplyr::rename("Age" = "age.class")
-annot$Age <- factor(annot$Age, levels = c("[0,15]", "(15,40]"))
-
-annot <- annot %>%
-  dplyr::select(Sample_ID, Age, Gender, diagnosis, diagnosis_type, sample_annotation, Tumor.Location.condensed) %>%
-  dplyr::rename("Diagnosis" = "diagnosis",
-                "Diagnosis Type" = "diagnosis_type",
-                "Annotation" = "sample_annotation",
-                "Tumor Location" = "Tumor.Location.condensed") %>%
-  column_to_rownames('Sample_ID') %>%
-  arrange(Age, Gender, Diagnosis, `Diagnosis Type`, Annotation, `Tumor Location`)
-# split <- factor(annot$Diagnosis, levels = c("Pleomorphic xanthoastrocytoma",
-#                                             "Diffuse Midline Glioma",
-#                                             "Astrocytoma;Oligoastrocytoma",
-#                                             "High-grade glioma/astrocytoma (WHO grade III/IV)",
-#                                             "Astrocytoma", 
-#                                             "Glioblastoma"))
-split <- factor(annot$Age, levels = c("[0,15]", "(15,40]"))
+# split by age
+split <- factor(plot_df$Age, levels = c("[0,15]", "(15,40]"))
 col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseagreen",
                  "Diffuse Midline Glioma" = "darkgreen",
                  "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
@@ -66,10 +69,12 @@ col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseag
                  "Other/Multiple locations/NOS" = "pink",
                  "Midline" = "purple",
                  "Cerebellar" = "navy")
+
+# generate plot
 circos.clear()
-pdf(file = file.path(output_dir, "hope_cohort_data_availability_clinical_two_groups.pdf"), width = 10, height = 10)
+pdf(file = file.path(output_dir, "hope_clinical_data_availability_diagnosis_age_two_groups.pdf"), width = 10, height = 10)
 circos.par(start.degree = 30, gap.degree = 1, points.overflow.warning = FALSE)
-circos.heatmap(annot, 
+circos.heatmap(plot_df, 
                split = split, 
                col = unlist(col_fun1), 
                track.height = 0.4, 
@@ -120,35 +125,10 @@ dev.off()
 
 # 2) Three age groups
 
-# updated clinical data from Mateusz
-annot = readr::read_tsv(file.path(input_dir, "hopeonly_clinical_table_011823.tsv"))
-annot$diagnosis_type[annot$diagnosis_type == "Recurrent"] = "Recurrence"
-annot$diagnosis_type[annot$diagnosis_type == "recurrent"] = "Recurrence"
-annot$diagnosis_type[annot$diagnosis_type == "Recurrent, residual"] = "Recurrence"
-annot$diagnosis_type[annot$diagnosis_type == "Primary"] = "Initial CNS Tumor"
+plot_df <- annot
 
-# get Age from Nicole's file
-cluster_data <- read_tsv(file.path(input_dir, "cluster_data101922.tsv"))
-annot <- annot %>%
-  inner_join(cluster_data, by = c("Sample_ID" = "id")) %>%
-  dplyr::rename("Age" = "age")
-annot$Age <- factor(annot$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
-
-annot <- annot %>%
-  dplyr::select(Sample_ID, Age, Gender, diagnosis, diagnosis_type, sample_annotation, Tumor.Location.condensed) %>%
-  dplyr::rename("Diagnosis" = "diagnosis",
-                "Diagnosis Type" = "diagnosis_type",
-                "Annotation" = "sample_annotation",
-                "Tumor Location" = "Tumor.Location.condensed") %>%
-  column_to_rownames('Sample_ID') %>%
-  arrange(Age, Gender, Diagnosis, `Diagnosis Type`, Annotation, `Tumor Location`)
-# split <- factor(annot$Diagnosis, levels = c("Pleomorphic xanthoastrocytoma",
-#                                             "Diffuse Midline Glioma",
-#                                             "Astrocytoma;Oligoastrocytoma",
-#                                             "High-grade glioma/astrocytoma (WHO grade III/IV)",
-#                                             "Astrocytoma", 
-#                                             "Glioblastoma"))
-split <- factor(annot$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
+# split by age
+split <- factor(plot_df$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
 col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseagreen",
                  "Diffuse Midline Glioma" = "darkgreen",
                  "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
@@ -171,10 +151,12 @@ col_fun1 <- list("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseag
                  "Other/Multiple locations/NOS" = "pink",
                  "Midline" = "purple",
                  "Cerebellar" = "navy")
+
+# generate plot
 circos.clear()
-pdf(file = file.path(output_dir, "hope_cohort_data_availability_clinical_three_groups.pdf"), width = 10, height = 10)
+pdf(file = file.path(output_dir, "hope_clinical_data_availability_diagnosis_age_three_groups.pdf"), width = 10, height = 10)
 circos.par(start.degree = 30, gap.degree = 1, points.overflow.warning = FALSE)
-circos.heatmap(annot, 
+circos.heatmap(plot_df, 
                split = split, 
                col = unlist(col_fun1), 
                track.height = 0.4, 
