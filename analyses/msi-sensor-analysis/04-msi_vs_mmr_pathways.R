@@ -1,4 +1,6 @@
-# script to find correlation between MSI and MMR pathways from KEGG
+# Function: correlation between MSI and MMR pathways from KEGG
+
+# load libraries
 suppressPackageStartupMessages({
   library(msigdbr)
   library(tidyverse)
@@ -7,12 +9,12 @@ suppressPackageStartupMessages({
 
 # set working directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-input_dir <- file.path(root_dir, "data")
+data_dir <- file.path(root_dir, "data", "v1")
 analyses_dir <- file.path(root_dir, "analyses", "msi-sensor-analysis")
 output_dir <- file.path(analyses_dir, "results")
 
 # get coordinates of genes from gencode v39
-gencode_gtf <- rtracklayer::import(con = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gtf.gz")
+gencode_gtf <- rtracklayer::import(con = file.path(root_dir, "data", "gencode.v39.primary_assembly.annotation.gtf.gz"))
 gencode_gtf <- as.data.frame(gencode_gtf)
 gencode_gtf <- gencode_gtf %>%
   dplyr::select(gene_id, gene_name, gene_type) %>%
@@ -20,20 +22,19 @@ gencode_gtf <- gencode_gtf %>%
   unique()
 
 # tpm_dat
-tpm_dat <- file.path(input_dir, "Hope-gene-expression-rsem-tpm-collapsed.rds") %>%
-  readRDS()
-tpm_dat <- tpm_dat[rownames(tpm_dat) %in% gencode_gtf$gene_name,]
+tpm_dat <- readRDS(file = file.path(data_dir, "Hope-gene-expression-rsem-tpm-collapsed.rds"))
+tpm_dat <- tpm_dat %>%
+  filter(rownames(tpm_dat) %in% gencode_gtf$gene_name)
 
 # master histology file
-hist_df <- file.path(input_dir, "master_histology_hope_cohort.tsv") %>% read_tsv()
+annot <- read_tsv(file = file.path(data_dir, "Hope-GBM-histologies.tsv"))
+annot <- annot %>% 
+  filter(!is.na(molecular_subtype),
+         experimental_strategy == "RNA-Seq")
 
 # filter to biospecimens of interest
-rna_manifest <- list.files(path = file.path(root_dir, "analyses", "merge-files", "input", "manifest"), pattern = "rna", full.names = T) %>%
-  read_tsv()
-rna_manifest <- rna_manifest %>%
-  filter(sample_id %in% hist_df$Sample_ID) 
 tpm_dat <- tpm_dat %>%
-  dplyr::select(rna_manifest$`Kids First Biospecimen ID`)
+  dplyr::select(annot$Kids_First_Biospecimen_ID)
 
 # kegg pathways 
 geneset_db <- msigdbr::msigdbr(category = "C2", subcategory = "KEGG")
@@ -59,14 +60,26 @@ ssgsea_scores_each <- ssgsea_scores_each %>%
 
 # merge with sample ids
 ssgsea_scores_each <- ssgsea_scores_each %>%
-  inner_join(rna_manifest, by = c("Kids_First_Biospecimen_ID" = "Kids First Biospecimen ID"))
+  inner_join(annot)
 ssgsea_scores_each <- ssgsea_scores_each %>%
   dplyr::select(Kids_First_Biospecimen_ID, pathway_name, gsea_score, sample_id)
 
+# read MSI paired output 
+msi_paired_output <- read_tsv(file.path(output_dir, "msisensor-pro-paired", "Hope-msi-paired.tsv")) %>%
+  dplyr::mutate(Type = ifelse(Percent > 3.5, sample_id, "")) %>%
+  dplyr::rename("msi_paired" = "Percent") %>%
+  dplyr::select(sample_id, msi_paired)
+
+# read MSI tumor-only output 
+msi_tumor_only_output <- read_tsv(file.path(output_dir, "msisensor-pro-tumor-only", "Hope-msi-tumor_only.tsv")) %>%
+  dplyr::mutate(Type = ifelse(Percent > 3.5, sample_id, "")) %>%
+  dplyr::rename("msi_tumor_only" = "Percent") %>%
+  dplyr::select(sample_id, msi_tumor_only)
+
 # add MSI (paired and tumor-only)
 ssgsea_scores_each <- ssgsea_scores_each %>%
-  inner_join(hist_df %>%
-  dplyr::select(Sample_ID, msi_paired, msi_tumor_only), by = c("sample_id" = "Sample_ID"))
+  inner_join(msi_tumor_only_output) %>%
+  left_join(msi_paired_output)
 
 # 1) merge with MSI (tumor only)
 pdf(file = file.path(output_dir, "msisensor-pro-tumor-only", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)

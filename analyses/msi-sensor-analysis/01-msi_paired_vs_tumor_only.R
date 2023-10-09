@@ -1,4 +1,6 @@
-# script to compare paired and tumor-only msi-sensor output
+# Function: compare paired and tumor-only msi-sensor outputs
+
+# load libraries
 suppressPackageStartupMessages({
   library(tidyverse)
   library(ggplot2)
@@ -7,22 +9,28 @@ suppressPackageStartupMessages({
 
 # set directories
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-input_dir <- file.path(root_dir, "data")
 analyses_dir <- file.path(root_dir, "analyses", "msi-sensor-analysis")
-output_dir <- file.path(analyses_dir, "results", "msisensor-pro-combined")
+input_dir <- file.path(analyses_dir, "input")
+output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, showWarnings = F, recursive = T)
 
 # master histology
-annot <- read_tsv(file = file.path(input_dir, "master_histology_hope_cohort.tsv"))
+msi_paired <- file.path(output_dir, "msisensor-pro-paired", "Hope-msi-paired.tsv") %>% 
+  read_tsv() %>%
+  dplyr::rename("MSI_paired" = "Percent") %>%
+  dplyr::select(sample_id, MSI_paired)
+msi_tumor_only <- file.path(output_dir, "msisensor-pro-tumor-only", "Hope-msi-tumor_only.tsv") %>% 
+  read_tsv() %>%
+  dplyr::rename("MSI_tumor_only" = "Percent") %>%
+  dplyr::select(sample_id, MSI_tumor_only)
 
 # combined barplot of common sample ids
-annot <- annot %>%
-  dplyr::select(Sample_ID, msi_paired, msi_tumor_only) %>%
-  filter(!is.na(msi_tumor_only), !is.na(msi_paired))
+annot <- msi_paired %>%
+  inner_join(msi_tumor_only, by = "sample_id")
 
 # scatter plot
-pdf(file = file.path(output_dir, "tumor_only_vs_paired_analysis.pdf"), width = 8, height = 6)
-p <- ggplot(annot, aes(x = msi_paired, y = msi_tumor_only)) +
+pdf(file = file.path(output_dir, "msisensor-pro-combined", "tumor_only_vs_paired_analysis.pdf"), width = 8, height = 6)
+p <- ggplot(annot, aes(x = MSI_paired, y = MSI_tumor_only)) +
   geom_point(pch = 21, size = 4) +
   ggpubr::theme_pubr(base_size = 10, legend = "bottom") + 
   ggtitle(paste0("Paired vs Tumor-only analysis (n = ", nrow(annot) , ")")) +
