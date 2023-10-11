@@ -1,5 +1,6 @@
-# script to correlate ALT status to clinical variables like
-# Protein clusters, Age (2 and 3 groups), Gender and TMB
+# Function: correlate ALT status to clinical variables like Protein clusters, Age (2 and 3 groups), Gender and TMB
+
+# load libraries
 suppressPackageStartupMessages({
   library(tidyverse)
   library(ggplot2)
