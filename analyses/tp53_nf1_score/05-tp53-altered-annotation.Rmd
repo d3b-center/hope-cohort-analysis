@@ -87,7 +87,8 @@ if (!dir.exists(results_dir)) {
 
 # Read in combined scores from tp53-nf1-classifier 
 classifier_score <- read_tsv(file.path(results_dir, "combined_scores.tsv")) %>%
-  dplyr::rename(Kids_First_Biospecimen_ID_RNA = sample_id) %>%
+  select(!sample_id) %>%
+  dplyr::rename(Kids_First_Biospecimen_ID_RNA = Kids_First_Biospecimen_ID) %>%
   filter(Kids_First_Biospecimen_ID_RNA %in% histology$Kids_First_Biospecimen_ID) %>%
   left_join(histology, by=c("Kids_First_Biospecimen_ID_RNA"="Kids_First_Biospecimen_ID"))
 
