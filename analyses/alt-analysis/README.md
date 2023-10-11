@@ -15,6 +15,19 @@ master-annotation
 
 ### Scripts
 
+`00-generate-telomere-ratio.R`: This script computes the telomere ratio using telomere content for tumor and normal samples output from Telomere Hunter.
+
+- Input: `76_pairs_tumor_normal_summary.tsv`
+- Output: `alt_status_aya_hgg.tsv`
+
+This script can be run using the following R script:
+
+```
+Rscript 00-generate-telomere-ratio.R
+```
+
+
+
 `01-correlation_alt_vs_vars.R`: This scripts computes the correlation between ALT-status and 
 
  - t_n_telomere_content vs MSI 
