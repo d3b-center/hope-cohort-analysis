@@ -49,7 +49,7 @@ hist_with_subtype <- hist %>%
                                      sample_id == "7316-2857" ~ "High-grade neuroepithelial tumor",
                                      TRUE ~ NA_character_)) %>% 
   ## Add mol_sub_broad column
-  mutate(mol_sub_broad = case_when(grepl(",", molecular_subtype) ~ substr(molecular_subtype, 1, regexpr(",", molecular_subtype) - 1), 
+  mutate(cancer_group_short = case_when(grepl(",", molecular_subtype) ~ substr(molecular_subtype, 1, regexpr(",", molecular_subtype) - 1), 
                                    grepl("^C3", Kids_First_Biospecimen_ID) ~ "GBM", TRUE ~ NA_character_)) %>%
   mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>%
   select(colnames(.)[!grepl(paste(c("^HARMONY_", "^HOPE_"), collapse = "|"), colnames(.))], 
