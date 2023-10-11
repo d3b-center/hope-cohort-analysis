@@ -60,9 +60,8 @@ for(i in var){
   test = "kap.meier",
   metadata_sample_col = "sample_id",
   days_col = "OS_days",
-  status_col = "OS_status"
-  )
-print(i)
+  status_col = "OS_status")
+
   plot <- plotKM(model = kap_OS, 
        variable = i, 
        combined = FALSE, 
@@ -260,6 +259,8 @@ tp53_survival_cox <- fit_save_model(DMG,
 
 DMG_model <- read_rds(file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"))
 
+## manually change the coefficient name, may need to address this issue later in survival script
+names(DMG_model$coefficients) <- c(names(DMG_model$coefficients)[1:6], "DMG, H3 K28 * tp53_score")
 plotForest(DMG_model)
 
 ```
@@ -268,7 +269,7 @@ plotForest(DMG_model)
 
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_DMG_tp53_interaction.png"), width = 15, height = 6)
+ggsave(file.path(plots_dir, "HR_DMG_tp53_interaction.png"), width = 8, height = 6)
 
 ```
 

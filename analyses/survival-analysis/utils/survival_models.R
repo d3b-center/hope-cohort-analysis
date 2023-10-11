@@ -101,8 +101,8 @@ survival_analysis <- function(metadata,
   metadata <- metadata %>%
     dplyr::mutate(
       !!status_col := case_when(
-        status %in% c("LIVING", "NO EVENT") ~ FALSE,
-        status %in% c("DECEASED", "EVENT") ~ TRUE
+        OS_status %in% c("LIVING", "NO EVENT") ~ FALSE,
+        OS_status %in% c("DECEASED", "EVENT") ~ TRUE
       ))
       
       
