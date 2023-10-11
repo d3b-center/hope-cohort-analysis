@@ -8,8 +8,6 @@ data_dir <- file.path(root_dir, "data")
 
 hist <- readr::read_tsv(file.path(data_dir, "Hope-GBM-histologies-base.tsv")) %>% 
   select(-c(molecular_subtype, gtex_group, gtex_subgroup)) %>% 
-  ## remove 7316-212 from histology file
-  filter(sample_id != "7316-212")
 
 HGG_mol_subtype <- readr::read_tsv(file.path(results_dir, "Hope_subtype.tsv")) %>% 
   select(Kids_First_Biospecimen_ID, molecular_subtype)
