@@ -152,7 +152,10 @@ ggplot(combined, aes(x = age_at_diagnosis_days, y = tp53_score)) +
   geom_point() + 
   geom_text(y = 0.05, x = 20000, 
             label = lm_eqn(combined, x= combined$age_at_diagnosis_days, y = combined$tp53_score), 
-            parse = TRUE)
+            parse = TRUE) + 
+  ylab("TP53 score") + 
+  xlab("Age at diagnosis days") + 
+  theme_Publication()
 ```
 
 ### The distribution of TP53 score between age range and tp53 score 
@@ -172,9 +175,11 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
   stat_compare_means(method = "wilcox", comparisons = list(c("[0,15]", "(15,26]"), c("[0,15]", "(26,40]"), c("[0,15]", "(40,62]"), c("[0,15]", ">62"))) + 
   stat_compare_means(method = "kruskal", label.y = 1.5) + 
   xlab("") + 
+  ylab("TP53 score") + 
   theme_Publication()
 
 ```
+
 ### save the plot
 
 ```{r}
@@ -189,8 +194,10 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
   geom_boxplot() +
   geom_jitter(aes(color = status), width = 0.3, alpha = 0.5) + 
   xlab("") + 
+  ylab("TP53 score") + 
   theme_Publication() 
 ```
+
 ### save the plot
 
 ```{r}
@@ -209,7 +216,8 @@ p1 <- ggplot(HGG_survival, aes(x = reported_gender, y = tp53_score)) +
       stat_compare_means(comparisons = list(c("Female", "Male"))) + 
       ggtitle(label = "HOPE cohort") + 
       xlab("") +
-      theme_Publication() +
+      ylab("TP53 score") + 
+      theme_Publication() + 
       theme(legend.position="none")
 
 
@@ -220,6 +228,7 @@ p2 <- ggplot(GBM_df, aes(x = reported_gender, y = tp53_score)) +
       stat_compare_means(comparisons = list(c("Female", "Male"))) + 
       ggtitle(label = "GBM") + 
       xlab("") + 
+      ylab("TP53 score") + 
       theme_Publication() +
       theme(legend.position="none")
      
@@ -229,7 +238,8 @@ p3 <- ggplot(combined, aes(x = reported_gender, y = tp53_score)) +
       scale_color_manual(values = c("DHG" = "gold2", "DMG" = "red4", "GBM" = "purple3", "HGG" = "cyan4", "IHG" = "hotpink2", "PXA"  ="olivedrab4")) +
       stat_compare_means(comparisons = list(c("Female", "Male"))) + 
       ggtitle(label = "All samples") + 
-      xlab("") + 
+      xlab("") +      
+      ylab("TP53 score") + 
       theme_Publication()
 
 p1 + p2 + p3
@@ -264,6 +274,7 @@ p1 <- HGG_filtered %>%
   stat_compare_means(method = "wilcox", comparisons = list(c("Asian", "Reported Unknown"), c("Asian", "Black or African American"), c("Asian", "White"), c("Asian", "Other"))) +
   stat_compare_means(method = "kruskal", label.y = 1.6) + 
   theme_Publication() + 
+  ylab("TP53 score") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 p1
@@ -288,6 +299,7 @@ p1 <- combined_filtered %>%
   geom_boxplot() +
   geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
   xlab("") + 
+  ylab("TP53 score") + 
   theme_Publication()
 
 p2 <- combined_filtered %>% 
@@ -296,6 +308,7 @@ p2 <- combined_filtered %>%
   geom_boxplot() +
   geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
   xlab("") + 
+  ylab("TP53 score") + 
   theme_Publication() +   
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
