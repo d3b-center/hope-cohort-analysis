@@ -123,6 +123,8 @@ all_data_df <-  all_data_df %>%
 h3_k28_df_biospecimen <- all_data_df %>%
   filter(`H3F3A_H3-3A.K28M` == "Yes" | HIST1H3B_H3C2.K28M == "Yes" |
            HIST1H3C_H3C3.K28M == "Yes" | HIST2H3C_H3C14.K28M == "Yes" |
+           `H3F3A_H3-3A.K28I` == "Yes" | HIST1H3B_H3C2.K28I == "Yes" |
+           HIST1H3C_H3C3.K28I == "Yes" | HIST2H3C_H3C14.K28I == "Yes" |
            molecular_subtype_methyl == "DMG, H3 K28") %>%
   mutate(molecular_subtype = "DMG, H3 K28")
 
@@ -192,13 +194,14 @@ pxa_sample_id <- hgg_meta %>%
                                               "anaplastic pleomorphic xanthoastrocytoma, who grade 3") |
   (dkfz_v12_methylation_subclass_score >= 0.8 &
     dkfz_v12_methylation_subclass == "PXA")) %>% 
-  pull(sample_id)
+  pull(sample_id) %>%
+  unique()
 
 pxa_df_biospecimen <- all_data_df %>% 
   filter(sample_id %in% pxa_sample_id) %>% 
   ## check if these sample has BRAF V600E mutation
   mutate(molecular_subtype = case_when(BRAF_V600E == "p.V600E" ~ "PXA", 
-                                       TRUE ~ "Susceptible PXA without BRAF mutation"))
+                                       TRUE ~ NA_character_))
 
 
 ```
@@ -229,6 +232,10 @@ wildtype_df <- all_data_df %>%
          HIST1H3B_H3C2.K28M == "No",
          HIST1H3C_H3C3.K28M == "No",
          HIST2H3C_H3C14.K28M == "No",
+         `H3F3A_H3-3A.K28I` == "No",
+         HIST1H3B_H3C2.K28I == "No", 
+         HIST1H3C_H3C3.K28I == "No",
+         HIST2H3C_H3C14.K28I == "No" |
          `H3F3A_H3-3A.G35R` == "No",
          `H3F3A_H3-3A.G35V` == "No",
          IDH1_mutation == "No R132 or R172", 

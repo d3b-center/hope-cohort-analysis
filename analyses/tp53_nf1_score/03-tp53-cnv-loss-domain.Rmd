@@ -88,7 +88,7 @@ DNA_seg <- consensus_seg %>%
 
 # Read in scores from tp53-nf1-classifier 
 score_df <- read_tsv(file.path(results_dir, "combined_scores.tsv")) %>%
-  dplyr::rename(Kids_First_Biospecimen_ID = sample_id) %>%
+  select(!sample_id) %>%
   left_join(histologies_df,by=c("Kids_First_Biospecimen_ID")) %>%
   as.data.frame()
 
@@ -174,7 +174,7 @@ annotated_cn %>%
   # remove columns 
   dplyr::select(-tp53_score,-Kids_First_Biospecimen_ID) %>%
   unique() %>%
-  write_tsv( file.path(results_dir,"loss_overlap_domains_tp53.tsv"))
+  write_tsv(file.path(results_dir,"loss_overlap_domains_tp53.tsv"))
 
 ```
 
