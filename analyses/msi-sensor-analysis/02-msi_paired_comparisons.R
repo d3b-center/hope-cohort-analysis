@@ -30,6 +30,10 @@ msi_paired_output <- read_tsv(file.path(output_dir, "Hope-msi-paired.tsv")) %>%
 tmb_paired_output <- read_tsv("../tmb-calculation/results/wgs_paired/snv-mutation-tmb-coding.tsv") %>%
   dplyr::rename("tmb_paired" = "tmb")
 
+# read ALT status
+alt_status_output <- read_tsv("../alt-analysis/results/alt_status_aya_hgg.tsv") %>%
+  dplyr::select(sample_id, t_n_telomere_content, ALT_status)
+
 # add proteomics cluster data
 proteomic_data <- read_tsv(file.path(input_dir, "cluster_data_090722.tsv")) %>%
   dplyr::select(id, rdt.cc)
@@ -41,6 +45,7 @@ dev_data <- read_tsv(file.path(input_dir, "cluster_data_101922.tsv")) %>%
 # combine all
 output_df <- msi_paired_output %>%
   inner_join(tmb_paired_output, by = c("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode")) %>%
+  inner_join(alt_status_output) %>%
   inner_join(proteomic_data, by = c("sample_id" = "id")) %>%
   inner_join(dev_data, by = c("sample_id" = "id")) %>%
   inner_join(annot)
@@ -226,32 +231,28 @@ p <- ggplot(plot_data, aes(x = as.character(HARMONY_Gender), y = msi_paired, col
   theme(legend.position = "none") 
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_gender.png"), width = 6, height = 6)
 
-# # 8) ALT 
-# output_df = output_df %>% 
-#   group_by(ALT_status) %>% 
-#   mutate(n = n(), ALT_status = paste0(ALT_status, "\n(n = ", n, ")"))
-# p <- ggplot(output_df, aes(x = ALT_status, msi_paired, color = ALT_status)) +
-#   stat_boxplot(geom ='errorbar', width = 0.2) +
-#   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-#   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-#   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-#   stat_compare_means(color = "red", 
-#                      label = "p.format",
-#                      ref.group = ".all.",
-#                      size = 4) +
-#   xlab("") + 
-#   ylab("% Microsatellite Instability") +
-#   ggtitle("% Microsatellite Instability vs. ALT Status") +
-#   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-#   theme(legend.position = "none") 
-# ggsave(plot = p, filename = file.path(output_dir, "msi_vs_alt_status.png"), height = 6, width = 6)
-# 
-# # 9) MSI vs ALT telomere content
-# p <- ggplot(output_df, aes(x = msi_paired, y = t_n_telomere_content)) +
-#   geom_point() +
-#   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "red") +
-#   theme_pubr() + 
-#   xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs Telomere content") +
-#   stat_cor(method = "pearson", color = "red")
-# ggsave(plot = p, filename = file.path(output_dir, "msi_vs_telomere_content.png"))
+# 8) ALT
+plot_data <- output_df %>%
+  group_by(ALT_status) %>%
+  mutate(n = n(), ALT_status = paste0(ALT_status, "\n(n = ", n, ")"))
+p <- ggplot(plot_data, aes(x = ALT_status, msi_paired, color = ALT_status)) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") +
+  stat_compare_means(color = "red", size = 4) +
+  xlab("") +
+  ylab("% Microsatellite Instability") +
+  ggtitle("% Microsatellite Instability vs. ALT Status") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none")
+ggsave(plot = p, filename = file.path(output_dir, "msi_vs_alt_status.png"), height = 6, width = 6)
 
+# 9) MSI vs ALT telomere content
+p <- ggplot(output_df, aes(x = msi_paired, y = t_n_telomere_content)) +
+  geom_point() +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "red") +
+  theme_pubr() +
+  xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs Telomere content") +
+  stat_cor(method = "pearson", color = "red")
+ggsave(plot = p, filename = file.path(output_dir, "msi_vs_telomere_content.png"))
