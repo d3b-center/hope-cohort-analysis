@@ -7,7 +7,7 @@ results_dir <- file.path(analysis_dir, "results")
 data_dir <- file.path(root_dir, "data")
 
 hist <- readr::read_tsv(file.path(data_dir, "Hope-GBM-histologies-base.tsv")) %>% 
-  select(-c(molecular_subtype, gtex_group, gtex_subgroup)) %>% 
+  select(-c(molecular_subtype, gtex_group, gtex_subgroup))
 
 HGG_mol_subtype <- readr::read_tsv(file.path(results_dir, "Hope_subtype.tsv")) %>% 
   select(Kids_First_Biospecimen_ID, molecular_subtype)
@@ -26,7 +26,7 @@ hist_with_subtype <- hist %>%
                                           grepl("HGG, H3 wildtype", molecular_subtype) ~ "High-grade glioma, IDH-wildtype and H3-wildtype",
                                           grepl("HGG, IDH", molecular_subtype) ~ "High-grade glioma, IDH-mutant",
                                           molecular_subtype == "HGG, To be classified" ~ "High-grade glioma",
-                                          # account for IGH subtypes
+                                          # account for IHG subtypes
                                           grepl("IHG, NTRK-altered", molecular_subtype) ~ "Infant-type hemispheric glioma, NTRK-altered",
                                           grepl("IHG, ALK-altered", molecular_subtype) ~ "Infant-type hemispheric glioma, ALK-altered",
                                           grepl("IHG, ROS1-altered", molecular_subtype) ~ "Infant-type hemispheric glioma, ROS1-altered",
