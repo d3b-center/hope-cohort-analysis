@@ -253,11 +253,11 @@ gbm_tp53 <- gbm_muts %>%
   select(-ApprovedGeneSymbol) %>%
   filter(grepl("^C3", sample_id))
 
-head(gbm_tp53)
-
 tp53_alterations_score_wide <- tp53_alterations_score_wide %>%
   left_join(gbm_tp53, by = "sample_id") %>%
-  mutate(SNV_indel_counts = ifelse(GBM_TP53_SNV == 1, 1, 0)) %>%
+  mutate(SNV_indel_counts = case_when(GBM_TP53_SNV == 1 ~ 1,
+                                      GBM_TP53_SNV == 0 ~ 0,
+                                      TRUE ~ SNV_indel_counts)) %>%
   select(-GBM_TP53_SNV)
 
 ```
