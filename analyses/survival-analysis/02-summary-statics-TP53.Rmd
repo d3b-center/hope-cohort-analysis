@@ -191,6 +191,10 @@ ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age.pdf"))
 ### plot to show the tp53 alteration status
 
 ```{r}
+## change the order of tp53 status legend
+combined_filtered <- combined_filtered %>% 
+  mutate(status = factor(status, levels = c("CNV loss", "SNV", "SNV,CNV loss", "SNV,Fusion", "None")))
+
 ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "(40,62]", ">62", "not reported")), y = tp53_score)) + 
   geom_boxplot() +
   geom_jitter(aes(color = status), width = 0.3, alpha = 0.5) + 
