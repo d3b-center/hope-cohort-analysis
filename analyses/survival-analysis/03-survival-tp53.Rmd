@@ -98,6 +98,9 @@ survival_cox <- fit_save_model(HGG_survival,
 
 model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype+binned_age.RDS"))
 
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
 plotForest(model)
 
 ```
@@ -106,7 +109,7 @@ plotForest(model)
 
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_molecular_subtype.png"), width = 10, height = 6)
+ggsave(file.path(plots_dir, "HR_molecular_subtype.pdf"), width = 10, height = 6)
 
 ```
 
@@ -125,6 +128,9 @@ survival_cox <- fit_save_model(HGG_survival,
 
 model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+race+binned_age.RDS"))
 
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
 plotForest(model)
 
 ```
@@ -133,7 +139,7 @@ plotForest(model)
 
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_race.png"), width = 10, height = 6)
+ggsave(file.path(plots_dir, "HR_race.pdf"), width = 10, height = 6)
 
 ```
 
@@ -151,6 +157,9 @@ survival_cox <- fit_save_model(HGG_survival,
 
 model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+broad_mol+binned_age.RDS"))
 
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
 plotForest(model)
 
 ```
@@ -159,7 +168,7 @@ plotForest(model)
 
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_broad_mol_subtype.png"), width = 10, height = 6)
+ggsave(file.path(plots_dir, "HR_broad_mol_subtype.pdf"), width = 10, height = 6)
 
 ```
 
@@ -177,6 +186,9 @@ survival_cox <- fit_save_model(HGG_survival,
 
 model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype_without_tp53+binned_age.RDS"))
 
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
 plotForest(model)
 
 ```
@@ -185,7 +197,7 @@ plotForest(model)
 
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_mol_subtype_without_tp53.png"), width = 10, height = 6)
+ggsave(file.path(plots_dir, "HR_mol_subtype_without_tp53.pdf"), width = 10, height = 6)
 
 ```
 
@@ -212,6 +224,10 @@ tp53_survival_cox <- fit_save_model(h3_wt,
 
 HGG_H3WT_model <- read_rds(file.path(analyses_dir, "results", "HGG_H3WT_score+reported_gender+molecular_subtype+binned_age.RDS"))
 
+## manually change the coefficient name, may need to address this issue later in survival script
+names(HGG_H3WT_model$coefficients) <- gsub("tp53_score", "TP53 score", names(HGG_H3WT_model$coefficients))
+
+
 plotForest(HGG_H3WT_model)
 
 ```
@@ -220,7 +236,7 @@ plotForest(HGG_H3WT_model)
 
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_HGG_WT.png"), width = 10, height = 6)
+ggsave(file.path(plots_dir, "HR_HGG_WT.pdf"), width = 10, height = 6)
 
 ```
 
@@ -236,6 +252,10 @@ tp53_survival_cox <- fit_save_model(DMG,
 
 DMG_model <- read_rds(file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype+binned_age.RDS"))
 
+## manually change the coefficient name, may need to address this issue later in survival script
+names(DMG_model$coefficients) <- c("TP53 score", names(DMG_model$coefficients)[2:6])
+
+
 plotForest(DMG_model)
 
 ```
@@ -244,7 +264,7 @@ plotForest(DMG_model)
 
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_DMG.png"), width = 10, height = 6)
+ggsave(file.path(plots_dir, "HR_DMG.pdf"), width = 10, height = 6)
 
 ```
 
@@ -260,7 +280,8 @@ tp53_survival_cox <- fit_save_model(DMG,
 DMG_model <- read_rds(file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"))
 
 ## manually change the coefficient name, may need to address this issue later in survival script
-names(DMG_model$coefficients) <- c(names(DMG_model$coefficients)[1:6], "DMG, H3 K28 * tp53_score")
+names(DMG_model$coefficients) <- c(names(DMG_model$coefficients)[1:2], "TP53 score", names(DMG_model$coefficients)[4:6], "DMG, H3 K28 * TP53 score")
+
 plotForest(DMG_model)
 
 ```
@@ -269,7 +290,7 @@ plotForest(DMG_model)
 
 ```{r}
 
-ggsave(file.path(plots_dir, "HR_DMG_tp53_interaction.png"), width = 8, height = 6)
+ggsave(file.path(plots_dir, "HR_DMG_tp53_interaction.pdf"), width = 8, height = 6)
 
 ```
 
