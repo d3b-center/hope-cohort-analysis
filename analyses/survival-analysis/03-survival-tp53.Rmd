@@ -1,0 +1,300 @@
+---
+title: "TP53_survival_analysis"
+author: "Zhuangzhuang Geng"
+date: "2023-09-20"
+output: html_document
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+### load libraries
+
+```{r libraries}
+suppressWarnings({
+  library(tidyverse)
+  library(survival)
+  library(ggplot2)
+  library(patchwork)
+})
+```
+
+### set directories and source functions for plotting 
+
+```{r}
+root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
+analyses_dir <- file.path(root_dir, "analyses", "survival-analysis")
+input_dir <- file.path(analyses_dir, "input")
+plots_dir <- file.path(analyses_dir, "plots")
+
+## source this script for plotting
+source(file.path(analyses_dir, "utils", "survival_models.R"))
+```
+
+### read in file and
+### transfomr OS_days to OS_years
+
+```{r}
+HGG_survival <- read_tsv(file.path(input_dir, "HGG_survial_tp53.tsv"))
+
+HGG_survival <- HGG_survival %>%
+  mutate(OS_years = (OS_days / 365.25), 
+         binned_tp53 = replace_na(binned_tp53, "no tp53 score"), 
+         plot_mol_subtype = case_when(grepl("IHG", molecular_subtype) ~ "IHG", 
+                                      TRUE ~ molecular_subtype))
+
+```
+
+### plot the Kaplan–Meier survival curve on 
+### broad_mol, mol_subtype_without_tp53, gender, binned age, race and binned_tp53 score
+
+```{r}
+var <- c("reported_gender", "binned_age", "binned_tp53", "broad_mol", "mol_subtype_without_tp53", "race")
+
+for(i in var){
+  
+  kap_OS <- survival_analysis(
+  metadata = HGG_survival, 
+  ind_var = i,
+  test = "kap.meier",
+  metadata_sample_col = "sample_id",
+  days_col = "OS_days",
+  status_col = "OS_status")
+
+  plot <- plotKM(model = kap_OS, 
+       variable = i, 
+       combined = FALSE, 
+       title = i)
+
+  if(i == "race"){
+    ggsave(file.path(plots_dir, paste0("KM_", i, ".pdf")), plot, 
+       width = 16, height = 6, units = "in", 
+       device = "pdf")
+  }else{
+    ggsave(file.path(plots_dir, paste0("KM_", i, ".pdf")), plot, 
+       width = 10, height = 6, units = "in", 
+       device = "pdf")
+  }
+  
+}
+
+```
+
+### Add a new column `plot_mol_subtype` by combining all IHG subtypes as `IHG` from `molecular_subtype` column and 
+### manually set `HGG, H3 wildtype` and `[0,15]` as controls and
+### plot forest plot with tp53_score, reported_gender, plot_mol_subtype, and binned_age
+
+```{r}
+
+HGG_survival <- HGG_survival %>% 
+  mutate(plot_mol_subtype = factor(plot_mol_subtype, levels = c("HGG, H3 wildtype", "HGG, H3 wildtype, TP53", "HGG, IDH", "HGG, IDH, TP53", "HGG, To be classified", "DMG, H3 K28", "DMG, H3 K28, TP53", "DHG, H3 G35, TP53", "IHG", "PXA")),
+         binned_age = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "not reported")))
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "tp53_score + reported_gender + plot_mol_subtype + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype+binned_age.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
+plotForest(model)
+
+```
+
+### save plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_molecular_subtype.pdf"), width = 10, height = 6)
+
+```
+
+### manually set `White` as controls and
+### plot forest plot with tp53_score, reported_gender, race, and binned_age
+
+```{r}
+
+HGG_survival <- HGG_survival %>% 
+  mutate(race = factor(race, levels = c("White", "Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "Reported Unknown", "Other")))
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "reported_gender + race + tp53_score + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+race+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+race+binned_age.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
+plotForest(model)
+
+```
+
+### save plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_race.pdf"), width = 10, height = 6)
+
+```
+
+
+### calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
+
+```{r}
+HGG_survival <- HGG_survival %>% 
+  mutate(broad_mol = factor(broad_mol, levels = c("HGG", "DMG", "DHG",  "IHG", "PXA")))
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "tp53_score + reported_gender + broad_mol + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+broad_mol+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+broad_mol+binned_age.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
+plotForest(model)
+
+```
+
+### save the plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_broad_mol_subtype.pdf"), width = 10, height = 6)
+
+```
+
+### calculate hazard ratio using tp53_score as continuous variat, reported gender, broad_mol and binned_age.
+
+```{r}
+HGG_survival <- HGG_survival %>% 
+  mutate(mol_subtype_without_tp53 = factor(mol_subtype_without_tp53, 
+                                           levels = c("HGG, H3 wildtype", "DMG, H3 K28", "DHG, H3 G35", "HGG, To be classified", "HGG, IDH", "IHG", "PXA")))
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "tp53_score + reported_gender + mol_subtype_without_tp53 + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype_without_tp53+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender+mol_subtype_without_tp53+binned_age.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
+plotForest(model)
+
+```
+
+### save the plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_mol_subtype_without_tp53.pdf"), width = 10, height = 6)
+
+```
+
+
+### Take a look at two subtypes, `HGG, H3 WT` and `DMG, H3 K28`
+
+```{r}
+h3_wt <- HGG_survival %>% 
+  filter(grepl("HGG, H3 wildtype", molecular_subtype))
+
+DMG <- HGG_survival %>%
+  filter(grepl("DMG, H3 K28", molecular_subtype))
+
+```
+
+### calculate hazard ratio using tp53_score as continuous variat, reported gender, molecular_subtype and binned_age in `HGG, H3 WT` samples
+
+```{r}
+
+tp53_survival_cox <- fit_save_model(h3_wt, 
+                                    terms = "tp53_score + reported_gender + molecular_subtype + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "HGG_H3WT_score+reported_gender+molecular_subtype+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+HGG_H3WT_model <- read_rds(file.path(analyses_dir, "results", "HGG_H3WT_score+reported_gender+molecular_subtype+binned_age.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(HGG_H3WT_model$coefficients) <- gsub("tp53_score", "TP53 score", names(HGG_H3WT_model$coefficients))
+
+
+plotForest(HGG_H3WT_model)
+
+```
+
+### save the plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_HGG_WT.pdf"), width = 10, height = 6)
+
+```
+
+
+### calculate hazard ratio using tp53_score as continuous variant, reported gender, molecular_subtype and binned_age in `DMG, H3 K28` samples
+
+```{r}
+
+tp53_survival_cox <- fit_save_model(DMG, 
+                                    terms = "tp53_score + reported_gender + molecular_subtype + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+DMG_model <- read_rds(file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype+binned_age.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(DMG_model$coefficients) <- c("TP53 score", names(DMG_model$coefficients)[2:6])
+
+
+plotForest(DMG_model)
+
+```
+
+### save the plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_DMG.pdf"), width = 10, height = 6)
+
+```
+
+
+### testing the interaction between DMG and tp53 score
+
+```{r}
+tp53_survival_cox <- fit_save_model(DMG, 
+                                    terms = "reported_gender + molecular_subtype * tp53_score + binned_age", 
+                                    output_file = file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"), 
+                                    model_type = "multivariate")
+
+DMG_model <- read_rds(file.path(analyses_dir, "results", "DMG_score+reported_gender+molecular_subtype*tp53+binned_age.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(DMG_model$coefficients) <- c(names(DMG_model$coefficients)[1:2], "TP53 score", names(DMG_model$coefficients)[4:6], "DMG, H3 K28 * TP53 score")
+
+plotForest(DMG_model)
+
+```
+
+### save the plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_DMG_tp53_interaction.pdf"), width = 8, height = 6)
+
+```
+
+```{r}
+sessionInfo()
+
+```
