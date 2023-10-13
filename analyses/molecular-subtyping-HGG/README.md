@@ -28,7 +28,7 @@ bash run-molecular-subtyping.sh
 `methylation_subclass == "PXA"`, 
 **and** 
 have _BRAF_ mutation or other MAPK pathway gene alteration, combined with homozygous deletion of _CDKN2A_ and/or _CDKN2B_. -> "PXA".
-7. All samples that did not meet any of these criteria were marked as `HGG, H3 wildtype` (i.e. there was no canonical histone variant the DNA or methylation classification subtype). 
+7. All samples that did not meet any of these criteria were marked as `HGG, H3 wildtype` (i.e. there was no canonical variant the DNA or methylation classification subtype). 
 8. Remaining samples with no DNA or methylation were categorized as `HGG, To be classified`.
 
 
