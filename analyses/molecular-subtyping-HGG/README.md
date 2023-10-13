@@ -13,7 +13,7 @@ bash run-molecular-subtyping.sh
 
 ### Standard of HGG molecular subtype
 
-1. If there was an _H3-3A_ K28M, _H3C2_ K28M, _H3C3_ K28M, _H3C14_ K28M, _H3-3A_ K28I, _H3C2_ K28I, _H3C3_ K28I or _H3C14_ K28I mutation -> `DMG, H3K28`.
+1. If there was an _H3-3A_ K28M, _H3C2_ K28M, _H3C3_ K28M, _H3C14_ K28M, _H3-3A_ K28I, _H3C2_ K28I, _H3C3_ K28I or _H3C14_ K28I mutation -> `DMG, H3 K28`.
 2. If there was an _H3-3A_ G35V or G35R mutation -> `HGG, H3 G35`.
 3. If there was an _IDH1_ R132 mutation -> `HGG, IDH`.
 4. If high-confidence methylation classification suggested one of the subtypes above (e.g. K28) --> `DMG, H3 K28`.
