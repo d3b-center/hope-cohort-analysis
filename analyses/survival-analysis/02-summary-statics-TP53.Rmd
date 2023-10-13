@@ -67,7 +67,7 @@ tp53_score <- tp53_score %>%
 ```{r}
 
 tp53_score <- tp53_score %>% 
-  mutate(SNV_alt = case_when(!is.na(HGVSp_Short) ~ "SNV", TRUE ~ "None"),
+  mutate(SNV_alt = case_when(SNV_indel_counts == 1 ~ "SNV", TRUE ~ "None"),
          CNV_alt = case_when(!is.na(CNV_loss_evidence) ~ "CNV loss", TRUE ~ "None"), 
          Fusion_alt = case_when(!is.na(Fusion_evidence) ~ "Fusion", TRUE ~ "None"), 
          SV_alt = case_when(!is.na(SV_type) ~ "SV", TRUE ~ "None")) %>% 
