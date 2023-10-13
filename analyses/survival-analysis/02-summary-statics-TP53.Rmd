@@ -45,7 +45,7 @@ tp53_score <- readr::read_tsv(file.path(root_dir, "analyses", "tp53_nf1_score", 
 
 hist <- hist %>% 
   ## molecular subtype as NA
- # filter(!sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212")) %>%
+  filter(!sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212")) %>%
   mutate(broad_mol = case_when(grepl(",", molecular_subtype) ~ substr(molecular_subtype, 1, regexpr(",", molecular_subtype) - 1), 
                                TRUE ~ molecular_subtype), 
          mol_subtype_without_tp53 = case_when(grepl("IHG", molecular_subtype) ~ "IHG", 
