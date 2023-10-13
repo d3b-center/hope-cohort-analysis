@@ -67,13 +67,13 @@ tp53_score <- tp53_score %>%
 ```{r}
 
 tp53_score <- tp53_score %>% 
-  mutate(SNV_alt = case_when(!is.na(HGVSp_Short) ~ "SNV_alt", TRUE ~ "NO"),
-         CNV_alt = case_when(!is.na(CNV_loss_evidence) ~ "CNV_loss", TRUE ~ "NO"), 
-         Fusion_alt = case_when(!is.na(Fusion_evidence) ~ "Fusion", TRUE ~ "NO"), 
-         SV_alt = case_when(!is.na(SV_type) ~ "SV_alt", TRUE ~ "NO")) %>% 
+  mutate(SNV_alt = case_when(SNV_indel_counts == 1 ~ "SNV", TRUE ~ "None"),
+         CNV_alt = case_when(!is.na(CNV_loss_evidence) ~ "CNV loss", TRUE ~ "None"), 
+         Fusion_alt = case_when(!is.na(Fusion_evidence) ~ "Fusion", TRUE ~ "None"), 
+         SV_alt = case_when(!is.na(SV_type) ~ "SV", TRUE ~ "None")) %>% 
   mutate(status = paste(SNV_alt, CNV_alt, Fusion_alt, SV_alt, sep = ","), 
-         status = gsub(",NO", "", status), 
-         status = gsub("NO,", "", status))
+         status = gsub(",None", "", status), 
+         status = gsub("None,", "", status))
                                      
 
 ```
@@ -176,6 +176,7 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
   stat_compare_means(method = "kruskal", label.y = 1.5) + 
   xlab("") + 
   ylab("TP53 score") + 
+  labs(color = "Histology") + 
   theme_Publication()
 
 ```
@@ -183,13 +184,17 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
 ### save the plot
 
 ```{r}
-ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age.png"))
+ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age.pdf"))
 
 ```
 
 ### plot to show the tp53 alteration status
 
 ```{r}
+## change the order of tp53 status legend
+combined_filtered <- combined_filtered %>% 
+  mutate(status = factor(status, levels = c("CNV loss", "SNV", "SNV,CNV loss", "SNV,Fusion", "None")))
+
 ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "(40,62]", ">62", "not reported")), y = tp53_score)) + 
   geom_boxplot() +
   geom_jitter(aes(color = status), width = 0.3, alpha = 0.5) + 
@@ -201,7 +206,7 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
 ### save the plot
 
 ```{r}
-ggsave(file.path(plots_dir, "boxplot_tp53_score_status.png"))
+ggsave(file.path(plots_dir, "boxplot_tp53_score_status.pdf"))
 
 ```
 
@@ -240,6 +245,7 @@ p3 <- ggplot(combined, aes(x = reported_gender, y = tp53_score)) +
       ggtitle(label = "All samples") + 
       xlab("") +      
       ylab("TP53 score") + 
+      labs(color = "Histology") + 
       theme_Publication()
 
 p1 + p2 + p3
@@ -249,7 +255,7 @@ p1 + p2 + p3
 ### save the plot
 
 ```{r}
-ggsave(file.path(plots_dir, "boxplot_tp53_score_gender.png"), height = 6, width = 12)
+ggsave(file.path(plots_dir, "boxplot_tp53_score_gender.pdf"), height = 6, width = 12)
 
 ```
 
@@ -283,7 +289,7 @@ p1
 ### save the plot
 
 ```{r}
-ggsave(file.path(plots_dir, "boxplot_tp53_score_race.png"))
+ggsave(file.path(plots_dir, "boxplot_tp53_score_race.pdf"))
 
 ```
 
@@ -300,6 +306,7 @@ p1 <- combined_filtered %>%
   geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
   xlab("") + 
   ylab("TP53 score") + 
+  labs(color = "TP53 status") + 
   theme_Publication()
 
 p2 <- combined_filtered %>% 
@@ -309,7 +316,8 @@ p2 <- combined_filtered %>%
   geom_jitter(aes(color = tp53_altered), width = 0.3, alpha = 0.5) +
   xlab("") + 
   ylab("TP53 score") + 
-  theme_Publication() +   
+  theme_Publication() + 
+  labs(color = "TP53 status") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 
@@ -321,7 +329,7 @@ p1 / p2
 ### save the plot
 
 ```{r}
-ggsave(file.path(plots_dir, "boxplot_tp53_score_subtype.png"))
+ggsave(file.path(plots_dir, "boxplot_tp53_score_subtype.pdf"), width = 7, height = 8)
 
 ```
 
