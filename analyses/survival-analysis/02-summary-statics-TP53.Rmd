@@ -40,7 +40,7 @@ source(file.path(analyses_dir, "utils", "theme_for_plot.R"))
 ### load files and modify the hist and tp53 score
 
 ```{r}
-hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies.tsv"))
+hist <- readr::read_tsv(file.path(root_dir, "data", "v1", "Hope-GBM-histologies.tsv"))
 tp53_score <- readr::read_tsv(file.path(root_dir, "analyses", "tp53_nf1_score", "results", "tp53_altered_status.tsv"))
 ancestry <- readr::read_tsv(file.path(root_dir, "analyses", "survival-analysis", "input", "D3b_Hope_Ad_Hoc_DEI.somalier-ancestry.tsv"))
 
@@ -120,7 +120,7 @@ HGG_survival <- hist %>%
                                   age_at_diagnosis_year <= 60 ~ "(40,62]", 
                                 TRUE ~ "not reported")) %>%
   distinct() %>% 
-  write_tsv(file.path(file.path(analyses_dir, "input", "HGG_survial_tp53.tsv")))
+  write_tsv(file.path(file.path(analyses_dir, "input", "HGG_survival_tp53.tsv")))
 
 ## GBM samples
 GBM_df <- hist %>%
@@ -140,7 +140,7 @@ GBM_df <- hist %>%
          molecular_subtype, binned_age, binned_tp53, broad_mol, mol_subtype_without_tp53, status) %>% 
     mutate(binned_age = case_when(age_at_diagnosis_year > 62 ~ ">62", TRUE ~ binned_age)) %>%
     distinct() %>% 
-    write_tsv(file.path(file.path(analyses_dir, "input", "GBM_survial_tp53.tsv")))
+    write_tsv(file.path(file.path(analyses_dir, "input", "GBM_survival_tp53.tsv")))
 
 combined <- bind_rows(GBM_df, HGG_survival) %>% 
     mutate(predicted_ancestry = replace_na(predicted_ancestry, "Not reported"))
