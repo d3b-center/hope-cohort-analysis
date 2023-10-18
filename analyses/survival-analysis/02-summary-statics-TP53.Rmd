@@ -42,7 +42,13 @@ source(file.path(analyses_dir, "utils", "theme_for_plot.R"))
 ```{r}
 hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies.tsv"))
 tp53_score <- readr::read_tsv(file.path(root_dir, "analyses", "tp53_nf1_score", "results", "tp53_altered_status.tsv"))
+ancestry <- readr::read_tsv(file.path(root_dir, "analyses", "survival-analysis", "input", "D3b_Hope_Ad_Hoc_DEI.somalier-ancestry.tsv"))
 
+## add sample_id to ancestry
+ancestry <- ancestry %>% 
+  dplyr::rename("Kids_First_Biospecimen_ID" = "#sample_id") %>% 
+  left_join(hist[, c("Kids_First_Biospecimen_ID", "sample_id")])
+  
 hist <- hist %>% 
   ## molecular subtype as NA
   filter(!sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212")) %>%
@@ -85,6 +91,8 @@ tp53_score <- tp53_score %>%
 ## extract HGG samples and combine histologies, tp53_score table, molecular_subtypes together
 HGG_survival <- hist %>%
   left_join(tp53_score, by = "sample_id") %>%
+  ## add predicted_ancestry
+  left_join(ancestry[, c("sample_id", "predicted_ancestry")]) %>%
   ## filter out normal samples as they do not have a molecular subtype
   filter(sample_type != "Normal") %>%
   ## remove CPTAC samples 
@@ -92,13 +100,16 @@ HGG_survival <- hist %>%
   ## generate a column for age_at_diagnosis_years
   mutate(age_at_diagnosis_year = as.integer(age_at_diagnosis_days/365.25)) %>%
   ## change NA in molecular_subtype and reported gender to "not reported"
-  mutate(molecular_subtype = replace_na(molecular_subtype, "Not reported")) %>%
-  mutate(reported_gender = replace_na(reported_gender, "not reported")) %>%
+  mutate(molecular_subtype = replace_na(molecular_subtype, "Not reported"), 
+         reported_gender = replace_na(reported_gender, "not reported")) %>%
+  ## change NA in predicted_ancestry to "not reported
+  mutate(predicted_ancestry = replace_na(predicted_ancestry, "Not reported")) %>%
   select(sample_id, tp53_score, tp53_altered, 
          OS_days, OS_status, EFS_days, EFS_event_type, 
          reported_gender, race, age_at_diagnosis_days, 
          age_at_diagnosis_year, molecular_subtype, 
-         binned_tp53, broad_mol, mol_subtype_without_tp53, status) %>% 
+         binned_tp53, broad_mol, mol_subtype_without_tp53, status, 
+         predicted_ancestry) %>% 
   mutate(binned_age = case_when(age_at_diagnosis_year >= 0 & 
                                   age_at_diagnosis_year <= 15 ~ "[0,15]", 
                                 age_at_diagnosis_year > 15 & 
@@ -131,7 +142,8 @@ GBM_df <- hist %>%
     distinct() %>% 
     write_tsv(file.path(file.path(analyses_dir, "input", "GBM_survial_tp53.tsv")))
 
-combined <- bind_rows(GBM_df, HGG_survival)
+combined <- bind_rows(GBM_df, HGG_survival) %>% 
+    mutate(predicted_ancestry = replace_na(predicted_ancestry, "Not reported"))
 
 ```
 ### test if there is a correlation between age and tp53 score
@@ -290,6 +302,39 @@ p1
 
 ```{r}
 ggsave(file.path(plots_dir, "boxplot_tp53_score_race.pdf"))
+
+```
+
+### The distribution of TP53 score among predicted ancestry
+
+```{r}
+group_summary <- HGG_survival %>%
+  group_by(predicted_ancestry) %>%
+  summarize(count = n())
+
+# Filter the groups with at least 3 samples
+HGG_filtered <- HGG_survival %>%
+  filter(predicted_ancestry %in% group_summary$predicted_ancestry[group_summary$count >= 3])
+
+p1 <- HGG_filtered %>% 
+  mutate(predicted_ancestry = fct_reorder(predicted_ancestry, -tp53_score, .fun='median' )) %>%
+  ggplot(aes(x = predicted_ancestry, y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(width = 0.3, alpha = 0.5) + 
+  xlab("") +
+  stat_compare_means(method = "wilcox", comparisons = list(c("EAS", "AFR"), c("EAS", "EUR"), c("EAS", "AMR"), c("EAS", "Not reported"))) +
+  stat_compare_means(method = "kruskal", label.y = 1.6) + 
+  theme_Publication() + 
+  ylab("TP53 score") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+p1
+```
+
+### save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "boxplot_tp53_score_ancestry.pdf"))
 
 ```
 
