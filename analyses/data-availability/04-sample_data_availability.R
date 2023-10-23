@@ -11,13 +11,13 @@ suppressPackageStartupMessages({
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data", "v1")
 analyses_dir <- file.path(root_dir, "analyses", "data-availability")
-output_dir <- file.path(analyses_dir, "results")
+output_dir <- file.path(analyses_dir, "plots")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
 # read histologies
 annot <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>%
-  filter(!is.na(molecular_subtype))
+  filter(!is.na(HOPE_diagnosis))
 dat <- annot %>% dplyr::select(sample_id) %>% unique()
 
 # proteomics 
