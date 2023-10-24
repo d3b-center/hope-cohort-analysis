@@ -21,15 +21,15 @@ gencode_gtf <- gencode_gtf %>%
   filter(gene_type == "protein_coding") %>%
   unique()
 
-# tpm_dat
+# read TPM data
 tpm_dat <- readRDS(file = file.path(data_dir, "Hope-gene-expression-rsem-tpm-collapsed.rds"))
 tpm_dat <- tpm_dat %>%
   filter(rownames(tpm_dat) %in% gencode_gtf$gene_name)
 
-# master histology file
+# read histology file
 annot <- read_tsv(file = file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>% 
-  filter(!is.na(molecular_subtype),
+  filter(!is.na(HOPE_diagnosis),
          experimental_strategy == "RNA-Seq")
 
 # filter to biospecimens of interest
@@ -81,7 +81,7 @@ ssgsea_scores_each <- ssgsea_scores_each %>%
   inner_join(msi_tumor_only_output) %>%
   left_join(msi_paired_output)
 
-# 1) merge with MSI (tumor only)
+# 1) MSI (tumor only) vs MMR pathways
 pdf(file = file.path(output_dir, "msisensor-pro-tumor-only", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
 ggplot(ssgsea_scores_each, aes(x = msi_tumor_only, y = gsea_score)) +
   xlab("MSI Percent") + 
@@ -92,7 +92,7 @@ ggplot(ssgsea_scores_each, aes(x = msi_tumor_only, y = gsea_score)) +
   stat_cor(method = "pearson", color = "red")
 dev.off()
 
-# 2) merge with MSI (paired)
+# 2) MSI (paired) vs MMR pathways
 pdf(file = file.path(output_dir, "msisensor-pro-paired", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
 ggplot(ssgsea_scores_each, aes(x = msi_paired, y = gsea_score)) +
   xlab("MSI Percent") + 
@@ -102,3 +102,4 @@ ggplot(ssgsea_scores_each, aes(x = msi_paired, y = gsea_score)) +
   facet_wrap(~pathway_name, scales = "free") +
   stat_cor(method = "pearson", color = "red")
 dev.off()
+
