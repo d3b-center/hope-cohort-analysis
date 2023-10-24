@@ -84,7 +84,7 @@ ssgsea_scores_each <- ssgsea_scores_each %>%
 # 1) MSI (tumor only) vs MMR pathways
 pdf(file = file.path(output_dir, "msisensor-pro-tumor-only", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
 ggplot(ssgsea_scores_each, aes(x = msi_tumor_only, y = gsea_score)) +
-  xlab("MSI Percent") + 
+  xlab("% Microsatellite Instability") + 
   ylab("GSVA score") +
   ggpubr::theme_pubr() +
   geom_point(position = "jitter", pch = 21) +
@@ -95,11 +95,10 @@ dev.off()
 # 2) MSI (paired) vs MMR pathways
 pdf(file = file.path(output_dir, "msisensor-pro-paired", "msi_vs_mmr_pathways.pdf"), height = 6, width = 12)
 ggplot(ssgsea_scores_each, aes(x = msi_paired, y = gsea_score)) +
-  xlab("MSI Percent") + 
+  xlab("% Microsatellite Instability") + 
   ylab("GSVA score") +
   ggpubr::theme_pubr() +
   geom_point(position = "jitter", pch = 21) +
   facet_wrap(~pathway_name, scales = "free") +
   stat_cor(method = "pearson", color = "red")
 dev.off()
-

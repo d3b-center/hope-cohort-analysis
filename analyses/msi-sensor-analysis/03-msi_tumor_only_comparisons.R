@@ -45,7 +45,7 @@ p <- ggplot(output_df, aes(msi_tumor_only, tmb_tumor_only)) +
   geom_point(shape = 21) + 
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "red") +
   theme_pubr() + 
-  xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs TMB (tumor-only)") +
+  xlab("% Microsatellite Instability") + ylab("TMB") + ggtitle("% Microsatellite Instability vs TMB (tumor-only)") +
   stat_cor(method = "pearson", color = "red")
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_tmb.pdf"))
 
@@ -66,7 +66,10 @@ p <- ggplot(plot_data, aes(x = HARMONY_age_class_derived, y = msi_tumor_only, co
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("[0,15]\n(n = 58)" = "#C7E9C0",
+                                "(15,26]\n(n = 23)" = "#74C476",
+                                "(26,40]\n(n = 8)" = "#238B45"))
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_three_groups.pdf"), width = 6, height = 6)
 
 # 5) MSI vs Age (two groups)
@@ -87,7 +90,9 @@ p <- ggplot(plot_data, aes(x = HARMONY_age_class_derived, y = msi_tumor_only, co
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("[0,15]\n(n = 58)" = "#C7E9C0",
+                                "(15,40]\n(n = 31)" = "#238B45"))
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_two_groups.pdf"), width = 6, height = 6)
 
 # 4) MSI vs Developmental cluster name
@@ -108,22 +113,28 @@ p <- ggplot(plot_data, aes(x = rdt.name, y = msi_tumor_only, color = rdt.name)) 
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Dev. Cluster Name") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Classical\n(n = 23)" = "#88BED8",
+                                "Mesenchymal-IDHMutant\n(n = 40)" = "#89A544",
+                                "Mesenchymal-IDHWT\n(n = 13)" = "#CE9D21",
+                                "Pro-neural\n(n = 11)" = "#CE61A2",
+                                "NA\n(n = 2)" = "gray"))
 p
 q <- ggplot(plot_data %>% filter(!grepl("NA", rdt.name)), aes(x = rdt.name, y = msi_tumor_only, color = rdt.name)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm=TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
+  stat_compare_means(color = "red", size = 4) +
   xlab("") + 
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Dev. Cluster Name") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Classical\n(n = 23)" = "#88BED8",
+                                "Mesenchymal-IDHMutant\n(n = 40)" = "#89A544",
+                                "Mesenchymal-IDHWT\n(n = 13)" = "#CE9D21",
+                                "Pro-neural\n(n = 11)" = "#CE61A2"))
 q
 dev.off()
 
@@ -143,5 +154,7 @@ p <- ggplot(plot_data, aes(x = as.character(HARMONY_Gender), y = msi_tumor_only,
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Gender") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Male\n(n = 48)" = "#0707CF",
+                                "Female\n(n = 41)" = "#CC0303"))
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_gender.pdf"), width = 6, height = 6)

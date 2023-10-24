@@ -34,6 +34,7 @@ p <- ggplot(annot, aes(x = MSI_paired, y = MSI_tumor_only)) +
   geom_point(pch = 21, size = 4) +
   ggpubr::theme_pubr(base_size = 10, legend = "bottom") + 
   ggtitle(paste0("Paired vs Tumor-only analysis (n = ", nrow(annot) , ")")) +
-  stat_cor(method = "pearson") + ylab("MSI (tumor-only)") + xlab("MSI (paired)")
+  stat_cor(method = "pearson") + 
+  xlab("MSI (paired)") + ylab("MSI (tumor-only)") 
 print(p)
 dev.off()

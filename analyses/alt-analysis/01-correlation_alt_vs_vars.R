@@ -19,7 +19,7 @@ dir.create(output_dir, showWarnings = F, recursive = T)
 # read histologies 
 annot <- read_tsv(file = file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>% 
-  filter(!is.na(molecular_subtype))
+  filter(!is.na(HOPE_diagnosis))
 
 # read MSI paired output 
 msi_paired_output <- read_tsv(file.path("../msi-sensor-analysis/results/msisensor-pro-paired/Hope-msi-paired.tsv")) %>%
@@ -34,20 +34,15 @@ tmb_paired_paired_output <- read_tsv("../tmb-calculation/results/wgs_paired/snv-
 alt_status_output <- read_tsv(file.path(output_dir, "alt_status_aya_hgg.tsv")) %>%
   dplyr::select(sample_id, t_n_telomere_content, ALT_status)
 
-# add proteomics cluster data
-proteomic_data <- read_tsv(file.path(input_dir, "cluster_data_090722.tsv")) %>%
-  dplyr::select(id, rdt.cc)
-
-# add developmental cluster data
-dev_data <- read_tsv(file.path(input_dir, "cluster_data_101922.tsv")) %>%
+# add proteomic/developmental cluster data
+cluster_data <- read_tsv(file.path(input_dir, "cluster_data_101922.tsv")) %>%
   dplyr::select(id, dtt.cc, rdt.name)
 
-# combine all (n = 71)
+# combine all (n = 72)
 output_df <- msi_paired_output %>%
   inner_join(tmb_paired_paired_output, by = c("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode")) %>%
   inner_join(alt_status_output) %>%
-  left_join(proteomic_data, by = c("sample_id" = "id")) %>%
-  left_join(dev_data, by = c("sample_id" = "id")) %>%
+  inner_join(cluster_data, by = c("sample_id" = "id")) %>%
   inner_join(annot)
 
 # split Age into 2 and 3 groups
@@ -59,14 +54,6 @@ output_df <- output_df %>%
 # function to compute correlations
 compute_corr <- function(x){
 
-  # t_n_telomere_content vs MSI
-  tel_content_vs_msi_paired_correlation = cor.test(x = x$t_n_telomere_content, y = x$msi_paired)$estimate
-  tel_content_vs_msi_paired_pvalue = cor.test(x = x$t_n_telomere_content, y = x$msi_paired)$p.value
-  
-  # t_n_telomere_content vs tmb_paired
-  tel_content_vs_tmb_paired_correlation = cor.test(x = x$t_n_telomere_content, y = x$tmb_paired)$estimate
-  tel_content_vs_tmb_paired_pvalue = cor.test(x = x$t_n_telomere_content, y = x$tmb_paired)$p.value
-  
   # ALT status vs Age (two groups)
   alt_status_vs_age_two_group_chisq_pvalue <- chisq.test(x = factor(x$ALT_status), y = factor(x$age_two_groups))$p.value
   alt_status_vs_age_two_group_chisq_pvalue <- round(alt_status_vs_age_two_group_chisq_pvalue, digits = 3)
@@ -79,54 +66,24 @@ compute_corr <- function(x){
   alt_status_vs_gender_chisq_pvalue <- chisq.test(x = factor(x$ALT_status), y = factor(x$HARMONY_Gender))$p.value
   alt_status_vs_gender_chisq_pvalue <- round(alt_status_vs_gender_chisq_pvalue, digits = 3)
   
-  # ALT status vs Protein cluster
-  alt_status_vs_protein_cluster_chisq_pvalue <- chisq.test(x = factor(x$ALT_status), y = factor(x$rdt.cc))$p.value
-  alt_status_vs_protein_cluster_chisq_pvalue <- round(alt_status_vs_protein_cluster_chisq_pvalue, digits = 3)
-  
-  # ALT status vs Protein cluster name
+  # ALT status vs cluster name
   alt_status_vs_protein_cluster_name_chisq_pvalue <- chisq.test(x = factor(x$ALT_status), y = factor(x$rdt.name))$p.value
   alt_status_vs_protein_cluster_name_chisq_pvalue <- round(alt_status_vs_protein_cluster_name_chisq_pvalue, digits = 3)
   
-  # ALT status vs MSI (paired)
-  # msi_pvalue <- chisq.test(x = factor(x$ALT_status), y = x$msi_paired)$p.value
-  alt_status_vs_msi_paired_chisq_pvalue <- wilcox.test(formula = x$msi_paired ~ factor(x$ALT_status))$p.value
-  alt_status_vs_msi_paired_chisq_pvalue <- round(alt_status_vs_msi_paired_chisq_pvalue, digits = 3)
-  
-  # ALT status vs TMB (paired)
-  # tmb_paired_pvalue <- chisq.test(x = factor(x$ALT_status), y = x$tmb_paired)$p.value
-  alt_status_vs_tmb_paired_chisq_pvalue <- wilcox.test(formula = x$tmb_paired ~ factor(x$ALT_status))$p.value
-  alt_status_vs_tmb_paired_chisq_pvalue <- round(alt_status_vs_tmb_paired_chisq_pvalue, digits = 3)
-
   # summarize
-  output_df <- data.frame(tel_content_vs_msi_paired_correlation,
-                          tel_content_vs_msi_paired_pvalue,
-                          tel_content_vs_tmb_paired_correlation,
-                          tel_content_vs_tmb_paired_pvalue,
-                          alt_status_vs_age_two_group_chisq_pvalue, 
+  output_df <- data.frame(alt_status_vs_age_two_group_chisq_pvalue, 
                           alt_status_vs_age_three_group_chisq_pvalue, 
                           alt_status_vs_gender_chisq_pvalue, 
-                          alt_status_vs_protein_cluster_chisq_pvalue, 
-                          alt_status_vs_protein_cluster_name_chisq_pvalue,
-                          alt_status_vs_msi_paired_chisq_pvalue, 
-                          alt_status_vs_tmb_paired_chisq_pvalue)
+                          alt_status_vs_protein_cluster_name_chisq_pvalue)
   return(output_df)
 }
 
-# 1) correlations
+# 1) ALT status chisq comparisons
 df <- compute_corr(x = output_df)
-df <- reshape2::melt(df)
-write_tsv(x = df, file = file.path(output_dir, "alt_correlations_paired.tsv"))
+df <- reshape2::melt(df, variable.name = "comparison", value.name = "chisq_pvalue")
+write_tsv(x = df, file = file.path(output_dir, "alt_status_chisq_output.tsv"))
 
-# 2) ALT telomere content vs TMB (paired) scatter plot
-p <- ggplot(output_df, aes(x = t_n_telomere_content, y = tmb_paired)) +
-  geom_point(pch = 21) +
-  theme_pubr() + 
-  xlab("Telomere Content") + ylab("tmb_paired") + ggtitle("Telomere content vs tmb_paired") +
-  stat_cor(method = "pearson", color = "red")
-p
-ggsave(plot = p, filename = file.path(output_dir, "alt_content_vs_tmb_paired.png"))
-
-# 3) ALT status vs TMB (paired) boxplot
+# 2) ALT status vs TMB (paired) boxplot
 plot_data <- output_df %>% 
   group_by(ALT_status) %>% 
   mutate(n = n(), ALT_status = paste0(ALT_status, "\n(n = ", n, ")"))
@@ -134,56 +91,148 @@ p <- ggplot(plot_data, aes(x = ALT_status, y = tmb_paired, color = ALT_status)) 
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     size = 4) +
+  stat_compare_means(color = "red", size = 4) +
   xlab("") + 
-  ylab("tmb_paired") +
-  ggtitle("ALT Status vs tmb_paired") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  ylab("TMB") +
+  ggtitle("ALT Status vs TMB") +
   theme(legend.position = "none") 
-ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_tmb_paired.png"), height = 6, width = 6)
+ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_tmb.pdf"), height = 6, width = 6)
 
-# 4) ALT status vs telomere content
+# 3) ALT status vs MSI (paired)
+p <- ggplot(plot_data, aes(x = ALT_status, y = msi_paired, color = ALT_status)) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", size = 4) +
+  xlab("") + 
+  ylab("% Microsatellite instability") +
+  ggtitle("ALT Status vs % Microsatellite instability") +
+  theme(legend.position = "none") 
+ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_msi.pdf"), height = 6, width = 6)
+
+# 4) ALT Telomere content vs ALT status
 p <- ggplot(plot_data, aes(x = ALT_status, y = t_n_telomere_content, color = ALT_status)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     size = 4) +
+  stat_compare_means(color = "red", size = 4) +
   xlab("") + 
-  ylab("tmb_paired") +
-  ggtitle("ALT Status vs Telomere Content") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  ylab("Telomere Content") +
+  ggtitle("Telomere Content vs ALT Status") +
   theme(legend.position = "none") 
-ggsave(plot = p, filename = file.path(output_dir, "alt_status_vs_telomere_content.png"), height = 6, width = 4)
+ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_alt_status.pdf"), height = 6, width = 4)
 
 # 5) ALT telomere content vs Age three groups
 plot_df <- output_df %>%
   group_by(age_three_groups) %>%
   mutate(n = n(), age_three_groups = paste0(age_three_groups, "\n(n = ", n, ")"))
-plot_df$age_three_groups <- factor(plot_df$age_three_groups,  levels = c("[0,15]\n(n = 42)", "(15,26]\n(n = 20)", "(26,40]\n(n = 8)"))
+plot_df$age_three_groups <- factor(plot_df$age_three_groups,  levels = c("[0,15]\n(n = 44)", "(15,26]\n(n = 20)", "(26,40]\n(n = 8)"))
 p <- ggplot(plot_df, aes(x = age_three_groups, y = t_n_telomere_content, color = age_three_groups)) +
   geom_boxplot(coef=0) +
   geom_sina() +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
   stat_compare_means(color = "red", size = 4, method = "kruskal.test") +
-  xlab("\nHARMONY_age_class_derived") + 
-  ylab("t_n_telomere_content\n") +
-  theme(legend.position = "none") 
-p
+  xlab("") + 
+  ylab("Telomere Content\n") +
+  ggtitle("ALT telomere content vs. Age") + 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("[0,15]\n(n = 44)" = "#C7E9C0",
+                                "(15,26]\n(n = 20)" = "#74C476",
+                                "(26,40]\n(n = 8)" = "#238B45"))
+ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_age_three_groups.pdf"), height = 6, width = 6)
 
 # 6) ALT telomere content vs Age two groups 
-# 2 class
 plot_df <- output_df %>%
   group_by(age_two_groups) %>%
   mutate(n = n(), age_two_groups = paste0(age_two_groups, "\n(n = ", n, ")"))
-plot_df$age_two_groups <- factor(plot_df$age_two_groups, levels = c("[0,15]\n(n = 42)", "(15,40]\n(n = 28)"))
+plot_df$age_two_groups <- factor(plot_df$age_two_groups, levels = c("[0,15]\n(n = 44)", "(15,40]\n(n = 28)"))
 q <- ggplot(plot_df, aes(x = age_two_groups, y = t_n_telomere_content, color = age_two_groups)) +
   geom_boxplot(coef=0) +
   geom_sina() +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
   stat_compare_means(color = "red", size = 4, method = "wilcox.test") +
-  xlab("\nHARMONY_age_class_derived") + 
-  ylab("t_n_telomere_content\n") +
-  theme(legend.position = "none") 
-q
+  xlab("") + 
+  ylab("Telomere Content\n") +
+  ggtitle("ALT telomere content vs. Age") + 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("[0,15]\n(n = 44)" = "#C7E9C0",
+                                "(15,40]\n(n = 28)" = "#238B45"))
+ggsave(plot = q, filename = file.path(output_dir, "telomere_content_vs_age_two_groups.pdf"), height = 6, width = 6)
+
+# 7) ALT telomere content vs Gender
+plot_data <- output_df %>%
+  mutate(HARMONY_Gender = as.character(HARMONY_Gender)) %>%
+  group_by(HARMONY_Gender) %>%
+  mutate(n = n()) %>%
+  mutate(HARMONY_Gender = paste0(HARMONY_Gender, "\n(n = ",n,")")) 
+p <- ggplot(plot_df, aes(x = HARMONY_Gender, y = t_n_telomere_content, color = HARMONY_Gender)) +
+  geom_boxplot(coef=0) +
+  geom_sina() +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", size = 4, method = "wilcox.test") +
+  xlab("") + 
+  ylab("Telomere Content\n") +
+  ggtitle("ALT telomere content vs. Gender") + 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Male\n(n = 42)" = "#0707CF",
+                                "Female\n(n = 30)" = "#CC0303"))
+ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_gender.pdf"), height = 6, width = 6)
+
+# 8) ALT telomere content vs Developmental cluster name
+plot_data <- output_df %>%
+  mutate(rdt.name = as.character(rdt.name)) %>%
+  group_by(rdt.name) %>%
+  mutate(n = n()) %>%
+  mutate(rdt.name = paste0(rdt.name, "\n(n = ",n,")")) 
+plot_data$rdt.name <- factor(plot_data$rdt.name, levels = plot_data %>% arrange(dtt.cc) %>% pull(rdt.name) %>% unique())
+pdf(file = file.path(output_dir, "telomere_content_vs_dev_cluster_name.pdf"), width = 10, height = 6)
+p <- ggplot(plot_data, aes(x = rdt.name, y = t_n_telomere_content, color = rdt.name)) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", size = 4) +
+  xlab("") + 
+  ylab("Telomere Content") +
+  ggtitle("Telomere Content vs. Dev. Cluster") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Classical\n(n = 17)" = "#88BED8",
+                                "Mesenchymal-IDHMutant\n(n = 35)" = "#89A544",
+                                "Mesenchymal-IDHWT\n(n = 9)" = "#CE9D21",
+                                "Pro-neural\n(n = 9)" = "#CE61A2",
+                                "NA\n(n = 2)" = "gray"))
+print(p)
+q <- ggplot(plot_data %>% filter(!grepl("NA", rdt.name)), aes(x = rdt.name, y = t_n_telomere_content, color = rdt.name)) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", size = 4) +
+  xlab("") + 
+  ylab("Telomere Content") +
+  ggtitle("Telomere Content vs. Dev. Cluster") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Classical\n(n = 17)" = "#88BED8",
+                                "Mesenchymal-IDHMutant\n(n = 35)" = "#89A544",
+                                "Mesenchymal-IDHWT\n(n = 9)" = "#CE9D21",
+                                "Pro-neural\n(n = 9)" = "#CE61A2"))
+print(q)
+dev.off()
+
+# 8) ALT telomere content vs TMB (paired) scatter plot
+p <- ggplot(output_df, aes(x = t_n_telomere_content, y = tmb_paired)) +
+  geom_point(pch = 21) +
+  theme_pubr() + 
+  xlab("Telomere Content") + ylab("TMB") + ggtitle("Telomere content vs TMB") +
+  stat_cor(method = "pearson", color = "red")
+ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_tmb.pdf"))
+
+# 9) ALT telomere content vs MSI (paired)
+p <- ggplot(output_df, aes(x = t_n_telomere_content, y = msi_paired)) +
+  geom_point(pch = 21) +
+  theme_pubr() + 
+  xlab("Telomere Content") + ylab("% MSI") + ggtitle("Telomere content vs % MSI") +
+  stat_cor(method = "pearson", color = "red")
+ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_msi.pdf"))

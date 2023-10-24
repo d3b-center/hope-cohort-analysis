@@ -1,0 +1,5 @@
+comparison	chisq_pvalue
+alt_status_vs_age_two_group_chisq_pvalue	0.273
+alt_status_vs_age_three_group_chisq_pvalue	0.406
+alt_status_vs_gender_chisq_pvalue	0.44
+alt_status_vs_protein_cluster_name_chisq_pvalue	0.37

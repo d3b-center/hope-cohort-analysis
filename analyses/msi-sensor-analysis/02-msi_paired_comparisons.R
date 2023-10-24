@@ -50,7 +50,7 @@ p <- ggplot(output_df, aes(msi_paired, tmb_paired)) +
   geom_point(shape = 21) + 
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "red") +
   theme_pubr() + 
-  xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs TMB") +
+  xlab("% Microsatellite Instability") + ylab("TMB") + ggtitle("% Microsatellite Instability vs TMB") +
   stat_cor(method = "pearson", color = "red")
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_tmb.pdf"))
 
@@ -71,7 +71,10 @@ p <- ggplot(plot_data, aes(x = HARMONY_age_class_derived, y = msi_paired, color 
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("[0,15]\n(n = 44)" = "#C7E9C0",
+                              "(15,26]\n(n = 20)" = "#74C476",
+                              "(26,40]\n(n = 8)" = "#238B45"))
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_three_groups.pdf"), width = 6, height = 6)
 
 # 3) MSI vs Age (two groups)
@@ -92,7 +95,9 @@ p <- ggplot(plot_data, aes(x = plot_data$HARMONY_age_class_derived, y = msi_pair
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("[0,15]\n(n = 44)" = "#C7E9C0",
+                                "(15,40]\n(n = 28)" = "#238B45"))
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_two_groups.pdf"), width = 6, height = 6)
 
 # 4) MSI vs Developmental cluster name
@@ -113,7 +118,12 @@ p <- ggplot(plot_data, aes(x = rdt.name, y = msi_paired, color = rdt.name)) +
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Dev. Cluster") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Classical\n(n = 17)" = "#88BED8",
+                                "Mesenchymal-IDHMutant\n(n = 35)" = "#89A544",
+                                "Mesenchymal-IDHWT\n(n = 9)" = "#CE9D21",
+                                "Pro-neural\n(n = 9)" = "#CE61A2",
+                                "NA\n(n = 2)" = "gray"))
 print(p)
 q <- ggplot(plot_data %>% filter(!grepl("NA", rdt.name)), aes(x = rdt.name, y = msi_paired, color = rdt.name)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
@@ -125,7 +135,11 @@ q <- ggplot(plot_data %>% filter(!grepl("NA", rdt.name)), aes(x = rdt.name, y = 
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Dev. Cluster") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Classical\n(n = 17)" = "#88BED8",
+                                "Mesenchymal-IDHMutant\n(n = 35)" = "#89A544",
+                                "Mesenchymal-IDHWT\n(n = 9)" = "#CE9D21",
+                                "Pro-neural\n(n = 9)" = "#CE61A2"))
 print(q)
 dev.off()
 
@@ -135,7 +149,7 @@ plot_data <- output_df %>%
   group_by(HARMONY_Gender) %>%
   mutate(n = n()) %>%
   mutate(HARMONY_Gender = paste0(HARMONY_Gender, "\n(n = ",n,")")) 
-p <- ggplot(plot_data, aes(x = as.character(HARMONY_Gender), y = msi_paired, color = as.character(HARMONY_Gender))) +
+p <- ggplot(plot_data, aes(x = HARMONY_Gender, y = msi_paired, color = HARMONY_Gender)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
@@ -144,8 +158,10 @@ p <- ggplot(plot_data, aes(x = as.character(HARMONY_Gender), y = msi_paired, col
   xlab("") + 
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Gender") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Male\n(n = 42)" = "#0707CF",
+                                "Female\n(n = 30)" = "#CC0303"))
+p
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_gender.pdf"), width = 6, height = 6)
 
 # 6) MSI vs ALT status
@@ -170,6 +186,6 @@ p <- ggplot(output_df, aes(x = msi_paired, y = t_n_telomere_content)) +
   geom_point(shape = 21) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "red") +
   theme_pubr() +
-  xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs Telomere content") +
+  xlab("% Microsatellite Instability") + ylab("Telomere Content") + ggtitle("% Microsatellite Instability vs Telomere content") +
   stat_cor(method = "pearson", color = "red")
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_telomere_content.pdf"))
