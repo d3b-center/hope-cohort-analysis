@@ -158,7 +158,7 @@ ggplot(combined, aes(x = age_at_diagnosis_days, y = tp53_score)) +
   theme_Publication()
 ```
 
-### The distribution of TP53 score between age range and tp53 score 
+### The distribution of TP53 score between age range and tp53 score - 3 group AYA
 
 ```{r}
 group_summary <- combined %>%
@@ -167,8 +167,11 @@ group_summary <- combined %>%
 
 # Filter the groups with at least 3 samples
 combined_filtered <- combined %>%
+  mutate(binned_age_2gp = case_when(binned_age %in% c("(15,26]", "(26,40]") ~ "(15,40]",
+                                     TRUE ~ binned_age)) %>%
   filter(binned_age %in% group_summary$binned_age[group_summary$count >= 3])
 
+# 3 group AYA
 ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "(40,62]", ">62", "not reported")), y = tp53_score)) + 
   geom_boxplot() +
   geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) + 
@@ -178,13 +181,34 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
   ylab("TP53 score") + 
   labs(color = "Histology") + 
   theme_Publication()
-
 ```
 
 ### save the plot
 
 ```{r}
-ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age.pdf"))
+ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age_3gp_aya.pdf"))
+
+```
+
+### 2 group AYA
+
+```{r}
+# 2 group AYA
+ggplot(combined_filtered, aes(x = factor(binned_age_2gp, levels = c("[0,15]", "(15,40]", "(40,62]", ">62")), y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) + 
+  stat_compare_means(method = "wilcox", comparisons = list(c("[0,15]", "(15,40]"), c("[0,15]", "(40,62]"), c("[0,15]", ">62"), c("(15,40]", "(40,62]"), c("(15,40]", ">62"))) + 
+  stat_compare_means(method = "kruskal", label.y = 1.5) + 
+  xlab("") + 
+  ylab("TP53 score") + 
+  labs(color = "Histology") + 
+  theme_Publication()
+```
+
+### save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age_2gp_aya.pdf"))
 
 ```
 
