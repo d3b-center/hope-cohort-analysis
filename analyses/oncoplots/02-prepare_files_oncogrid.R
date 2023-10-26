@@ -37,57 +37,65 @@ deg <- read.delim(file.path(input_dir, "deg_genes.tsv"), header = F) %>%
 
 # rna/wgs ids
 wgs_ids <- readRDS(file.path(data_dir, "Hope-cnv-controlfreec.rds")) %>%
-  pull(biospecimen_id) %>%
+  pull(Kids_First_Biospecimen_ID) %>%
   unique()
 rna_ids <- file.path(data_dir, "Hope-gene-expression-rsem-tpm-collapsed.rds") %>%
   readRDS() %>%
   colnames()
 
 # read master histology
-hist_df <- read_tsv(file.path(data_dir, "master_histology_hope_cohort.tsv"))
+hist_df <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
+hist_df <- hist_df %>%
+  filter(!is.na(HOPE_diagnosis))
 
-# format diagnosis type 
-hist_df$diagnosis_type[hist_df$diagnosis_type == "Recurrent"] = "Recurrence"
-hist_df$diagnosis_type[hist_df$diagnosis_type == "recurrent"] = "Recurrence"
-hist_df$diagnosis_type[hist_df$diagnosis_type == "Recurrent, residual"] = "Recurrence"
-hist_df$diagnosis_type[hist_df$diagnosis_type == "Primary"] = "Initial CNS Tumor"
+# fix HOPE_diagnosis_type
+hist_df <- hist_df %>%
+  mutate(HOPE_diagnosis_type = case_when(
+    HOPE_diagnosis_type %in% c("Recurrent", "recurrent", "Recurrent, residual")  ~ "Recurrence",
+    HOPE_diagnosis_type == "Primary" ~ "Initial CNS Tumor",
+    TRUE ~ as.character(HOPE_diagnosis_type)))
 
-# pull sequencing experiment information from cavatica manifests
-manifest <- list.files(path = file.path("analyses", "merge-files", "input", "manifest"), pattern = "manifest.*.tsv", full.names = T)
-manifest <- grep("msi|cram|fusion", manifest, invert = T, value = T)
-manifest <- lapply(manifest, FUN = function(x) readr::read_tsv(x))
-manifest <- data.table::rbindlist(manifest)
-colnames(manifest) <- gsub(" ", "_", colnames(manifest))
-manifest <- manifest %>%
-  filter(Kids_First_Biospecimen_ID %in% c(rna_ids, wgs_ids),
-         sample_id %in% hist_df$Sample_ID) %>%
-  mutate(experimental_strategy = ifelse(Kids_First_Biospecimen_ID %in% rna_ids, "RNA-Seq", "WGS")) %>%
-  dplyr::mutate(Sample_ID = sample_id,
-                Sequencing_Experiment = experimental_strategy) %>%
-  dplyr::select(Kids_First_Biospecimen_ID, Sample_ID, Sequencing_Experiment) %>%
+# fix WHO Grade
+hist_df <- hist_df %>%
+  mutate(HARMONY_WHO.Grade = ifelse(HARMONY_WHO.Grade == "1-2?", NA, HARMONY_WHO.Grade))
+
+# add WHO Grade to Diagnosis 
+diagnosis_who_grade_map <- hist_df %>% 
+  filter(!is.na(HOPE_diagnosis)) %>%
+  mutate(Diagnosis = gsub(" [(].*", "", HOPE_diagnosis)) %>%
+  group_by(Diagnosis, HOPE_diagnosis) %>% 
+  summarise(HARMONY_WHO.Grade = toString(as.roman(sort(unique(na.omit(HARMONY_WHO.Grade)))))) %>%
+  mutate(HARMONY_WHO.Grade = gsub(", ", "/", HARMONY_WHO.Grade)) %>%
+  mutate(HARMONY_WHO.Grade = paste0("(WHO grade ", HARMONY_WHO.Grade, ")")) %>%
+  mutate(Diagnosis = paste(Diagnosis, HARMONY_WHO.Grade)) %>%
+  dplyr::select(HOPE_diagnosis, Diagnosis)
+
+# add new Diagnosis to annotation 
+hist_df <- hist_df %>%
+  left_join(diagnosis_who_grade_map)
+
+# add TMB (paired)
+tmb_paired_output <- read_tsv("../tmb-calculation/results/wgs_paired/snv-mutation-tmb-coding.tsv") %>%
+  dplyr::rename("TMB" = "tmb") %>%
+  dplyr::select(Tumor_Sample_Barcode, TMB) %>%
+  inner_join(hist_df, by = c("Tumor_Sample_Barcode" = "Kids_First_Biospecimen_ID")) %>%
+  dplyr::select(sample_id, TMB) %>%
   unique()
-
-# annotation with sample and experimental strategy
-seq_info <- manifest %>%
-  dplyr::select(-c(Kids_First_Biospecimen_ID)) %>%
-  group_by(Sample_ID) %>%
-  mutate(Sequencing_Experiment = toString(sort(Sequencing_Experiment))) %>%
-  filter(Sample_ID %in% hist_df$Sample_ID) %>%
-  unique()
+hist_df <- hist_df %>%
+  left_join(tmb_paired_output, by = c("sample_id"))
 
 # select columns of interest
 annot_info <- hist_df %>%
-  left_join(seq_info, by = "Sample_ID") %>%
-  dplyr::rename("Sample" = "Sample_ID",
-                "Integrated_Diagnosis" = "diagnosis",
-                "Diagnosis_Type" = "diagnosis_type",
-                "Tumor_Location" = "Tumor.Location.condensed",
-                "Sex" = "Gender",
-                "Age" = "age_two_groups",
-                # "Age_Three_Groups" = "age_three_groups",
-                # "MSI" = "msi_paired",
-                "TMB" = "TMB_paired") %>%
-  dplyr::select(Sample, Sequencing_Experiment, Integrated_Diagnosis, Diagnosis_Type, Tumor_Location, Sex, Age, TMB)
+  filter(Kids_First_Biospecimen_ID %in% c(rna_ids, wgs_ids)) %>%
+  group_by(sample_id) %>%
+  mutate(Sequencing_Experiment = toString(sort(experimental_strategy))) %>%
+  dplyr::rename("Sample" = "sample_id",
+                "Diagnosis_Type" = "HOPE_diagnosis_type",
+                "Tumor_Location" = "HOPE_Tumor.Location.condensed",
+                "Sex" = "HARMONY_Gender",
+                "Age" = "HARMONY_age_class_derived") %>%
+  dplyr::select(Sample, Sequencing_Experiment, Diagnosis, Diagnosis_Type, Tumor_Location, Sex, Age, TMB) %>%
+  unique()
 
 # save annotation file
 write.table(annot_info, file = file.path(output_dir, "annotation.txt"), quote = F, sep = "\t", row.names = F)
@@ -96,10 +104,11 @@ write.table(annot_info, file = file.path(output_dir, "annotation.txt"), quote = 
 genes_df <- readRDS(file.path(output_dir, "hope_cohort_vs_gtex_brain_degs.rds"))
 deg_genes <- genes_df %>%
   dplyr::mutate(label = ifelse(diff_expr == "up", "OVE", "UNE")) %>%
-  dplyr::rename("Gene_name" = "genes") %>%
+  dplyr::rename("Gene_name" = "genes",
+                "Sample" = "sample") %>%
   filter(Gene_name %in% deg$V1) %>%
-  inner_join(manifest, by = c("sample" = "Kids_First_Biospecimen_ID")) %>%
-  dplyr::select(Sample_ID, Gene_name, label) %>%
+  inner_join(hist_df, by = c("Sample" = "Kids_First_Biospecimen_ID")) %>%
+  dplyr::select(sample_id, Gene_name, label) %>%
   unique()
 
 # 2. get cnv info
@@ -107,14 +116,13 @@ cnv_genes <- readRDS(file.path(data_dir, "Hope-cnv-controlfreec.rds"))
 cnv_genes <- cnv_genes %>%
   dplyr::mutate(label = ifelse(status == "Gain", "GAI", "LOS")) %>%
   filter(gene_symbol %in% cnv$V1) %>%
-  dplyr::rename("Gene_name" = "gene_symbol",
-                "Kids_First_Biospecimen_ID" = "biospecimen_id") %>%
-  inner_join(manifest, by = "Kids_First_Biospecimen_ID") %>%
-  dplyr::select(Sample_ID, Gene_name, label) %>%
+  dplyr::rename("Gene_name" = "gene_symbol") %>%
+  inner_join(hist_df, by = "Kids_First_Biospecimen_ID") %>%
+  dplyr::select(sample_id, Gene_name, label) %>%
   unique()
 
 # 3. get snv info
-mut_genes <- readRDS(file.path(data_dir, "Hope-consensus-mutation.maf.rds"))
+mut_genes <- data.table::fread(file.path(data_dir, "Hope-snv-consensus-plus-hotspots.maf.tsv.gz"))
 
 # filter to variant classification of interest
 mut_genes <- mut_genes %>%
@@ -128,8 +136,8 @@ mut_genes <- mut_genes %>%
   filter(Hugo_Symbol %in% snv$V1) %>%
   dplyr::rename("Gene_name" = "Hugo_Symbol",
                 "Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode") %>%
-  inner_join(manifest, by = "Kids_First_Biospecimen_ID") %>%
-  dplyr::select(Sample_ID, Gene_name, label) %>%
+  inner_join(hist_df, by = "Kids_First_Biospecimen_ID") %>%
+  dplyr::select(sample_id, Gene_name, label) %>%
   unique()
 
 # 4. get fusion info
@@ -144,8 +152,8 @@ fus_genes <- fus_genes %>%
   dplyr::mutate(label = "FUS") %>%
   dplyr::rename("Kids_First_Biospecimen_ID" = "Sample") %>%
   filter(Gene_name %in% fusion$V1) %>%
-  inner_join(manifest, by = c("Kids_First_Biospecimen_ID")) %>%
-  dplyr::select(Sample_ID, Gene_name, label) %>%
+  inner_join(hist_df, by = c("Kids_First_Biospecimen_ID")) %>%
+  dplyr::select(sample_id, Gene_name, label) %>%
   unique()
 
 # combine fus + snv
@@ -156,34 +164,34 @@ cnv_deg <- rbind(cnv_genes, deg_genes)
 
 # uniquify rows
 snv_fus <- snv_fus %>%
-  group_by(Sample_ID, Gene_name) %>%
+  group_by(sample_id, Gene_name) %>%
   dplyr::summarise(label = paste0(label, collapse = ';'))
 cnv_deg <- cnv_deg %>%
-  group_by(Sample_ID, Gene_name) %>%
+  group_by(sample_id, Gene_name) %>%
   dplyr::summarise(label = paste0(label, collapse = ';'))
 
 # convert to matrix
 snv_fus <- snv_fus %>%
   spread(key = Gene_name, value = 'label') %>%
-  column_to_rownames('Sample_ID')
+  column_to_rownames('sample_id')
 cnv_deg <- cnv_deg %>%
   spread(key = Gene_name, value = 'label') %>%
-  column_to_rownames('Sample_ID')
+  column_to_rownames('sample_id')
 
 # add an * to common genes 
 colnames(cnv_deg) <- ifelse(colnames(cnv_deg) %in% colnames(snv_fus), paste0(colnames(cnv_deg),'*'), colnames(cnv_deg))
 
 # merge both matrices
 oncogrid_mat <- snv_fus %>%
-  rownames_to_column('Sample') %>%
+  rownames_to_column('sample_id') %>%
   full_join(cnv_deg %>%
-              rownames_to_column('Sample'), by = "Sample")
+              rownames_to_column('sample_id'), by = "sample_id")
 
 print("Samples missing from oncogrid:")
-print(setdiff(hist_df$Sample_ID, oncogrid_mat$Sample))
-# "7316-1455"  "7316-942"   "7316-24"    "7316-255"   "7316-1889"  "7316-212"   "7316UP-904"
+print(setdiff(hist_df$sample_id, oncogrid_mat$sample_id))
+# [1] "7316-212"   "7316-24"    "7316-942"   "7316UP-904"
 
 # save output matrix
 oncogrid_mat <- oncogrid_mat %>%
-  filter(Sample %in% annot_info$Sample)
+  filter(sample_id %in% annot_info$Sample)
 write.table(oncogrid_mat, file = file.path(output_dir, "oncoprint.txt"), quote = F, sep = "\t", row.names = F)

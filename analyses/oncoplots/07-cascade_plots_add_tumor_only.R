@@ -24,7 +24,6 @@ mat = t(as.matrix(mat))
 mat[mat %in% c("OVE", "UNE", "FUS", "GAI", "LOS")] <- ""
 mat = gsub(";UNE|;OVE|;FUS", "", mat)
 mat = gsub("GAI|LOS|;LOS|GAI;LOS|LOS;GAI", "", mat)
-# mat[mat == ""] <- "NO"
 mat[mat != ""] <- "Mutation"
 
 keep = apply(mat, 1, FUN = function(x) length(unique(x)) == 2)
@@ -55,60 +54,47 @@ samples_to_use <- intersect(rownames(annot_info), colnames(mat))
 mat <- mat[,samples_to_use]
 annot_info <- annot_info[samples_to_use,]
 
+# only plot top genes 
+snv_genes_to_keep = apply(mat, 1, FUN = function(x) (length(grep("Mutation", x))/ncol(mat))*100)
+snv_genes_to_keep <- names(snv_genes_to_keep[snv_genes_to_keep >= 6])
+mat <- mat[which(rownames(mat) %in% snv_genes_to_keep),]
+
 # annotation 1
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
-# col_fun_msi = colorRamp2(c(0, max(annot_info$MSI, na.rm = T)), c("white", "purple3"))
-annot_info$Integrated_Diagnosis[is.na(annot_info$Integrated_Diagnosis)] <- "N/A"
-annot_info$Diagnosis_Type[is.na(annot_info$Diagnosis_Type)] <- "N/A"
-annot_info$Tumor_Location[is.na(annot_info$Tumor_Location)] <- "N/A"
-annot_info$Sex[is.na(annot_info$Sex)] <- "N/A"
-annot_info$Age[is.na(annot_info$Age)] <- "N/A"
-annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,40]", "N/A"))
-# annot_info$Age_Three_Groups[is.na(annot_info$Age_Three_Groups)] <- "N/A"
-# annot_info$Age_Three_Groups <- factor(annot_info$Age_Three_Groups, levels = c("[0,15]", "(15,26]", "(26,40]", "N/A"))
+annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
 ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experiment)), col = list(
   TMB = col_fun_tmb,
-  Sequencing_Experiment = c("WGS" = "red",
-                            "RNA-Seq, WGS" = "orangered",
-                            "RNA-Seq, WGS_Tumor_Only" = "orange"),
-  Integrated_Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
-                           "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
-                           "Astrocytoma" = "brown2", 
-                           "Glioblastoma" = "orange",
-                           "Pleomorphic xanthoastrocytoma" = "darkgreen",
-                           "Diffuse Midline Glioma" = "blue2"),
+  Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseagreen",
+                "Diffuse Midline Glioma (WHO grade III/IV)" = "darkgreen",
+                "Astrocytoma;Oligoastrocytoma (WHO grade III)" = "mediumorchid2",
+                "Astrocytoma (WHO grade III/IV)" = "#5fff57", 
+                "Glioblastoma (WHO grade IV)" = "#f268d6",
+                "Pleomorphic xanthoastrocytoma (WHO grade II/III)" = "#005082"),
   Diagnosis_Type = c("Initial CNS Tumor" = "#cee397",
                      "Progressive" = "#827397",
                      "Recurrence" = "#363062",
                      "Second Malignancy" = "#005082"),
-  Tumor_Location = c("Cortical" = "magenta",
-                     "Other/Multiple locations/NOS" = "pink",
-                     "Midline" = "purple",
-                     "Cerebellar" = "navy"),
-  Sex = c("Female" = "deeppink4",
-          "Male" = "navy"),
-  Age = c("[0,15]" = "gold",
-                     "(15,40]" = "purple",
-                     "N/A" = "gray")),
-  # Age_Three_Groups = c("[0,15]" = "gold",
-  #                      "(15,26]" = "purple",
-  #                      "(26,40]" = "darkgreen",
-  #                      "N/A" = "gray")),
-  annotation_name_gp = gpar(fontsize = 9),
+  Tumor_Location = c("Cortical" = "#D4806C",
+                     "Other/Multiple locations/NOS" = "#7C8F97",
+                     "Midline" = "#344C68",
+                     "Cerebellar" = "#94004C"),
+  Sex = c("Male" = "#0707CF",
+          "Female" = "#CC0303"),
+  Age = c("[0,15]" = "#C7E9C0",
+          "(15,26]" = "#74C476",
+          "(26,40]" = "#238B45")),
+  annotation_name_gp = gpar(fontsize = 10),
   gp = gpar(col = "#595959"), 
   simple_anno_size = unit(4, "mm"), 
-  annotation_name_side = "left",
-  annotation_legend_param = list(
-    # Sequencing_Experiment = list(nrow = 3)
-  ))
+  annotation_name_side = "left")
 
 # oncoprint
 ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                alter_fun = alter_fun, 
                col = col, 
                show_column_names = TRUE, 
-               column_names_gp = gpar(fontsize = 9),
-               row_names_gp = gpar(fontsize = 9),
+               column_names_gp = gpar(fontsize = 10),
+               row_names_gp = gpar(fontsize = 10),
                column_names_side = "top",
                top_annotation = ha,
                right_annotation = NULL,
@@ -120,18 +106,18 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            labels = c("SNV")
                ))
 
-pdf(file = file.path(output_dir, "cascade_plot.pdf"), width = 15, height = 10) 
+pdf(file = file.path(output_dir, "cascade_plot.pdf"), width = 15, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
-# order by Age (2 groups)
+# order by Age 
 ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                alter_fun = alter_fun, 
                column_split = annot_info$Age,
                col = col, 
                show_column_names = TRUE, 
-               column_names_gp = gpar(fontsize = 9),
-               row_names_gp = gpar(fontsize = 9),
+               column_names_gp = gpar(fontsize = 10),
+               row_names_gp = gpar(fontsize = 10),
                column_names_side = "top",
                top_annotation = ha,
                right_annotation = NULL,
@@ -142,31 +128,9 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("Mutation"),
                                            labels = c("SNV")
                ))
-pdf(file = file.path(output_dir, "cascade_orderby_age.pdf"), width = 15, height = 10) 
+pdf(file = file.path(output_dir, "cascade_orderby_age.pdf"), width = 15, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
-
-# # order by Age (3 groups)
-# ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
-#                alter_fun = alter_fun, 
-#                column_split = annot_info$Age_Three_Groups,
-#                col = col, 
-#                show_column_names = TRUE, 
-#                column_names_gp = gpar(fontsize = 9),
-#                row_names_gp = gpar(fontsize = 9),
-#                column_names_side = "top",
-#                top_annotation = ha,
-#                right_annotation = NULL,
-#                row_names_side = "left",
-#                pct_side = "right",
-#                remove_empty_rows = TRUE,
-#                heatmap_legend_param = list(title = "Alteration", nrow = 9, title_position = "topleft", direction = "horizontal",
-#                                            at = c("Mutation"),
-#                                            labels = c("SNV")
-#                ))
-# pdf(file = file.path(output_dir, "cascade_orderby_age_three_groups.pdf"), width = 15, height = 10) 
-# draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
-# dev.off()
 
 # order by Sex
 ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
@@ -174,8 +138,8 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                column_split = annot_info$Sex,
                col = col, 
                show_column_names = TRUE, 
-               column_names_gp = gpar(fontsize = 9),
-               row_names_gp = gpar(fontsize = 9),
+               column_names_gp = gpar(fontsize = 10),
+               row_names_gp = gpar(fontsize = 10),
                column_names_side = "top",
                top_annotation = ha,
                right_annotation = NULL,
@@ -186,6 +150,6 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("Mutation"),
                                            labels = c("SNV")
                ))
-pdf(file = file.path(output_dir, "cascade_orderby_sex.pdf"), width = 15, height = 10) 
+pdf(file = file.path(output_dir, "cascade_orderby_sex.pdf"), width = 15, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
