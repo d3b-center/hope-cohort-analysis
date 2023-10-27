@@ -1,12 +1,16 @@
 
-### Introduction
+### Authors: 
+
+Jo Lynne Rokita
+Komal S. Rathi
+
+### Purpose
 
 The goal of this module is to compute correlations between ALT-status/Telomere content and various sample/clinical variables. 
 
 ### Description of scripts
 
 ***
-
 `00-generate-telomere-ratio.R`: This script computes the telomere ratio using telomere content for tumor and normal samples output from Telomere Hunter.
 
 This script can be run using the following R script:
@@ -28,7 +32,9 @@ input
 results
 └── alt_status_aya_hgg.tsv
 ```
+
 ***
+
 `01-correlation_alt_vs_vars.R`: This scripts computes the correlation between ALT-status vs various clinical variables and T/N telomere content vs various clinical variables like Age (two and three groups), Gender, Protein clusters, % Microsatellite instability and TMB.
 
 This script can be run using the following R script:
@@ -40,7 +46,7 @@ Rscript 01-correlation_alt_vs_vars.R
 #### Inputs
 
 ```
-../data
+../../data
 └── Hope-GBM-histologies.tsv
 
 input

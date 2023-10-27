@@ -19,7 +19,7 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data", "v1")
 analyses_dir <- file.path(root_dir, "analyses", "data-availability")
-output_dir <- file.path(analyses_dir, "plots")
+output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
 # read histologies
