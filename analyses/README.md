@@ -7,7 +7,7 @@ Order of analyses:
 5. `alt-analysis`: Downstream analysis of `ALT status` and `telomere content` for `T/N paired` WGS samples.
 6. `msi-sensor-analysis`: Downstream analysis of MSI outputs for `T/N paired` and `Tumor-only` WGS samples.  
 7. `survival-analysis`: Survival analysis with `ALT status` and `Molecular subtypes`.
-8. `oncoplots`:
+8. `oncoplots`: Oncoplots and cascade style plots.
 9. `proteomic-data`:
 10. `tp53_nf1_score`:
 
