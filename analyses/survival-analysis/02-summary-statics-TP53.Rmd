@@ -14,6 +14,7 @@ suppressWarnings({
   library(ggplot2)
   library(patchwork)
   library(ggpubr)
+  library(ggalluvial)
 })
 ```
 
@@ -335,6 +336,31 @@ p1
 
 ```{r}
 ggsave(file.path(plots_dir, "boxplot_tp53_score_ancestry.pdf"))
+
+```
+
+## alluvial plot for race and predicted-ancestry
+
+```{r}
+HGG_race <- as.data.frame(table(HGG_survival$race, HGG_survival$predicted_ancestry)) %>% 
+  dplyr::rename(race = Var1, 
+                predicted_ancestry = Var2) %>%
+  to_lodes_form(axes = 1:2) %>% 
+  dplyr::rename(Group = stratum)
+
+p1 <- ggplot(HGG_race, aes(y = Freq, stratum = Group, alluvium = alluvium, x= x)) + 
+  geom_alluvium(aes(fill = Group)) + 
+  geom_stratum(aes(fill = Group)) +
+  xlab("") + 
+  theme_Publication()
+  
+p1
+```
+
+## save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "alluvial_race_ancestry.pdf"), height = 6, width = 10)
 
 ```
 
