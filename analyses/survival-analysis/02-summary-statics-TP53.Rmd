@@ -346,11 +346,18 @@ HGG_race <- as.data.frame(table(HGG_survival$race, HGG_survival$predicted_ancest
   dplyr::rename(race = Var1, 
                 predicted_ancestry = Var2) %>%
   to_lodes_form(axes = 1:2) %>% 
-  dplyr::rename(Group = stratum)
+  dplyr::rename(Group = stratum) %>% 
+  filter(Group != "Not reported") %>% 
+  mutate(Group = factor(Group, levels = c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "Other", "Reported Unknown", "White", "EAS", "SAS", "AFR", "EUR", "AMR")))
 
-p1 <- ggplot(HGG_race, aes(y = Freq, stratum = Group, alluvium = alluvium, x= x)) + 
-  geom_alluvium(aes(fill = Group)) + 
-  geom_stratum(aes(fill = Group)) +
+p1 <- ggplot(HGG_race, aes(y = Freq, stratum = Group, alluvium = alluvium, x= x, fill = Group)) + 
+  geom_alluvium() + 
+  geom_stratum() +
+  scale_fill_manual(values = c("Asian" = "darkorange", "SAS" = "goldenrod1", "EAS" = "tan", 
+                                "White" = "firebrick4", "EUR" = "lightpink", 
+                                "Black or African American" = "royalblue4", "AFR" = "steelblue1", 
+                                "Native Hawaiian or Other Pacific Islander" = "olivedrab", "AMR" = "orchid4", 
+                                "Reported Unknown" = "black", "Other" = "ivory4")) + 
   xlab("") + 
   theme_Publication()
   
