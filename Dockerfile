@@ -8,7 +8,8 @@ COPY script/install_github.r .
 
 ### Install apt-getable packages to start
 #########################################
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils dialog
+RUN apt-get update  
+RUN apt-get install -y --no-install-recommends apt-utils dialog
 RUN apt-get install -y --no-install-recommends \
   libxt6 \
   bzip2 
@@ -30,6 +31,7 @@ RUN ./install_bioc.r \
 	corrplot \
 	cowplot \
 	cutpointr \
+	ggalluvial \
 	ggpubr \
 	ggthemes \
 	ggstatsplot \
