@@ -40,13 +40,10 @@ RUN ./install_bioc.r \
 	GenomicFeatures \
 	GSVA \
 	msigdbr \
-	readr \
 	reshape2 \
 	R.utils \
 	survival \
-	survminer \
-	tibble \
-	tidyverse
+	survminer
 	
 ## R packages for tp53_nf1_score
 RUN ./install_bioc.r \
