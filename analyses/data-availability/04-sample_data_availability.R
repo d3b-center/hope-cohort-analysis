@@ -11,6 +11,7 @@ suppressPackageStartupMessages({
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data", "v1")
 analyses_dir <- file.path(root_dir, "analyses", "data-availability")
+input_dir <- file.path(analyses_dir, "input")
 output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -18,7 +19,18 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 annot <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>%
   filter(!is.na(HOPE_diagnosis))
-dat <- annot %>% dplyr::select(sample_id) %>% unique()
+
+# filter to HOPE annotation binary matrix
+binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
+binary_matrix <- binary_matrix %>%
+  filter(Remove == 0)
+annot <- annot %>%
+  filter(sample_id %in% binary_matrix$sample_id)
+
+# 0-1 matrix of data
+dat <- annot %>% 
+  dplyr::select(sample_id) %>% 
+  unique()
 
 # proteomics 
 dat$Proteomics <- dat$sample_id %in% (annot %>% 

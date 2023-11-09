@@ -21,6 +21,13 @@ annot <- read_tsv(file = file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>% 
   filter(!is.na(HOPE_diagnosis))
 
+# filter to HOPE annotation binary matrix
+binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
+binary_matrix <- binary_matrix %>%
+  filter(Remove == 0)
+annot <- annot %>%
+  filter(sample_id %in% binary_matrix$sample_id)
+
 # read MSI tumor-only output 
 msi_tumor_only_output <- read_tsv(file.path(output_dir, "Hope-msi-tumor_only.tsv")) %>%
   dplyr::mutate(Type = ifelse(Percent > 3.5, sample_id, "")) %>%
@@ -55,7 +62,7 @@ plot_data <- output_df %>%
   group_by(HARMONY_age_class_derived) %>%
   mutate(n = n()) %>%
   mutate(HARMONY_age_class_derived = paste0(HARMONY_age_class_derived, "\n(n = ",n,")")) 
-plot_data$HARMONY_age_class_derived <- factor(plot_data$HARMONY_age_class_derived, levels = c("[0,15]\n(n = 58)", "(15,26]\n(n = 23)", "(26,40]\n(n = 8)"))
+plot_data$HARMONY_age_class_derived <- factor(plot_data$HARMONY_age_class_derived, levels = c("[0,15]\n(n = 57)", "(15,26]\n(n = 22)", "(26,40]\n(n = 8)"))
 p <- ggplot(plot_data, aes(x = HARMONY_age_class_derived, y = msi_tumor_only, color = as.character(HARMONY_age_class_derived))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
@@ -67,8 +74,8 @@ p <- ggplot(plot_data, aes(x = HARMONY_age_class_derived, y = msi_tumor_only, co
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") +
-  scale_color_manual(values = c("[0,15]\n(n = 58)" = "#C7E9C0",
-                                "(15,26]\n(n = 23)" = "#74C476",
+  scale_color_manual(values = c("[0,15]\n(n = 57)" = "#C7E9C0",
+                                "(15,26]\n(n = 22)" = "#74C476",
                                 "(26,40]\n(n = 8)" = "#238B45"))
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_three_groups.pdf"), width = 6, height = 6)
 
@@ -79,7 +86,7 @@ plot_data <- output_df %>%
   group_by(HARMONY_age_class_derived) %>%
   mutate(n = n()) %>%
   mutate(HARMONY_age_class_derived = paste0(HARMONY_age_class_derived, "\n(n = ",n,")")) 
-plot_data$HARMONY_age_class_derived <- factor(plot_data$HARMONY_age_class_derived, levels = c("[0,15]\n(n = 58)", "(15,40]\n(n = 31)"))
+plot_data$HARMONY_age_class_derived <- factor(plot_data$HARMONY_age_class_derived, levels = c("[0,15]\n(n = 57)", "(15,40]\n(n = 30)"))
 p <- ggplot(plot_data, aes(x = HARMONY_age_class_derived, y = msi_tumor_only, color = as.character(HARMONY_age_class_derived))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
@@ -91,8 +98,8 @@ p <- ggplot(plot_data, aes(x = HARMONY_age_class_derived, y = msi_tumor_only, co
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
   theme(legend.position = "none") +
-  scale_color_manual(values = c("[0,15]\n(n = 58)" = "#C7E9C0",
-                                "(15,40]\n(n = 31)" = "#238B45"))
+  scale_color_manual(values = c("[0,15]\n(n = 57)" = "#C7E9C0",
+                                "(15,40]\n(n = 30)" = "#238B45"))
 ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_two_groups.pdf"), width = 6, height = 6)
 
 # 4) MSI vs Developmental cluster name

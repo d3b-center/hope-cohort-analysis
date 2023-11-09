@@ -1,18 +1,18 @@
 comparison	variable	value	chisq_pval
-NF1 vs ATRX	Age (Two Groups)	(15,40]	0.34238
-NF1 vs ATRX	Age (Two Groups)	[0,15]	0.05688
-NF1 vs ATRX	Age (Three Groups)	(15,26]	0.74154
+NF1 vs ATRX	Age (Two Groups)	(15,40]	0.27362
+NF1 vs ATRX	Age (Two Groups)	[0,15]	0.03652
+NF1 vs ATRX	Age (Three Groups)	(15,26]	0.59449
 NF1 vs ATRX	Age (Three Groups)	(26,40]	NA
-NF1 vs ATRX	Age (Three Groups)	[0,15]	0.05688
-NF1 vs ATRX	Sex	Male	0.52953
-NF1 vs ATRX	Sex	Female	0.95235
-NF1 vs ATRX	Age (Two Groups) + Sex	(15,40]_Male	0.86682
+NF1 vs ATRX	Age (Three Groups)	[0,15]	0.03652
+NF1 vs ATRX	Sex	Male	0.61517
+NF1 vs ATRX	Sex	Female	0.8215
+NF1 vs ATRX	Age (Two Groups) + Sex	(15,40]_Male	0.74218
 NF1 vs ATRX	Age (Two Groups) + Sex	(15,40]_Female	0.51861
-NF1 vs ATRX	Age (Two Groups) + Sex	[0,15]_Female	0.33061
+NF1 vs ATRX	Age (Two Groups) + Sex	[0,15]_Female	0.22582
 NF1 vs ATRX	Age (Two Groups) + Sex	[0,15]_Male	0.20495
-NF1 vs ATRX	Age (Three Groups) + Sex	(15,26]_Male	1
+NF1 vs ATRX	Age (Three Groups) + Sex	(15,26]_Male	0.78225
 NF1 vs ATRX	Age (Three Groups) + Sex	(26,40]_Female	NA
-NF1 vs ATRX	Age (Three Groups) + Sex	[0,15]_Female	0.33061
+NF1 vs ATRX	Age (Three Groups) + Sex	[0,15]_Female	0.22582
 NF1 vs ATRX	Age (Three Groups) + Sex	[0,15]_Male	0.20495
 NF1 vs ATRX	Age (Three Groups) + Sex	(15,26]_Female	1
 NF1 vs ATRX	Age (Three Groups) + Sex	(26,40]_Male	NA

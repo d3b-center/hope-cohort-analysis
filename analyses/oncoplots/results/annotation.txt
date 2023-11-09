@@ -1,7 +1,6 @@
 Sample	Sequencing_Experiment	Diagnosis	Diagnosis_Type	Tumor_Location	Sex	Age	TMB
 7316-1052	RNA-Seq	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Cerebellar	Female	[0,15]	NA
 7316-1099	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Cortical	Male	(15,26]	1.30611134221254
-7316-1106	RNA-Seq, WGS	Pleomorphic xanthoastrocytoma (WHO grade II/III)	Initial CNS Tumor	Cortical	Male	(15,26]	0.333475236309584
 7316-114	RNA-Seq, WGS	High-grade glioma/astrocytoma (WHO grade III/IV)	Second Malignancy	Other/Multiple locations/NOS	Female	(26,40]	1.11158412103195
 7316-1455	RNA-Seq	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Cortical	Female	[0,15]	NA
 7316-161	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Cortical	Male	(15,26]	0.889267296825557
@@ -38,7 +37,6 @@ Sample	Sequencing_Experiment	Diagnosis	Diagnosis_Type	Tumor_Location	Sex	Age	TMB
 7316-2857	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Cortical	Male	[0,15]	0.166737618154792
 7316-287	RNA-Seq	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Cortical	Male	[0,15]	NA
 7316-288	RNA-Seq	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Midline	Female	[0,15]	NA
-7316-3000	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	Progressive	Cortical	Female	[0,15]	0.917056899851356
 7316-3058	RNA-Seq, WGS	Diffuse Midline Glioma (WHO grade III/IV)	Progressive	Midline	Male	[0,15]	7.14192797763026
 7316-3075	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Cortical	Male	[0,15]	0.166737618154792
 7316-3303	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	Progressive	Midline	Male	(26,40]	1.97306181483171

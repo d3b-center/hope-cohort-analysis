@@ -6,6 +6,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(ggpubr)
   library(ggforce)
+  library(ggrepel)
 })
 
 # output directory
@@ -20,6 +21,13 @@ dir.create(output_dir, showWarnings = F, recursive = T)
 annot <- read_tsv(file = file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>% 
   filter(!is.na(HOPE_diagnosis))
+
+# filter to HOPE annotation binary matrix
+binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
+binary_matrix <- binary_matrix %>%
+  filter(Remove == 0)
+annot <- annot %>%
+  filter(sample_id %in% binary_matrix$sample_id)
 
 # read MSI paired output 
 msi_paired_output <- read_tsv(file.path("../msi-sensor-analysis/results/msisensor-pro-paired/Hope-msi-paired.tsv")) %>%
@@ -38,7 +46,7 @@ alt_status_output <- read_tsv(file.path(output_dir, "alt_status_aya_hgg.tsv")) %
 cluster_data <- read_tsv(file.path(input_dir, "cluster_data_101922.tsv")) %>%
   dplyr::select(id, dtt.cc, rdt.name)
 
-# combine all (n = 72)
+# combine all (n = 70)
 output_df <- msi_paired_output %>%
   inner_join(tmb_paired_paired_output, by = c("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode")) %>%
   inner_join(alt_status_output) %>%
@@ -126,7 +134,7 @@ ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_alt_statu
 plot_df <- output_df %>%
   group_by(age_three_groups) %>%
   mutate(n = n(), age_three_groups = paste0(age_three_groups, "\n(n = ", n, ")"))
-plot_df$age_three_groups <- factor(plot_df$age_three_groups,  levels = c("[0,15]\n(n = 44)", "(15,26]\n(n = 20)", "(26,40]\n(n = 8)"))
+plot_df$age_three_groups <- factor(plot_df$age_three_groups,  levels = c("[0,15]\n(n = 43)", "(15,26]\n(n = 19)", "(26,40]\n(n = 8)"))
 p <- ggplot(plot_df, aes(x = age_three_groups, y = t_n_telomere_content, color = age_three_groups)) +
   geom_boxplot(coef=0) +
   geom_sina() +
@@ -136,8 +144,8 @@ p <- ggplot(plot_df, aes(x = age_three_groups, y = t_n_telomere_content, color =
   ylab("Telomere Content\n") +
   ggtitle("ALT telomere content vs. Age") + 
   theme(legend.position = "none") +
-  scale_color_manual(values = c("[0,15]\n(n = 44)" = "#C7E9C0",
-                                "(15,26]\n(n = 20)" = "#74C476",
+  scale_color_manual(values = c("[0,15]\n(n = 43)" = "#C7E9C0",
+                                "(15,26]\n(n = 19)" = "#74C476",
                                 "(26,40]\n(n = 8)" = "#238B45"))
 ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_age_three_groups.pdf"), height = 6, width = 6)
 
@@ -145,7 +153,7 @@ ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_age_three
 plot_df <- output_df %>%
   group_by(age_two_groups) %>%
   mutate(n = n(), age_two_groups = paste0(age_two_groups, "\n(n = ", n, ")"))
-plot_df$age_two_groups <- factor(plot_df$age_two_groups, levels = c("[0,15]\n(n = 44)", "(15,40]\n(n = 28)"))
+plot_df$age_two_groups <- factor(plot_df$age_two_groups, levels = c("[0,15]\n(n = 43)", "(15,40]\n(n = 27)"))
 q <- ggplot(plot_df, aes(x = age_two_groups, y = t_n_telomere_content, color = age_two_groups)) +
   geom_boxplot(coef=0) +
   geom_sina() +
@@ -155,8 +163,8 @@ q <- ggplot(plot_df, aes(x = age_two_groups, y = t_n_telomere_content, color = a
   ylab("Telomere Content\n") +
   ggtitle("ALT telomere content vs. Age") + 
   theme(legend.position = "none") +
-  scale_color_manual(values = c("[0,15]\n(n = 44)" = "#C7E9C0",
-                                "(15,40]\n(n = 28)" = "#238B45"))
+  scale_color_manual(values = c("[0,15]\n(n = 43)" = "#C7E9C0",
+                                "(15,40]\n(n = 27)" = "#238B45"))
 ggsave(plot = q, filename = file.path(output_dir, "telomere_content_vs_age_two_groups.pdf"), height = 6, width = 6)
 
 # 7) ALT telomere content vs Gender
@@ -165,7 +173,7 @@ plot_data <- output_df %>%
   group_by(HARMONY_Gender) %>%
   mutate(n = n()) %>%
   mutate(HARMONY_Gender = paste0(HARMONY_Gender, "\n(n = ",n,")")) 
-p <- ggplot(plot_df, aes(x = HARMONY_Gender, y = t_n_telomere_content, color = HARMONY_Gender)) +
+p <- ggplot(plot_data, aes(x = HARMONY_Gender, y = t_n_telomere_content, color = HARMONY_Gender)) +
   geom_boxplot(coef=0) +
   geom_sina() +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
@@ -174,8 +182,8 @@ p <- ggplot(plot_df, aes(x = HARMONY_Gender, y = t_n_telomere_content, color = H
   ylab("Telomere Content\n") +
   ggtitle("ALT telomere content vs. Gender") + 
   theme(legend.position = "none") +
-  scale_color_manual(values = c("Male\n(n = 42)" = "#0707CF",
-                                "Female\n(n = 30)" = "#CC0303"))
+  scale_color_manual(values = c("Male\n(n = 41)" = "#0707CF",
+                                "Female\n(n = 29)" = "#CC0303"))
 ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_gender.pdf"), height = 6, width = 6)
 
 # 8) ALT telomere content vs Developmental cluster name
@@ -185,7 +193,6 @@ plot_data <- output_df %>%
   mutate(n = n()) %>%
   mutate(rdt.name = paste0(rdt.name, "\n(n = ",n,")")) 
 plot_data$rdt.name <- factor(plot_data$rdt.name, levels = plot_data %>% arrange(dtt.cc) %>% pull(rdt.name) %>% unique())
-pdf(file = file.path(output_dir, "telomere_content_vs_dev_cluster_name.pdf"), width = 10, height = 6)
 p <- ggplot(plot_data, aes(x = rdt.name, y = t_n_telomere_content, color = rdt.name)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
@@ -200,26 +207,8 @@ p <- ggplot(plot_data, aes(x = rdt.name, y = t_n_telomere_content, color = rdt.n
   scale_color_manual(values = c("Classical\n(n = 17)" = "#88BED8",
                                 "Mesenchymal-IDHMutant\n(n = 35)" = "#89A544",
                                 "Mesenchymal-IDHWT\n(n = 9)" = "#CE9D21",
-                                "Pro-neural\n(n = 9)" = "#CE61A2",
-                                "NA\n(n = 2)" = "gray"))
-print(p)
-q <- ggplot(plot_data %>% filter(!grepl("NA", rdt.name)), aes(x = rdt.name, y = t_n_telomere_content, color = rdt.name)) +
-  stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", size = 4) +
-  xlab("") + 
-  ylab("Telomere Content") +
-  ggtitle("Telomere Content vs. Dev. Cluster") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") +
-  scale_color_manual(values = c("Classical\n(n = 17)" = "#88BED8",
-                                "Mesenchymal-IDHMutant\n(n = 35)" = "#89A544",
-                                "Mesenchymal-IDHWT\n(n = 9)" = "#CE9D21",
                                 "Pro-neural\n(n = 9)" = "#CE61A2"))
-print(q)
-dev.off()
+ggsave(plot = p, filename = file.path(output_dir, "telomere_content_vs_dev_cluster_name.pdf"), width = 10, height = 6)
 
 # 8) ALT telomere content vs TMB (paired) scatter plot
 p <- ggplot(output_df, aes(x = t_n_telomere_content, y = tmb_paired)) +

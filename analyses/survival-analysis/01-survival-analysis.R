@@ -10,6 +10,7 @@ suppressPackageStartupMessages({
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
 analyses_dir <- file.path(root_dir, "analyses", "survival-analysis")
+input_dir <- file.path(analyses_dir, "input")
 output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, showWarnings = F, recursive = T)
 
@@ -22,6 +23,13 @@ hist_df <- hist_df %>%
   filter(!is.na(molecular_subtype)) %>%
   mutate(OS_days = as.numeric(HOPE_Age_at_Initial_Diagnosis),
          OS_status = as.numeric(ifelse(HOPE_last_known_clinical_status == "Alive", 0, 1)))
+
+# filter to HOPE annotation binary matrix
+binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
+binary_matrix <- binary_matrix %>%
+  filter(Remove == 0)
+hist_df <- hist_df %>%
+  filter(sample_id %in% binary_matrix$sample_id)
 
 # 1) add ALT status
 alt_status_output <- read_tsv("../alt-analysis/results/alt_status_aya_hgg.tsv") %>%

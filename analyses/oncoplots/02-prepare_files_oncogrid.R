@@ -48,6 +48,13 @@ hist_df <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
 hist_df <- hist_df %>%
   filter(!is.na(HOPE_diagnosis))
 
+# filter to HOPE annotation binary matrix
+binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
+binary_matrix <- binary_matrix %>%
+  filter(Remove == 0)
+hist_df <- hist_df %>%
+  filter(sample_id %in% binary_matrix$sample_id)
+
 # fix HOPE_diagnosis_type
 hist_df <- hist_df %>%
   mutate(HOPE_diagnosis_type = case_when(
@@ -81,6 +88,9 @@ tmb_paired_output <- read_tsv("../tmb-calculation/results/wgs_paired/snv-mutatio
   inner_join(hist_df, by = c("Tumor_Sample_Barcode" = "Kids_First_Biospecimen_ID")) %>%
   dplyr::select(sample_id, TMB) %>%
   unique()
+tmb_paired_output <- tmb_paired_output %>%
+  filter(sample_id %in% binary_matrix$sample_id)
+
 hist_df <- hist_df %>%
   left_join(tmb_paired_output, by = c("sample_id"))
 
