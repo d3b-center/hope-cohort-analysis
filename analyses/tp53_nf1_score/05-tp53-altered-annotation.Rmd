@@ -40,18 +40,9 @@ input_dir <- file.path(root_dir,
                        "analyses",
                        "tp53_nf1_score",
                        "input")
-# cell composition
-# cell_line_composition <- read_tsv(file.path(root_dir,
-#                                            "scratch",
-#                                             "cell-line-composition.tsv"),
-#                                  col_types = 
-#                                    readr::cols( aliquot_id  = readr::col_character())) 
 
 # histology
 clinical<-read.delim(file.path(data_dir,"Hope-GBM-histologies-base.tsv"))
-
-# recording of "BS_ETC8R0TD" GMKF NBL sample; needs to be remove once updated in v12
-#clinical$RNA_library[clinical$Kids_First_Biospecimen_ID == "BS_ETC8R0TD"] <- "stranded"
 
 histology <- clinical %>%
   dplyr::select("Kids_First_Biospecimen_ID",
@@ -61,11 +52,8 @@ histology <- clinical %>%
         "sample_type",
         "experimental_strategy",
         "composition",
-        "cohort") #%>%
-   # merge cell line composition
-# No cell line composition for this module
-  # left_join(cell_line_composition)
- 
+        "cohort") 
+gbm_muts <- read_tsv(file.path(input_dir, "harmonized_mutation_06082023.tsv"))
 
 # Cancer database
 hotspot_database_2017_tp53_snv <- readxl::read_xls(file.path(input_dir,"hotspots_v2.xls"),sheet = 1) %>%
@@ -87,7 +75,8 @@ if (!dir.exists(results_dir)) {
 
 # Read in combined scores from tp53-nf1-classifier 
 classifier_score <- read_tsv(file.path(results_dir, "combined_scores.tsv")) %>%
-  dplyr::rename(Kids_First_Biospecimen_ID_RNA = sample_id) %>%
+  select(!sample_id) %>%
+  dplyr::rename(Kids_First_Biospecimen_ID_RNA = Kids_First_Biospecimen_ID) %>%
   filter(Kids_First_Biospecimen_ID_RNA %in% histology$Kids_First_Biospecimen_ID) %>%
   left_join(histology, by=c("Kids_First_Biospecimen_ID_RNA"="Kids_First_Biospecimen_ID"))
 
@@ -256,6 +245,22 @@ tp53_alterations_score_wide <- tp53_alterations_score %>%
 tp53_alterations_score_wide
 
 ```
+### Add GBM samples
+```{r}
+gbm_tp53 <- gbm_muts %>%
+  filter(ApprovedGeneSymbol == "TP53") %>%
+  pivot_longer(cols = -ApprovedGeneSymbol, names_to = "sample_id", values_to = "GBM_TP53_SNV") %>%
+  select(-ApprovedGeneSymbol) %>%
+  filter(grepl("^C3", sample_id))
+
+tp53_alterations_score_wide <- tp53_alterations_score_wide %>%
+  left_join(gbm_tp53, by = "sample_id") %>%
+  mutate(SNV_indel_counts = case_when(GBM_TP53_SNV == 1 ~ 1,
+                                      GBM_TP53_SNV == 0 ~ 0,
+                                      TRUE ~ SNV_indel_counts)) %>%
+  select(-GBM_TP53_SNV)
+
+```
 
 ### Add annotation
 
@@ -302,7 +307,7 @@ tp53_alterations_score_wide <- tp53_alterations_score_wide %>%
         # when activating == 1
         activating == 1 ~ "activated",
         # if no evidence supports TP53 inativation or activation 
-        TRUE ~ "Other"
+        TRUE ~ "other"
       )
   )
 
