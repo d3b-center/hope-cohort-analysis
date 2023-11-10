@@ -20,9 +20,12 @@ source(file.path(analyses_dir, "utils", "plotForest.R"))
 # read histologies 
 hist_df <- read_tsv(file = file.path(data_dir, "Hope-GBM-histologies.tsv"))
 hist_df <- hist_df %>% 
-  filter(!is.na(molecular_subtype)) %>%
+  filter(!is.na(molecular_subtype),
+         !is.na(HOPE_diagnosis)) %>%
   mutate(OS_days = as.numeric(HOPE_Age_at_Initial_Diagnosis),
-         OS_status = as.numeric(ifelse(HOPE_last_known_clinical_status == "Alive", 0, 1)))
+         OS_status = as.numeric(ifelse(HOPE_last_known_clinical_status == "Alive", 0, 1))) %>%
+  dplyr::select(sample_id, molecular_subtype, OS_days, OS_status) %>%
+  unique()
 
 # filter to HOPE annotation binary matrix
 binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
@@ -53,9 +56,9 @@ pdf(file = file.path(output_dir, "alt_status_vs_survival_multivariate.pdf"), wid
 res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + ALT_status, data = annot)
 plotForest(model = res.cox)
 
-# # filter subtypes with < 3 samples
-# res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + ALT_status, data = annot_filtered)
-# plotForest(model = res.cox, title_extra = "Molecular subtypes >= 3 samples")
+# filter subtypes with < 3 samples
+res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + ALT_status, data = annot_filtered)
+plotForest(model = res.cox, title_extra = "Molecular subtypes >= 3 samples")
 dev.off()
 
 # molecular subtype and telomere content 
@@ -63,9 +66,9 @@ pdf(file = file.path(output_dir, "t_n_telomere_content_vs_survival_multivariate.
 res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + t_n_telomere_content, data = annot)
 plotForest(model = res.cox)
 
-# # filter subtypes with < 3 samples
-# res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + t_n_telomere_content, data = annot_filtered)
-# plotForest(model = res.cox, title_extra = "Molecular subtypes >= 3 samples")
+# filter subtypes with < 3 samples
+res.cox <- coxph(Surv(OS_days, OS_status) ~ molecular_subtype + t_n_telomere_content, data = annot_filtered)
+plotForest(model = res.cox, title_extra = "Molecular subtypes >= 3 samples")
 dev.off()
 
 # kaplan meier
@@ -91,27 +94,27 @@ p <- p$plot +
   annotate("text", x = 12000, y = 0.75, label = paste0("Log-rank\nP-value: ", pvalue), cex=6, col="black", vjust=0, hjust = 1.1, fontface=1)
 print(p)
 
-# # filter subtypes with < 3 samples
-# annot_filtered$ALT_status <- relevel(annot_filtered$ALT_status, ref = "ALT+")
-# fit <- survival::survfit(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = annot_filtered)
-# sdf <- survival::survdiff(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = annot_filtered)
-# pvalue <- round(1 - pchisq(sdf$chisq, length(sdf$n) - 1), 3)
-# p <- ggsurvplot(fit, 
-#                 title = "ALT Status vs Survival\nMolecular subtypes >= 3 samples",
-#                 data = annot, 
-#                 font.x = c(20, face = "bold"),
-#                 font.tickslab = c(20),
-#                 font.y = c(20, face = "bold"),
-#                 font.legend = c(20, "bold"),
-#                 pval = FALSE, 
-#                 pval.method = FALSE,
-#                 ggtheme = theme_minimal(),
-#                 linetype = "strata",
-#                 legend = "bottom")  +
-#   guides(colour = guide_legend(ncol = 2)) 
-# p <- p$plot +
-#   annotate("text", x = 12000, y = 0.75, label = paste0("Log-rank\nP-value: ", pvalue), cex=6, col="black", vjust=0, hjust = 1.1, fontface=1)
-# print(p)
+# filter subtypes with < 3 samples
+annot_filtered$ALT_status <- relevel(annot_filtered$ALT_status, ref = "ALT+")
+fit <- survival::survfit(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = annot_filtered)
+sdf <- survival::survdiff(Surv(as.numeric(OS_days), OS_status) ~ ALT_status, data = annot_filtered)
+pvalue <- round(1 - pchisq(sdf$chisq, length(sdf$n) - 1), 3)
+p <- ggsurvplot(fit,
+                title = "ALT Status vs Survival\nMolecular subtypes >= 3 samples",
+                data = annot,
+                font.x = c(20, face = "bold"),
+                font.tickslab = c(20),
+                font.y = c(20, face = "bold"),
+                font.legend = c(20, "bold"),
+                pval = FALSE,
+                pval.method = FALSE,
+                ggtheme = theme_minimal(),
+                linetype = "strata",
+                legend = "bottom")  +
+  guides(colour = guide_legend(ncol = 2))
+p <- p$plot +
+  annotate("text", x = 12000, y = 0.75, label = paste0("Log-rank\nP-value: ", pvalue), cex=6, col="black", vjust=0, hjust = 1.1, fontface=1)
+print(p)
 dev.off()
 
 # 2) add MSI paired output 
