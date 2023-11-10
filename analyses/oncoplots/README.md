@@ -210,6 +210,31 @@ results/cascade_plots
 └── cascade_plot.pdf
 ```
 ***
+`07-cascade_plots_add_tumor_only_two_age_groups.R`: Script to generate cascade-style oncoplots with tumor-only samples added for patients where T/N samples are unavailable. Here the three age groups are summarized into two age groups.
+
+Command to run this script:
+
+```
+Rscript --vanilla 07-cascade_plots_add_tumor_only_two_age_groups.R
+```
+
+#### Inputs 
+
+```
+results
+├── annotation_add_tumor_only.txt
+└── oncoprint_add_tumor_only.txt
+```
+
+#### Outputs
+
+```
+results/cascade_plots_add_tumor_only
+├── cascade_orderby_age_two_age_groups.pdf
+├── cascade_orderby_sex_two_age_groups.pdf
+└── cascade_plot_two_age_groups.pdf
+```
+***
 `07-cascade_plots_add_tumor_only.R`: Script to generate cascade-style oncoplots with tumor-only samples added for patients where T/N samples are unavailable.
 
 Command to run this script:
