@@ -147,6 +147,7 @@ combined <- bind_rows(GBM_df, HGG_survival) %>%
     mutate(predicted_ancestry = replace_na(predicted_ancestry, "Not reported"))
 
 ```
+
 ### test if there is a correlation between age and tp53 score
 
 ```{r}
@@ -169,6 +170,13 @@ ggplot(combined, aes(x = age_at_diagnosis_days, y = tp53_score)) +
   ylab("TP53 score") + 
   xlab("Age at diagnosis days") + 
   theme_Publication()
+```
+
+### set a seed for reproducibility of jitter
+
+```{r}
+
+set.seed(2023)
 ```
 
 ### The distribution of TP53 score between age range and tp53 score 
@@ -315,7 +323,8 @@ group_summary <- HGG_survival %>%
 
 # Filter the groups with at least 3 samples
 HGG_filtered <- HGG_survival %>%
-  filter(predicted_ancestry %in% group_summary$predicted_ancestry[group_summary$count >= 3])
+  filter(predicted_ancestry %in% group_summary$predicted_ancestry[group_summary$count >= 3]) %>% 
+  filter(predicted_ancestry != "Not reported")
 
 p1 <- HGG_filtered %>% 
   mutate(predicted_ancestry = fct_reorder(predicted_ancestry, -tp53_score, .fun='median' )) %>%
@@ -323,7 +332,7 @@ p1 <- HGG_filtered %>%
   geom_boxplot() +
   geom_jitter(width = 0.3, alpha = 0.5) + 
   xlab("") +
-  stat_compare_means(method = "wilcox", comparisons = list(c("EAS", "AFR"), c("EAS", "EUR"), c("EAS", "AMR"), c("EAS", "Not reported"))) +
+  stat_compare_means(method = "wilcox", comparisons = list(c("EAS", "AFR"), c("EAS", "EUR"), c("EAS", "AMR"))) +
   stat_compare_means(method = "kruskal", label.y = 1.6) + 
   theme_Publication() + 
   ylab("TP53 score") + 
@@ -348,16 +357,21 @@ HGG_race <- as.data.frame(table(HGG_survival$race, HGG_survival$predicted_ancest
   to_lodes_form(axes = 1:2) %>% 
   dplyr::rename(Group = stratum) %>% 
   filter(Group != "Not reported") %>% 
-  mutate(Group = factor(Group, levels = c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "Other", "Reported Unknown", "White", "EAS", "SAS", "AFR", "EUR", "AMR")))
+  mutate(Group = factor(Group, levels = c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "Other", "Reported Unknown", "White", "EAS", "SAS", "AFR", "EUR", "AMR"))) %>% 
+  mutate(race = case_when(Group %in% c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "Other", "Reported Unknown", "White") ~ Group, 
+                          TRUE ~ NA), 
+         predicted_ancestry = case_when(Group %in% c("EAS", "SAS", "AFR", "EUR", "AMR") ~ Group, 
+                                        TRUE ~ NA))
 
-p1 <- ggplot(HGG_race, aes(y = Freq, stratum = Group, alluvium = alluvium, x= x, fill = Group)) + 
+
+p1 <- ggplot(HGG_race, aes(y = Freq, stratum = Group, alluvium = alluvium, x = x, fill = Group)) + 
   geom_alluvium() + 
   geom_stratum() +
-  scale_fill_manual(values = c("Asian" = "darkorange", "SAS" = "goldenrod1", "EAS" = "tan", 
-                                "White" = "firebrick4", "EUR" = "lightpink", 
-                                "Black or African American" = "royalblue4", "AFR" = "steelblue1", 
-                                "Native Hawaiian or Other Pacific Islander" = "olivedrab", "AMR" = "orchid4", 
-                                "Reported Unknown" = "black", "Other" = "ivory4")) + 
+  scale_fill_manual(values = c("Asian" = "brown", "SAS" = "brown3", "EAS" = "brown1", 
+                                "White" = "gold3", "EUR" = "gold", 
+                                "Black or African American" = "dodgerblue4", "AFR" = "dodgerblue3", 
+                                "Native Hawaiian or Other Pacific Islander" = "seagreen", "AMR" = "seagreen3", 
+                                "Reported Unknown" = "black", "Other" = "grey25")) + 
   xlab("") + 
   theme_Publication()
   
