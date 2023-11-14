@@ -9,13 +9,13 @@ suppressPackageStartupMessages({
 
 # set working directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-data_dir <- file.path(root_dir, "data", "v1")
+data_dir <- file.path(root_dir, "data")
 analyses_dir <- file.path(root_dir, "analyses", "msi-sensor-analysis")
 input_dir <- file.path(analyses_dir, "input")
 output_dir <- file.path(analyses_dir, "results")
 
 # get coordinates of genes from gencode v39
-gencode_gtf <- rtracklayer::import(con = file.path(root_dir, "data", "gencode.v39.primary_assembly.annotation.gtf.gz"))
+gencode_gtf <- rtracklayer::import(con = file.path(data_dir, "gencode.v39.primary_assembly.annotation.gtf.gz"))
 gencode_gtf <- as.data.frame(gencode_gtf)
 gencode_gtf <- gencode_gtf %>%
   dplyr::select(gene_id, gene_name, gene_type) %>%

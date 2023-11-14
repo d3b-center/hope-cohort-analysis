@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
 
 # output directory
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-data_dir <- file.path(root_dir, "data", "v1")
+data_dir <- file.path(root_dir, "data")
 analyses_dir <- file.path(root_dir, "analyses", "alt-analysis")
 input_dir <- file.path(analyses_dir, "input")
 output_dir <- file.path(analyses_dir, "results")
