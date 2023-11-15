@@ -209,6 +209,25 @@ ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age.pdf"))
 
 ```
 
+### plot the tp53 score between different age group
+
+```{r}
+
+DMG_df <- HGG_survival %>% 
+  filter(grepl("DMG", molecular_subtype))
+
+ggplot(DMG_df, aes(x = factor(binned_age, levels = c("[0,15]", "(15,26]")), y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(aes(color = molecular_subtype), width = 0.3, alpha = 0.5) + 
+    stat_compare_means(method = "wilcox", comparisons = list(c("[0,15]", "(15,26]"))) + 
+  xlab("") + 
+  ylab("TP53 score") + 
+  labs(color = "Molecular subtype") + 
+  theme_Publication()
+  
+
+```
+
 ### plot to show the tp53 alteration status
 
 ```{r}
