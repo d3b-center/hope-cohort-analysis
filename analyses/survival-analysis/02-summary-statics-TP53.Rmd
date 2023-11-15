@@ -365,17 +365,68 @@ HGG_race <- as.data.frame(table(HGG_survival$race, HGG_survival$predicted_ancest
 
 
 p1 <- ggplot(HGG_race, aes(y = Freq, stratum = Group, alluvium = alluvium, x = x, fill = Group)) + 
-  geom_alluvium() + 
-  geom_stratum() +
-  scale_fill_manual(values = c("Asian" = "brown", "SAS" = "brown3", "EAS" = "brown1", 
+  geom_alluvium(show.legend = F) + 
+  geom_stratum(show.legend = F) +
+  scale_fill_manual(values = c("Asian" = "dodgerblue3", "SAS" = "dodgerblue", "EAS" = "dodgerblue4", 
                                 "White" = "gold3", "EUR" = "gold", 
-                                "Black or African American" = "dodgerblue4", "AFR" = "dodgerblue3", 
+                                "Black or African American" = "brown", "AFR" = "brown3", 
                                 "Native Hawaiian or Other Pacific Islander" = "seagreen", "AMR" = "seagreen3", 
-                                "Reported Unknown" = "black", "Other" = "grey25")) + 
+                                "Reported Unknown" = "black", "Other" = "grey")) + 
   xlab("") + 
   theme_Publication()
+
+race_df <- data.frame(race = c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "White", "Other", "Reported Unknown"), 
+                     value = 1)
+ancestry_df <- data.frame(predicted_ancestry = c("EAS", "SAS", "AFR", "EUR", "AMR"), 
+                          value = 1)
+
+lgd1 <- ggplot(race_df, aes(x = value, y = factor(race, levels = c("Reported Unknown","Other","White","Native Hawaiian or Other Pacific Islander","Black or African American","Asian")), 
+                            fill = race)) + 
+  geom_tile(show.legend = F) + 
+  scale_fill_manual(values = c("Asian" = "dodgerblue3",  
+                                "White" = "gold3", 
+                                "Black or African American" = "brown", 
+                                "Native Hawaiian or Other Pacific Islander" = "seagreen", 
+                                "Reported Unknown" = "black", "Other" = "grey")) +
+  labs(title = "Race") + 
+  scale_y_discrete(position = "right", expand = c(0, 0)) + 
+  scale_x_discrete(expand = c(0, 0)) + 
+  coord_fixed(ratio=1) +
+  theme(legend.position = "none",
+        plot.title = element_text(size=8, face = "bold", colour = "black"),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_text(size=8, face = "bold", colour = "black"),
+        panel.background = element_blank()) 
+
+lgd2 <- ggplot(ancestry_df, aes(x = value, y = factor(predicted_ancestry, 
+                                                      levels = c("SAS","EAS","EUR","AMR","AFR")), 
+                                fill = predicted_ancestry)) + 
+  geom_tile(show.legend = F) + 
+  #xlim() + 
+  scale_fill_manual(values = c("SAS" = "dodgerblue", 
+                               "EAS" = "dodgerblue4",
+                               "EUR" = "gold", 
+                               "AFR" = "brown3", 
+                               "AMR" = "seagreen3")) +
+  labs(title = "Predicted ancestry") + 
+  scale_y_discrete(position = "right", expand = c(0, 0)) + 
+  scale_x_discrete(expand = c(0, 0)) + 
+  coord_fixed(ratio=1) + 
+  theme(legend.position = "none",
+        plot.title = element_text(size=8, face = "bold", colour = "black"),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_text(size=8, face = "bold", colour = "black"),
+        panel.background = element_blank()) 
   
-p1
+  
+
+p1 + lgd1/lgd2
 ```
 
 ## save the plot
