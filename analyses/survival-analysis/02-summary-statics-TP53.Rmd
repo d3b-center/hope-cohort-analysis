@@ -14,6 +14,7 @@ suppressWarnings({
   library(ggplot2)
   library(patchwork)
   library(ggpubr)
+  library(ggalluvial)
 })
 ```
 
@@ -40,9 +41,15 @@ source(file.path(analyses_dir, "utils", "theme_for_plot.R"))
 ### load files and modify the hist and tp53 score
 
 ```{r}
-hist <- readr::read_tsv(file.path(root_dir, "data", "Hope-GBM-histologies.tsv"))
+hist <- readr::read_tsv(file.path(root_dir, "data", "v1", "Hope-GBM-histologies.tsv"))
 tp53_score <- readr::read_tsv(file.path(root_dir, "analyses", "tp53_nf1_score", "results", "tp53_altered_status.tsv"))
+ancestry <- readr::read_tsv(file.path(root_dir, "analyses", "survival-analysis", "input", "D3b_Hope_Ad_Hoc_DEI.somalier-ancestry.tsv"))
 
+## add sample_id to ancestry
+ancestry <- ancestry %>% 
+  dplyr::rename("Kids_First_Biospecimen_ID" = "#sample_id") %>% 
+  left_join(hist[, c("Kids_First_Biospecimen_ID", "sample_id")])
+  
 hist <- hist %>% 
   ## molecular subtype as NA
   filter(!sample_id %in% c("7316-1723", "7316-1746", "7316-194", "7316-212")) %>%
@@ -85,6 +92,8 @@ tp53_score <- tp53_score %>%
 ## extract HGG samples and combine histologies, tp53_score table, molecular_subtypes together
 HGG_survival <- hist %>%
   left_join(tp53_score, by = "sample_id") %>%
+  ## add predicted_ancestry
+  left_join(ancestry[, c("sample_id", "predicted_ancestry")]) %>%
   ## filter out normal samples as they do not have a molecular subtype
   filter(sample_type != "Normal") %>%
   ## remove CPTAC samples 
@@ -92,13 +101,16 @@ HGG_survival <- hist %>%
   ## generate a column for age_at_diagnosis_years
   mutate(age_at_diagnosis_year = as.integer(age_at_diagnosis_days/365.25)) %>%
   ## change NA in molecular_subtype and reported gender to "not reported"
-  mutate(molecular_subtype = replace_na(molecular_subtype, "Not reported")) %>%
-  mutate(reported_gender = replace_na(reported_gender, "not reported")) %>%
+  mutate(molecular_subtype = replace_na(molecular_subtype, "Not reported"), 
+         reported_gender = replace_na(reported_gender, "not reported")) %>%
+  ## change NA in predicted_ancestry to "not reported
+  mutate(predicted_ancestry = replace_na(predicted_ancestry, "Not reported")) %>%
   select(sample_id, tp53_score, tp53_altered, 
          OS_days, OS_status, EFS_days, EFS_event_type, 
          reported_gender, race, age_at_diagnosis_days, 
          age_at_diagnosis_year, molecular_subtype, 
-         binned_tp53, broad_mol, mol_subtype_without_tp53, status) %>% 
+         binned_tp53, broad_mol, mol_subtype_without_tp53, status, 
+         predicted_ancestry) %>% 
   mutate(binned_age = case_when(age_at_diagnosis_year >= 0 & 
                                   age_at_diagnosis_year <= 15 ~ "[0,15]", 
                                 age_at_diagnosis_year > 15 & 
@@ -109,7 +121,7 @@ HGG_survival <- hist %>%
                                   age_at_diagnosis_year <= 60 ~ "(40,62]", 
                                 TRUE ~ "not reported")) %>%
   distinct() %>% 
-  write_tsv(file.path(file.path(analyses_dir, "input", "HGG_survial_tp53.tsv")))
+  write_tsv(file.path(file.path(analyses_dir, "input", "HGG_survival_tp53.tsv")))
 
 ## GBM samples
 GBM_df <- hist %>%
@@ -129,11 +141,13 @@ GBM_df <- hist %>%
          molecular_subtype, binned_age, binned_tp53, broad_mol, mol_subtype_without_tp53, status) %>% 
     mutate(binned_age = case_when(age_at_diagnosis_year > 62 ~ ">62", TRUE ~ binned_age)) %>%
     distinct() %>% 
-    write_tsv(file.path(file.path(analyses_dir, "input", "GBM_survial_tp53.tsv")))
+    write_tsv(file.path(file.path(analyses_dir, "input", "GBM_survival_tp53.tsv")))
 
-combined <- bind_rows(GBM_df, HGG_survival)
+combined <- bind_rows(GBM_df, HGG_survival) %>% 
+    mutate(predicted_ancestry = replace_na(predicted_ancestry, "Not reported"))
 
 ```
+
 ### test if there is a correlation between age and tp53 score
 
 ```{r}
@@ -158,7 +172,14 @@ ggplot(combined, aes(x = age_at_diagnosis_days, y = tp53_score)) +
   theme_Publication()
 ```
 
-### The distribution of TP53 score between age range and tp53 score - 3 group AYA
+### set a seed for reproducibility of jitter
+
+```{r}
+
+set.seed(2023)
+```
+
+### The distribution of TP53 score between age range and tp53 score 
 
 ```{r}
 group_summary <- combined %>%
@@ -167,11 +188,8 @@ group_summary <- combined %>%
 
 # Filter the groups with at least 3 samples
 combined_filtered <- combined %>%
-  mutate(binned_age_2gp = case_when(binned_age %in% c("(15,26]", "(26,40]") ~ "(15,40]",
-                                     TRUE ~ binned_age)) %>%
   filter(binned_age %in% group_summary$binned_age[group_summary$count >= 3])
 
-# 3 group AYA
 ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,26]", "(26,40]", "(40,62]", ">62", "not reported")), y = tp53_score)) + 
   geom_boxplot() +
   geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) + 
@@ -181,34 +199,13 @@ ggplot(combined_filtered, aes(x = factor(binned_age, levels = c("[0,15]", "(15,2
   ylab("TP53 score") + 
   labs(color = "Histology") + 
   theme_Publication()
+
 ```
 
 ### save the plot
 
 ```{r}
-ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age_3gp_aya.pdf"))
-
-```
-
-### 2 group AYA
-
-```{r}
-# 2 group AYA
-ggplot(combined_filtered, aes(x = factor(binned_age_2gp, levels = c("[0,15]", "(15,40]", "(40,62]", ">62")), y = tp53_score)) + 
-  geom_boxplot() +
-  geom_jitter(aes(color = broad_mol), width = 0.3, alpha = 0.5) + 
-  stat_compare_means(method = "wilcox", comparisons = list(c("[0,15]", "(15,40]"), c("[0,15]", "(40,62]"), c("[0,15]", ">62"), c("(15,40]", "(40,62]"), c("(15,40]", ">62"))) + 
-  stat_compare_means(method = "kruskal", label.y = 1.5) + 
-  xlab("") + 
-  ylab("TP53 score") + 
-  labs(color = "Histology") + 
-  theme_Publication()
-```
-
-### save the plot
-
-```{r}
-ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age_2gp_aya.pdf"))
+ggsave(file.path(plots_dir, "boxplot_tp53_score_binned_age.pdf"))
 
 ```
 
@@ -314,6 +311,128 @@ p1
 
 ```{r}
 ggsave(file.path(plots_dir, "boxplot_tp53_score_race.pdf"))
+
+```
+
+### The distribution of TP53 score among predicted ancestry
+
+```{r}
+group_summary <- HGG_survival %>%
+  group_by(predicted_ancestry) %>%
+  summarize(count = n())
+
+# Filter the groups with at least 3 samples
+HGG_filtered <- HGG_survival %>%
+  filter(predicted_ancestry %in% group_summary$predicted_ancestry[group_summary$count >= 3]) %>% 
+  filter(predicted_ancestry != "Not reported")
+
+p1 <- HGG_filtered %>% 
+  mutate(predicted_ancestry = fct_reorder(predicted_ancestry, -tp53_score, .fun='median' )) %>%
+  ggplot(aes(x = predicted_ancestry, y = tp53_score)) + 
+  geom_boxplot() +
+  geom_jitter(width = 0.3, alpha = 0.5) + 
+  xlab("") +
+  stat_compare_means(method = "wilcox", comparisons = list(c("EAS", "AFR"), c("EAS", "EUR"), c("EAS", "AMR"))) +
+  stat_compare_means(method = "kruskal", label.y = 1.6) + 
+  theme_Publication() + 
+  ylab("TP53 score") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+p1
+```
+
+### save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "boxplot_tp53_score_ancestry.pdf"))
+
+```
+
+## alluvial plot for race and predicted-ancestry
+
+```{r}
+HGG_race <- as.data.frame(table(HGG_survival$race, HGG_survival$predicted_ancestry)) %>% 
+  dplyr::rename(race = Var1, 
+                predicted_ancestry = Var2) %>%
+  to_lodes_form(axes = 1:2) %>% 
+  dplyr::rename(Group = stratum) %>% 
+  filter(Group != "Not reported") %>% 
+  mutate(Group = factor(Group, levels = c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "Other", "Reported Unknown", "White", "EAS", "SAS", "AFR", "EUR", "AMR"))) %>% 
+  mutate(race = case_when(Group %in% c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "Other", "Reported Unknown", "White") ~ Group, 
+                          TRUE ~ NA), 
+         predicted_ancestry = case_when(Group %in% c("EAS", "SAS", "AFR", "EUR", "AMR") ~ Group, 
+                                        TRUE ~ NA))
+
+
+p1 <- ggplot(HGG_race, aes(y = Freq, stratum = Group, alluvium = alluvium, x = x, fill = Group)) + 
+  geom_alluvium(show.legend = F) + 
+  geom_stratum(show.legend = F) +
+  scale_fill_manual(values = c("Asian" = "dodgerblue3", "SAS" = "dodgerblue", "EAS" = "dodgerblue4", 
+                                "White" = "gold3", "EUR" = "gold", 
+                                "Black or African American" = "brown", "AFR" = "brown3", 
+                                "Native Hawaiian or Other Pacific Islander" = "seagreen", "AMR" = "seagreen3", 
+                                "Reported Unknown" = "black", "Other" = "grey")) + 
+  xlab("") + 
+  theme_Publication()
+
+race_df <- data.frame(race = c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "White", "Other", "Reported Unknown"), 
+                     value = 1)
+ancestry_df <- data.frame(predicted_ancestry = c("EAS", "SAS", "AFR", "EUR", "AMR"), 
+                          value = 1)
+
+lgd1 <- ggplot(race_df, aes(x = value, y = factor(race, levels = c("Reported Unknown","Other","White","Native Hawaiian or Other Pacific Islander","Black or African American","Asian")), 
+                            fill = race)) + 
+  geom_tile(show.legend = F) + 
+  scale_fill_manual(values = c("Asian" = "dodgerblue3",  
+                                "White" = "gold3", 
+                                "Black or African American" = "brown", 
+                                "Native Hawaiian or Other Pacific Islander" = "seagreen", 
+                                "Reported Unknown" = "black", "Other" = "grey")) +
+  labs(title = "Race") + 
+  scale_y_discrete(position = "right", expand = c(0, 0)) + 
+  scale_x_discrete(expand = c(0, 0)) + 
+  coord_fixed(ratio=1) +
+  theme(legend.position = "none",
+        plot.title = element_text(size=8, face = "bold", colour = "black"),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_text(size=8, face = "bold", colour = "black"),
+        panel.background = element_blank()) 
+
+lgd2 <- ggplot(ancestry_df, aes(x = value, y = factor(predicted_ancestry, 
+                                                      levels = c("SAS","EAS","EUR","AMR","AFR")), 
+                                fill = predicted_ancestry)) + 
+  geom_tile(show.legend = F) + 
+  #xlim() + 
+  scale_fill_manual(values = c("SAS" = "dodgerblue", 
+                               "EAS" = "dodgerblue4",
+                               "EUR" = "gold", 
+                               "AFR" = "brown3", 
+                               "AMR" = "seagreen3")) +
+  labs(title = "Predicted ancestry") + 
+  scale_y_discrete(position = "right", expand = c(0, 0)) + 
+  scale_x_discrete(expand = c(0, 0)) + 
+  coord_fixed(ratio=1) + 
+  theme(legend.position = "none",
+        plot.title = element_text(size=8, face = "bold", colour = "black"),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_text(size=8, face = "bold", colour = "black"),
+        panel.background = element_blank()) 
+  
+  
+
+p1 + lgd1/lgd2
+```
+
+## save the plot
+
+```{r}
+ggsave(file.path(plots_dir, "alluvial_race_ancestry.pdf"), height = 6, width = 10)
 
 ```
 
