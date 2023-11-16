@@ -373,6 +373,8 @@ p1 <- ggplot(HGG_race, aes(y = Freq, stratum = Group, alluvium = alluvium, x = x
                                 "Native Hawaiian or Other Pacific Islander" = "seagreen", "AMR" = "seagreen3", 
                                 "Reported Unknown" = "black", "Other" = "grey")) + 
   xlab("") + 
+  ylab("Number of Patients") +
+  scale_x_discrete(labels = c("Race", "Predicted ancestry")) + 
   theme_Publication()
 
 race_df <- data.frame(race = c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "White", "Other", "Reported Unknown"), 
