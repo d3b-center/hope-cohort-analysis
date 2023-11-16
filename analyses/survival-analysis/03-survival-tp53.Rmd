@@ -36,8 +36,10 @@ source(file.path(analyses_dir, "utils", "survival_models.R"))
 ### transfomr OS_days to OS_years
 
 ```{r}
-HGG_survival <- read_tsv(file.path(input_dir, "HGG_survial_tp53.tsv"))
-ALT_df <- read_tsv(file.path(root_dir, "analyses", "alt-analysis", "resutls", "alt_status_aya_hgg.tsv")) %>% 
+HGG_survival <- read_tsv("~/hope-cohort-analysis/analyses/survival-analysis/input/HGG_survival_tp53.tsv")
+  #file.path(input_dir, "HGG_survial_tp53.tsv"))
+ALT_df <- read_tsv("~/hope-cohort-analysis/analyses/alt-analysis/results/alt_status_aya_hgg.tsv") %>% 
+  #file.path(root_dir, "analyses", "alt-analysis", "results", "alt_status_aya_hgg.tsv")) %>% 
   select(sample_id, t_n_telomere_content, ALT_status) 
 
 HGG_survival <- HGG_survival %>%
@@ -103,6 +105,7 @@ model <- read_rds(file.path(analyses_dir, "results", "tp53_score+reported_gender
 
 ## manually change the coefficient name, may need to address this issue later in survival script
 names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+names(model$coefficients) <- gsub("t_n_telomere_content", "telomere ratio", names(model$coefficients))
 
 plotForest(model)
 
@@ -113,6 +116,85 @@ plotForest(model)
 ```{r}
 
 ggsave(file.path(plots_dir, "HR_molecular_subtype.pdf"), width = 10, height = 6)
+
+```
+
+## remove gender, age, ALT status and telomere ratio.
+
+```{r}
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "tp53_score + plot_mol_subtype", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+mol_subtype.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+mol_subtype.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
+plotForest(model)
+
+```
+
+### save the plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_molecular_subtype_significant.pdf"), width = 10, height = 6)
+
+```
+
+### generate a forest plot with molecular subtype, tp53 score, and telomere ratio
+
+```{r}
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "tp53_score + plot_mol_subtype + t_n_telomere_content", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+mol_subtype+telomere.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+mol_subtype+telomere.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+names(model$coefficients) <- gsub("t_n_telomere_content", "telomere ratio", names(model$coefficients))
+
+plotForest(model)
+
+```
+
+### save plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_molecular_subtype_tel.pdf"), width = 10, height = 6)
+
+```
+
+### generate a forest plot with molecular subtype, tp53 score, and telomere ratio
+
+```{r}
+
+survival_cox <- fit_save_model(HGG_survival, 
+                                    terms = "tp53_score + plot_mol_subtype + ALT_status", 
+                                    output_file = file.path(analyses_dir, "results", "tp53_score+mol_subtype+alt.RDS"), 
+                                    model_type = "multivariate")
+
+model <- read_rds(file.path(analyses_dir, "results", "tp53_score+mol_subtype+alt.RDS"))
+
+## manually change the coefficient name, may need to address this issue later in survival script
+names(model$coefficients) <- gsub("tp53_score", "TP53 score", names(model$coefficients))
+
+plotForest(model)
+
+```
+
+### save plot
+
+```{r}
+
+ggsave(file.path(plots_dir, "HR_molecular_subtype_alt.pdf"), width = 10, height = 6)
 
 ```
 
