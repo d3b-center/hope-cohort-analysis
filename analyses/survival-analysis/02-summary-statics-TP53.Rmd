@@ -374,7 +374,7 @@ p1 <- ggplot(HGG_race, aes(y = Freq, stratum = Group, alluvium = alluvium, x = x
                                 "Reported Unknown" = "black", "Other" = "grey")) + 
   xlab("") + 
   ylab("Number of Patients") +
-  scale_x_discrete(labels = c("Race", "Predicted ancestry")) + 
+  scale_x_discrete(labels = c("reported race", "predicted ancestry")) + 
   theme_Publication()
 
 race_df <- data.frame(race = c("Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "White", "Other", "Reported Unknown"), 
@@ -390,7 +390,7 @@ lgd1 <- ggplot(race_df, aes(x = value, y = factor(race, levels = c("Reported Unk
                                 "Black or African American" = "brown", 
                                 "Native Hawaiian or Other Pacific Islander" = "seagreen", 
                                 "Reported Unknown" = "black", "Other" = "grey")) +
-  labs(title = "Race") + 
+  labs(title = "reported race") + 
   scale_y_discrete(position = "right", expand = c(0, 0)) + 
   scale_x_discrete(expand = c(0, 0)) + 
   coord_fixed(ratio=1) +
@@ -413,7 +413,7 @@ lgd2 <- ggplot(ancestry_df, aes(x = value, y = factor(predicted_ancestry,
                                "EUR" = "gold", 
                                "AFR" = "brown3", 
                                "AMR" = "seagreen3")) +
-  labs(title = "Predicted ancestry") + 
+  labs(title = "predicted ancestry") + 
   scale_y_discrete(position = "right", expand = c(0, 0)) + 
   scale_x_discrete(expand = c(0, 0)) + 
   coord_fixed(ratio=1) + 
