@@ -15,7 +15,7 @@ library(GSVA)
 #set directories
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 #data directory
-data_dir <- paste(root_dir, "/data", sep="")
+data_dir <- file.path(root_dir, "data")
 #directory containing input files
 inputfile_dir <- "./output"
 #directory to store output
@@ -43,7 +43,7 @@ if (!file.exists(quant_data_file)){
 
 
 #output file
-output_file <- "Hope_proteome_imputed_data_GSVA_BIOCARTA.tsv"
+output_file <- "Hope_proteome_imputed_data_GSVA_BIOCARTA_NEW.tsv"
 gsva_output_file <- file.path(output_dir, output_file)
 #
 
