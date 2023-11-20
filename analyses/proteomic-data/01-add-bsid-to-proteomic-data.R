@@ -41,10 +41,11 @@ whole_cell_protein <- whole_cell_protein %>%
   select(-c("OldSymbol", "Symbol.V5")) %>% 
   ## add protein symbols (NP id) %>% 
   left_join(prot_ID[, c("ApprovedGeneSymbol", "protein_HOPE")]) %>% 
-  select(protein_HOPE, everything())
+  select(protein_HOPE, everything()) %>% 
+  dplyr::rename(NP_id = protein_HOPE)
 
 ## save the file
-write_tsv(whole_cell_protein, file.path(output_dir, "Hope_proteome_imputed_data.tsv"))
+write_tsv(whole_cell_protein, file.path(output_dir, "hope-protein-imputed-prot-expression.tsv"))
 
 ## check if there are any gene does not present in rna-seq data
 gene_discrepancy <- data.frame(with_RNA = setdiff(unique(whole_cell_protein$ApprovedGeneSymbol), rna_gene_list), 
@@ -67,10 +68,10 @@ colnames(pho) <- c(colnames(pho)[1:7],
 
 ## remove OldSymbol column
 pho <- pho %>% 
-  select(-OldSymbol)
+  select(-OldSymbol, -Symbol.V5)
 
 ## save the file
-write_tsv(pho, file.path(output_dir, "Hope_phosphosite_imputed_data.tsv"))
+write_tsv(pho, file.path(output_dir, "hope-protein-imputed-phospho-expression.tsv"))
 
 ## check if there are any gene does not present in rna-seq data
 gene_discrepancy <- data.frame(with_RNA = setdiff(unique(pho$ApprovedGeneSymbol), rna_gene_list), 
@@ -99,11 +100,11 @@ colnames(pho_motif) <- c(colnames(pho_motif)[1:9],
                    col_mapping[colnames(pho_motif)[-c(1:9)]])
 
 ## remove OldSymbol column
-pho_motif <- pho_motif %>% 
-  select(-OldSymbol)
+pho_motif_1 <- pho_motif %>% 
+  select(-OldSymbol, -`Symbol-V5`)
 
 ## save the file
-write_tsv(pho_motif, file.path(output_dir, "Hope_phosphosite_imputed_data_ischemia_removed_motif.tsv"))
+write_tsv(pho_motif, file.path(output_dir, "hope-protein-imputed-phospho-motif-expression.tsv"))
 
 ## check if there are any gene does not present in rna-seq data
 gene_discrepancy <- data.frame(with_RNA = setdiff(unique(pho_motif$ApprovedGeneSymbol), rna_gene_list), 
