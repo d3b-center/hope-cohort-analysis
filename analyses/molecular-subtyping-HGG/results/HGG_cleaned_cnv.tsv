@@ -20,7 +20,6 @@ sample_id	Kids_First_Biospecimen_ID	Kids_First_Participant_ID	EGFR_focal_status	
 7316-3303	BS_96S0VQBN	PT_1H2REHT2	Gain	Neutral	Gain	Gain
 7316-194	BS_9DM8H1RX	PT_SYHB12RN	Gain	Gain	Gain	Gain
 7316-2777	BS_A0NBZQPH	PT_TPDB1WC8	Gain	Neutral	Neutral	Neutral
-7316-3000	BS_ABZ3BK38	PT_S2BEPYQ0	Loss	Neutral	Neutral	Gain
 7316-1746	BS_ASGBEHAX	PT_C2D4JXS1	Gain	Gain	Gain	Gain
 7316-195	BS_AYPBAHJ6	PT_Y5KY6KN9	Gain	Loss, Gain	Gain	Gain
 7316-409	BS_B9QP40ER	PT_2JDDX6TJ	Neutral	Loss	Neutral	Loss
@@ -35,7 +34,6 @@ sample_id	Kids_First_Biospecimen_ID	Kids_First_Participant_ID	EGFR_focal_status	
 7316-4516	BS_GCG2PKQA	PT_C7HHJG7Z	Neutral	Loss	Gain	Neutral
 7316-5928	BS_GMVP7K9F	PT_K1YK24PP	Neutral	Neutral	Neutral	Neutral
 7316-4466	BS_HBSA5CW2	PT_YSYNKHAE	Gain	Loss	Gain	Gain, Neutral
-7316-1106	BS_J4E9SW51	PT_T8V9ES93	Gain	Neutral	Neutral	Neutral
 7316-4942	BS_JZ40GV74	PT_HF824BSM	Gain	Loss	Gain	Neutral
 7316-2152	BS_KHSYAB3J	PT_7FZ8SE69	Gain	Neutral	Neutral	Neutral
 7316-2176	BS_KSHETTQC	PT_VAJN5QP8	Gain	Neutral	Gain	Neutral
@@ -60,6 +58,7 @@ sample_id	Kids_First_Biospecimen_ID	Kids_First_Participant_ID	EGFR_focal_status	
 7316-4432	BS_ZN35MFSR	PT_P1F0AHMT	Neutral	Loss	Gain	Neutral
 7316-1099	BS_JJ593ZW7	PT_N3205P0D	Neutral	Neutral	Neutral	Neutral
 7316-1106	BS_9XHV04WE	PT_T8V9ES93	Neutral	Neutral	Neutral	Neutral
+7316-1106	BS_J4E9SW51	PT_T8V9ES93	Neutral	Neutral	Neutral	Neutral
 7316-114	BS_2EJWS3SD	PT_3X3MF8ZD	Neutral	Neutral	Neutral	Neutral
 7316-114	BS_3NX3RBCX	PT_3X3MF8ZD	Neutral	Neutral	Neutral	Neutral
 7316-161	BS_ZY319KJ4	PT_Z4BF2NSB	Neutral	Neutral	Neutral	Neutral
@@ -91,6 +90,7 @@ sample_id	Kids_First_Biospecimen_ID	Kids_First_Participant_ID	EGFR_focal_status	
 7316-2660	BS_00TRPEQX	PT_MDWPRDBT	Neutral	Neutral	Neutral	Neutral
 7316-2857	BS_65YZYWHD	PT_0DXHDZJR	Neutral	Neutral	Neutral	Neutral
 7316-3000	BS_0TCRV9AC	PT_S2BEPYQ0	Neutral	Neutral	Neutral	Neutral
+7316-3000	BS_ABZ3BK38	PT_S2BEPYQ0	Neutral	Neutral	Neutral	Neutral
 7316-3022	BS_0KKH9VKP	PT_1H2REHT2	Neutral	Neutral	Neutral	Neutral
 7316-3075	BS_EBBQ7GD2	PT_KFYJBQB8	Neutral	Neutral	Neutral	Neutral
 7316-3075	BS_NJFK43N3	PT_KFYJBQB8	Neutral	Neutral	Neutral	Neutral
