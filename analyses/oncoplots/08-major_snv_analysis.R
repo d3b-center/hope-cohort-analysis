@@ -33,9 +33,9 @@ samples_to_use <- intersect(rownames(annot_info), colnames(mat))
 mat <- mat[,samples_to_use]
 annot_info <- annot_info[samples_to_use,]
 
-# only plot top genes 
+# top 20 genes 
 major_snv <- apply(mat, 1, FUN = function(x) (length(grep("MIS|NOS|FSD|FSI|NOT|SPS|IFD", x))/ncol(mat))*100)
-major_snv <- names(major_snv[major_snv >= 6])
+major_snv <- names(sort(major_snv, decreasing = TRUE)[1:20])
 
 # read oncoprint matrix
 mat <- mat[rownames(mat) %in% major_snv,]

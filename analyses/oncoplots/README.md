@@ -4,7 +4,7 @@ Komal S. Rathi
 
 ### Purpose
 
-The goal of this module is to generate oncoplots and cascade plots.
+The goal of this module is to generate oncoplots and cascade plots for top 20 alterations.
 
 ### Description of scripts
 
@@ -260,7 +260,7 @@ results/cascade_plots_add_tumor_only
 └── cascade_plot.pdf
 ```
 ***
-`08-major_snv_analysis.R`: This script computes correlations between ALT-status and % MSI to major SNV i.e. `> 6%`. 
+`08-major_snv_analysis.R`: This script computes correlations between ALT-status and % MSI to top 20 major SNV. 
 
 Command to run this script:
 

@@ -59,14 +59,15 @@ annot_info <- annot_info %>%
   mutate(Age = as.character(Age)) %>%
   mutate(Age = ifelse(Age %in% c("(15,26]", "(26,40]"), "(15,40]", Age))
 
-# only plot top genes 
+# only plot top 20 genes 
 snv_genes_to_keep = apply(mat, 1, FUN = function(x) (length(grep("Mutation", x))/ncol(mat))*100)
-snv_genes_to_keep <- names(snv_genes_to_keep[snv_genes_to_keep >= 6])
+snv_genes_to_keep <- names(sort(snv_genes_to_keep, decreasing = TRUE)[1:20])
 mat <- mat[which(rownames(mat) %in% snv_genes_to_keep),]
 
 # annotation 1
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
 annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,40]"))
+annot_info$Molecular_Subtype <- as.character(annot_info$Molecular_Subtype)
 ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experiment)), col = list(
   TMB = col_fun_tmb,
   Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseagreen",
@@ -75,6 +76,19 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experimen
                 "Astrocytoma (WHO grade III/IV)" = "#5fff57", 
                 "Glioblastoma (WHO grade IV)" = "#f268d6",
                 "Pleomorphic xanthoastrocytoma (WHO grade II/III)" = "#005082"),
+  Molecular_Subtype = c("DMG, H3 K28" = "#053061",
+                        "DHG, H3 G35, TP53" = "#A6761D",
+                        "HGG, H3 wildtype" = "#4393c3",
+                        "HGG, H3 wildtype, TP53" = "darkgreen",
+                        "DMG, H3 K28, TP53" = "#BC80BD",
+                        "HGG, IDH, TP53" = "#FFFF99",
+                        "IHG, NTRK-altered, TP53"  = "#E7298A",
+                        "IHG, NTRK-altered" = "#f4a582",
+                        "IHG, ROS1-altered" = "#d6604d",
+                        "IHG, ALK-altered" = "#E31A1C",
+                        "PXA" = "#67001f",
+                        "HGG, IDH" = "#B3DE69",
+                        "NA" = "#f1f1f1"),
   Diagnosis_Type = c("Initial CNS Tumor" = "#cee397",
                      "Progressive" = "#827397",
                      "Recurrence" = "#363062",
@@ -110,7 +124,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            labels = c("SNV")
                ))
 
-pdf(file = file.path(output_dir, "cascade_plot_two_age_groups.pdf"), width = 15, height = 8) 
+pdf(file = file.path(output_dir, "cascade_plot_two_age_groups.pdf"), width = 16, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -132,7 +146,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("Mutation"),
                                            labels = c("SNV")
                ))
-pdf(file = file.path(output_dir, "cascade_orderby_age_two_age_groups.pdf"), width = 15, height = 8) 
+pdf(file = file.path(output_dir, "cascade_orderby_age_two_age_groups.pdf"), width = 16, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -154,6 +168,6 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("Mutation"),
                                            labels = c("SNV")
                ))
-pdf(file = file.path(output_dir, "cascade_orderby_sex_two_age_groups.pdf"), width = 15, height = 8) 
+pdf(file = file.path(output_dir, "cascade_orderby_sex_two_age_groups.pdf"), width = 16, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()

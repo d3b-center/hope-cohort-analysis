@@ -76,18 +76,19 @@ samples_to_use <- intersect(rownames(annot_info), colnames(mat))
 mat <- mat[,samples_to_use]
 annot_info <- annot_info[samples_to_use,]
 
-# only plot top genes 
+# only plot top 20 genes 
 snv_fus_genes_to_keep = apply(mat, 1, FUN = function(x) 
   (length(grep("MIS|NOS|FSD|FSI|NOT|SPS|IFD|FUS", x))/ncol(mat))*100)
-snv_fus_genes_to_keep <- names(snv_fus_genes_to_keep[snv_fus_genes_to_keep >= 6])
+snv_fus_genes_to_keep <- names(sort(snv_fus_genes_to_keep, decreasing = TRUE)[1:20])
 cnv_dge_genes_to_keep = apply(mat, 1, FUN = function(x) 
   (length(grep("GAI|LOS|OVE|UNE", x))/ncol(mat))*100)
-cnv_dge_genes_to_keep <- names(cnv_dge_genes_to_keep[cnv_dge_genes_to_keep >= 50])
+cnv_dge_genes_to_keep <- names(sort(cnv_dge_genes_to_keep, decreasing = TRUE)[1:20])
 mat <- mat[which(rownames(mat) %in% c(snv_fus_genes_to_keep, cnv_dge_genes_to_keep)),]
 
 # annotation 1
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
 annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
+annot_info$Molecular_Subtype <- as.character(annot_info$Molecular_Subtype)
 ha = HeatmapAnnotation(df = annot_info , 
                        col = list(TMB = col_fun_tmb,
                                   Sequencing_Experiment = c("WGS" = "red",
@@ -99,6 +100,19 @@ ha = HeatmapAnnotation(df = annot_info ,
                                                 "Astrocytoma (WHO grade III/IV)" = "#5fff57", 
                                                 "Glioblastoma (WHO grade IV)" = "#f268d6",
                                                 "Pleomorphic xanthoastrocytoma (WHO grade II/III)" = "#005082"),
+                                  Molecular_Subtype = c("DMG, H3 K28" = "#053061",
+                                                        "DHG, H3 G35, TP53" = "#A6761D",
+                                                        "HGG, H3 wildtype" = "#4393c3",
+                                                        "HGG, H3 wildtype, TP53" = "darkgreen",
+                                                        "DMG, H3 K28, TP53" = "#BC80BD",
+                                                        "HGG, IDH, TP53" = "#FFFF99",
+                                                        "IHG, NTRK-altered, TP53"  = "#E7298A",
+                                                        "IHG, NTRK-altered" = "#f4a582",
+                                                        "IHG, ROS1-altered" = "#d6604d",
+                                                        "IHG, ALK-altered" = "#E31A1C",
+                                                        "PXA" = "#67001f",
+                                                        "HGG, IDH" = "#B3DE69",
+                                                        "NA" = "#f1f1f1"),
                                   Diagnosis_Type = c("Initial CNS Tumor" = "#cee397",
                                                      "Progressive" = "#827397",
                                                      "Recurrence" = "#363062",
@@ -134,12 +148,12 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
 
-pdf(file = file.path(output_dir, "oncoplot.pdf"), width = 15, height = 10) 
+pdf(file = file.path(output_dir, "oncoplot.pdf"), width = 16, height = 10) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -158,11 +172,11 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex.pdf"), width = 15, height = 10) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex.pdf"), width = 16, height = 10) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -180,11 +194,11 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_H3F3A.pdf"), width = 15, height = 10) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_H3F3A.pdf"), width = 16, height = 10) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -209,11 +223,11 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex_H3F3A_status.pdf"), width = 15, height = 10) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex_H3F3A_status.pdf"), width = 16, height = 10) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -232,11 +246,11 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age.pdf"), width = 15, height = 10) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age.pdf"), width = 16, height = 10) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -260,10 +274,10 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age_H3F3A_status.pdf"), width = 15, height = 10) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age_H3F3A_status.pdf"), width = 16, height = 10) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
