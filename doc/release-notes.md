@@ -1,9 +1,25 @@
 # Release note
 
-## Current release (V1)
+## Current release (V2)
+- release data: 2023-11-21
+- Overview:
+  - Sequence sample:
+    - 184 RNA-seq
+    - 87 WGS
+    - 78 DNA methylation
+    - 29 snRNA-seq
+    - 91 Proteomic
+- Updates: 
+  - Added `cancer_group_short` column in final histology file (https://github.com/d3b-center/hope-cohort-analysis/pull/65)
+  - Genomics data from two samples (`7316-1106` and `7316-3000`) were removed because they do not have proteomic data.
+  - DNA methylation data of sample `7316-212` was removed from the dataset. 
+  - Proteomic data was not included in this release.  
+
+
+## Previous release (V1)
 - release date: 2023-09-01
 - Overview: 
-  - Sequence ample:
+  - Sequence sample:
     - 186 RNA-seq
     - 91 WGS
     - 81 DNA methylation
@@ -25,3 +41,5 @@
     - Hope-fusion-putative-oncogenic.rds
     - Hope-gene-counts-rsem-expected_count-collapsed.rds	   
     - Hope-gene-counts-rsem-expected_count.rds
+    - Hope-methyl-beta-values.rds
+    - Hope-methyl-m-values.rds
