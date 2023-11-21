@@ -12,7 +12,7 @@
 - Updates: 
   - Added `cancer_group_short` column in final histology file (https://github.com/d3b-center/hope-cohort-analysis/pull/65)
   - Genomics data from two samples (`7316-1106` and `7316-3000`) were removed because they do not have proteomic data.
-  - DNA methylation data of sample `7316-212` was removed from the dataset. 
+  - DNA methylation data of sample `7316-212` was removed from the dataset due to a sample swap issue. 
   - Proteomic data was not included in this release.  
 
 
