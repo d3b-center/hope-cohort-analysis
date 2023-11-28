@@ -1,4 +1,7 @@
 # Function: merge sample level MSI output files from cavatica into cohort level TSV files
+suppressPackageStartupMessages({
+  library(tidyverse)
+})
 
 # set directories
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
@@ -23,7 +26,7 @@ msi_manifest <- msi_manifest %>%
 msi_manifest <- msi_manifest %>%
   filter(Kids_First_Biospecimen_ID %in% hist_df$Kids_First_Biospecimen_ID)
 
-# merge msi (n = 73)
+# merge msi 
 lf <- list.files(path = file.path(input_dir, "msisensor_pro"), pattern = 'msisensor_pro', recursive = T, full.names = T)
 hope_cohort_msi <- lapply(lf, read_tsv)
 hope_cohort_msi <- do.call(rbind, hope_cohort_msi)
@@ -50,7 +53,7 @@ msi_manifest <- msi_manifest %>%
 msi_manifest <- msi_manifest %>%
   filter(Kids_First_Biospecimen_ID %in% hist_df$Kids_First_Biospecimen_ID)
 
-# merge msi (n = 90)
+# merge msi
 lf <- list.files(path = file.path(input_dir, "msisensor_pro_tumor_only"), pattern = 'msisensor_pro', recursive = T, full.names = T)
 hope_cohort_msi <- lapply(lf, read_tsv)
 hope_cohort_msi <- do.call(rbind, hope_cohort_msi)

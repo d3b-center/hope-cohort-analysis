@@ -27,13 +27,6 @@ hist_df <- hist_df %>%
   dplyr::select(sample_id, molecular_subtype, OS_days, OS_status) %>%
   unique()
 
-# filter to HOPE annotation binary matrix
-binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
-binary_matrix <- binary_matrix %>%
-  filter(Remove == 0)
-hist_df <- hist_df %>%
-  filter(sample_id %in% binary_matrix$sample_id)
-
 # 1) add ALT status
 alt_status_output <- read_tsv("../alt-analysis/results/alt_status_aya_hgg.tsv") %>%
   dplyr::select(sample_id, t_n_telomere_content, ALT_status)

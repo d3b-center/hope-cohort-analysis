@@ -21,13 +21,6 @@ annot <- read_tsv(file = file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>% 
   filter(!is.na(HOPE_diagnosis))
 
-# filter to HOPE annotation binary matrix
-binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
-binary_matrix <- binary_matrix %>%
-  filter(Remove == 0)
-annot <- annot %>%
-  filter(sample_id %in% binary_matrix$sample_id)
-
 # read MSI paired output 
 msi_paired_output <- read_tsv(file.path(output_dir, "Hope-msi-paired.tsv")) %>%
   dplyr::mutate(Type = ifelse(Percent > 3.5, sample_id, "")) %>%

@@ -21,13 +21,6 @@ annot <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>%
   filter(!is.na(HOPE_diagnosis))
 
-# filter to HOPE annotation binary matrix
-binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
-binary_matrix <- binary_matrix %>%
-  filter(Remove == 0)
-annot <- annot %>%
-  filter(sample_id %in% binary_matrix$sample_id)
-
 # fix HOPE_diagnosis_type
 annot <- annot %>%
   mutate(HOPE_diagnosis_type = case_when(

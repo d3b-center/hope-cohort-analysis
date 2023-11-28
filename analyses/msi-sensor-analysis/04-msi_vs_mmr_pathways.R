@@ -33,13 +33,6 @@ annot <- annot %>%
   filter(!is.na(HOPE_diagnosis),
          experimental_strategy == "RNA-Seq")
 
-# filter to HOPE annotation binary matrix
-binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
-binary_matrix <- binary_matrix %>%
-  filter(Remove == 0)
-annot <- annot %>%
-  filter(sample_id %in% binary_matrix$sample_id)
-
 # filter to biospecimens of interest
 tpm_dat <- tpm_dat %>%
   dplyr::select(annot$Kids_First_Biospecimen_ID)
@@ -77,16 +70,12 @@ msi_paired_output <- read_tsv(file.path(output_dir, "msisensor-pro-paired", "Hop
   dplyr::mutate(Type = ifelse(Percent > 3.5, sample_id, "")) %>%
   dplyr::rename("msi_paired" = "Percent") %>%
   dplyr::select(sample_id, msi_paired)
-msi_paired_output <- msi_paired_output %>%
-  filter(sample_id %in% binary_matrix$sample_id)
 
 # read MSI tumor-only output 
 msi_tumor_only_output <- read_tsv(file.path(output_dir, "msisensor-pro-tumor-only", "Hope-msi-tumor_only.tsv")) %>%
   dplyr::mutate(Type = ifelse(Percent > 3.5, sample_id, "")) %>%
   dplyr::rename("msi_tumor_only" = "Percent") %>%
   dplyr::select(sample_id, msi_tumor_only)
-msi_tumor_only_output <- msi_tumor_only_output %>%
-  filter(sample_id %in% binary_matrix$sample_id)
 
 # add MSI (paired and tumor-only)
 ssgsea_scores_each <- ssgsea_scores_each %>%

@@ -28,13 +28,6 @@ msi_tumor_only <- file.path(output_dir, "msisensor-pro-tumor-only", "Hope-msi-tu
 annot <- msi_paired %>%
   inner_join(msi_tumor_only, by = "sample_id")
 
-# filter to HOPE annotation binary matrix
-binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
-binary_matrix <- binary_matrix %>%
-  filter(Remove == 0)
-annot <- annot %>%
-  filter(sample_id %in% binary_matrix$sample_id)
-
 # scatter plot
 pdf(file = file.path(output_dir, "msisensor-pro-combined", "tumor_only_vs_paired_analysis.pdf"), width = 8, height = 6)
 p <- ggplot(annot, aes(x = MSI_paired, y = MSI_tumor_only)) +

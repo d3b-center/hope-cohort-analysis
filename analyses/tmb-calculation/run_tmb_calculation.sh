@@ -23,7 +23,7 @@ wgs_bed="${input_dir}/intersect_strelka_mutect2_vardict_WGS.bed"
 mapping_file="${input_dir}/biospecimen_id_to_bed_map.tsv"
 
 # Histology file
-histology_file="${data_dir}/v1/Hope-GBM-histologies.tsv"
+histology_file="${data_dir}/Hope-GBM-histologies.tsv"
 
 ############# Create intersection BED files for TMB calculations ###############
 # Make All mutations BED files
@@ -44,7 +44,7 @@ gunzip -c ${data_dir}/gencode.v39.primary_assembly.annotation.gtf.gz \
 
 # ######################### Calculate consensus TMB ##############################
 Rscript 01-calculate_tmb.R \
---maf_file "${data_dir}/v1/Hope-snv-consensus-plus-hotspots.maf.tsv.gz" \
+--maf_file "${data_dir}/Hope-snv-consensus-plus-hotspots.maf.tsv.gz" \
 --bed_files $mapping_file \
 --histologies_file $histology_file \
 --coding_regions $cds_file \
@@ -53,7 +53,7 @@ Rscript 01-calculate_tmb.R \
 
 # ######################### Calculate mutect2 TMB ##############################
 Rscript 01-calculate_tmb.R \
---maf_file "${data_dir}/v1/Hope-tumor-only-snv-mutect2.maf.tsv.gz" \
+--maf_file "${data_dir}/Hope-tumor-only-snv-mutect2.maf.tsv.gz" \
 --bed_files $mapping_file \
 --histologies_file $histology_file \
 --coding_regions $cds_file \
