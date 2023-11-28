@@ -5,10 +5,14 @@ set -o pipefail
 
 # Set URL and release
 URL=${HOPE_URL:-https://s3.amazonaws.com/d3b-openaccess-us-east-1-prd-pbta/hope-aya}
-RELEASE=${VERSION:-v1}
+RELEASE=${VERSION:-v2}
+PREVIOUS=${VERSION:-v1}
 
 # Set the working directory to the directory of this file
 cd "$(dirname "${BASH_SOURCE[0]}")"
+
+# Remove old symlinks in data
+find data -type l -delete
 
 # If RUN_LOCAL is used, the time-intensive steps are skipped because they cannot
 # be run on a local computer -- the idea is that setting RUN_LOCAL=1 will allow for
