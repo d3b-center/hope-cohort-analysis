@@ -167,6 +167,28 @@ q <- ggplot(plot_df, aes(x = age_two_groups, y = t_n_telomere_content, color = a
                                 "(15,40]\n(n = 27)" = "#238B45"))
 ggsave(plot = q, filename = file.path(output_dir, "telomere_content_vs_age_two_groups.pdf"), height = 6, width = 6)
 
+# colored by tumor location
+# q <- ggplot(plot_df, aes(x = age_two_groups, y = t_n_telomere_content)) +
+#   geom_boxplot(coef = 0, outlier.shape = NA) +
+#   geom_jitter(aes(color = HOPE_Tumor.Location.condensed)) +
+#   ggpubr::theme_pubr(base_size = 10, legend = "right") + ylab("") + 
+#   stat_compare_means(color = "red", size = 4, method = "wilcox.test") +
+#   xlab("") + 
+#   ylab("Telomere Content\n") +
+#   ggtitle("ALT telomere content vs. Age") 
+q <- ggplot(plot_df, aes(x = age_two_groups, y = t_n_telomere_content, color = age_two_groups)) +
+  geom_boxplot(coef = 0, outlier.shape = NA) +
+  geom_jitter(pch = 21, aes(fill = HOPE_Tumor.Location.condensed), size = 3) +
+  ggpubr::theme_pubr(base_size = 10, legend = "right") + ylab("") + 
+  stat_compare_means(color = "red", size = 4, method = "wilcox.test") +
+  xlab("") + 
+  ylab("Telomere Content\n") +
+  ggtitle("ALT telomere content vs. Age") +
+  scale_color_manual(values = c("[0,15]\n(n = 43)" = "#C7E9C0",
+                                "(15,40]\n(n = 27)" = "#238B45")) +
+  guides(color = "none")
+ggsave(plot = q, filename = file.path(output_dir, "telomere_content_vs_age_two_groups_by_tumor_loc.pdf"), height = 6, width = 8)
+
 # 7) ALT telomere content vs Gender
 plot_data <- output_df %>%
   mutate(HARMONY_Gender = as.character(HARMONY_Gender)) %>%
