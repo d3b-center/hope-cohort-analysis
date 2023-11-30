@@ -59,12 +59,6 @@ annot_info <- annot_info %>%
   mutate(Age = as.character(Age)) %>%
   mutate(Age = ifelse(Age %in% c("(15,26]", "(26,40]"), "(15,40]", Age))
 
-# plot all oncogenes 
-annofuse_genes <- read_tsv(file.path(analyses_dir, "input", "genelistreference.txt"))
-annofuse_genes <- annofuse_genes %>%
-  filter(grepl("Oncogene", type))
-mat <- mat[which(rownames(mat) %in% annofuse_genes$Gene_Symbol),]
-
 # annotation 1
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
 annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,40]"))
@@ -125,7 +119,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            labels = c("SNV")
                ))
 
-pdf(file = file.path(output_dir, "cascade_plot_two_age_groups_oncogenes.pdf"), width = 16, height = 8) 
+pdf(file = file.path(output_dir, "cascade_two_age_groups_allgenes.pdf"), width = 16, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -147,7 +141,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("Mutation"),
                                            labels = c("SNV")
                ))
-pdf(file = file.path(output_dir, "cascade_orderby_age_two_age_groups_oncogenes.pdf"), width = 16, height = 8) 
+pdf(file = file.path(output_dir, "cascade_two_age_groups_orderby_age_allgenes.pdf"), width = 16, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -169,6 +163,6 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("Mutation"),
                                            labels = c("SNV")
                ))
-pdf(file = file.path(output_dir, "cascade_orderby_sex_two_age_groups_oncogenes.pdf"), width = 16, height = 8) 
+pdf(file = file.path(output_dir, "cascade_two_age_groups_orderby_sex_allgenes.pdf"), width = 16, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()

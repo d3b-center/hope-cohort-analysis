@@ -120,7 +120,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            labels = c("SNV")
                ))
 
-pdf(file = file.path(output_dir, "cascade_plot_three_age_groups.pdf"), width = 16, height = 8) 
+pdf(file = file.path(output_dir, "cascade_three_age_groups_top20genes.pdf"), width = 16, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -142,7 +142,7 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("Mutation"),
                                            labels = c("SNV")
                ))
-pdf(file = file.path(output_dir, "cascade_orderby_age_three_age_groups.pdf"), width = 16, height = 8) 
+pdf(file = file.path(output_dir, "cascade_three_age_groups_orderby_age_top20genes.pdf"), width = 16, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -164,6 +164,6 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                                            at = c("Mutation"),
                                            labels = c("SNV")
                ))
-pdf(file = file.path(output_dir, "cascade_orderby_sex_three_age_groups.pdf"), width = 16, height = 8) 
+pdf(file = file.path(output_dir, "cascade_three_age_groups_orderby_sex_top20genes.pdf"), width = 16, height = 8) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()

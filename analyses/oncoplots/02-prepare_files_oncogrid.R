@@ -14,7 +14,7 @@ input_dir <- file.path(analyses_dir, "input")
 output_dir <- file.path(analyses_dir, "results")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
-# read driver list from OT
+# read HGAT driver list from OT
 brain_goi_list <- read.delim(file = file.path(input_dir, "hgat_goi_list.tsv"), header = T)
 
 # MMR genes
@@ -26,13 +26,21 @@ mmr_genes <- unique(geneset_db$human_gene_symbol)
 driver_genes <- data.frame(V1 = c(brain_goi_list$HGAT, mmr_genes)) %>% unique()
 
 # read reference gene lists based on PNOC003
-snv <- read.delim(file.path(input_dir, "snv_genes.tsv"), header = F) %>%
+snv <- read.delim(file.path(input_dir, "snv_genes.tsv")) %>%
+  dplyr::select(hg38) %>%
+  dplyr::rename("V1" = "hg38") %>%
   rbind(driver_genes) %>% unique()
-fusion <- read.delim(file.path(input_dir, "fusion_genes.tsv"), header = F) %>%
+fusion <- read.delim(file.path(input_dir, "fusion_genes.tsv")) %>%
+  dplyr::select(hg38) %>%
+  dplyr::rename("V1" = "hg38") %>%
   rbind(driver_genes) %>% unique()
-cnv <- read.delim(file.path(input_dir, "cnv_genes.tsv"), header = F) %>%
+cnv <- read.delim(file.path(input_dir, "cnv_genes.tsv")) %>%
+  dplyr::select(hg38) %>%
+  dplyr::rename("V1" = "hg38") %>%
   rbind(driver_genes) %>% unique()
-deg <- read.delim(file.path(input_dir, "deg_genes.tsv"), header = F) %>%
+deg <- read.delim(file.path(input_dir, "deg_genes.tsv")) %>%
+  dplyr::select(hg38) %>%
+  dplyr::rename("V1" = "hg38") %>%
   rbind(driver_genes) %>% unique()
 
 # rna/wgs ids
@@ -47,13 +55,6 @@ rna_ids <- file.path(data_dir, "Hope-gene-expression-rsem-tpm-collapsed.rds") %>
 hist_df <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
 hist_df <- hist_df %>%
   filter(!is.na(HOPE_diagnosis))
-
-# filter to HOPE annotation binary matrix
-binary_matrix <- read_tsv(file.path(input_dir, "compare_HOPE_v2plot.annotation.txt"))
-binary_matrix <- binary_matrix %>%
-  filter(Remove == 0)
-hist_df <- hist_df %>%
-  filter(sample_id %in% binary_matrix$sample_id)
 
 # fix HOPE_diagnosis_type
 hist_df <- hist_df %>%
@@ -88,9 +89,6 @@ tmb_paired_output <- read_tsv("../tmb-calculation/results/wgs_paired/snv-mutatio
   inner_join(hist_df, by = c("Tumor_Sample_Barcode" = "Kids_First_Biospecimen_ID")) %>%
   dplyr::select(sample_id, TMB) %>%
   unique()
-tmb_paired_output <- tmb_paired_output %>%
-  filter(sample_id %in% binary_matrix$sample_id)
-
 hist_df <- hist_df %>%
   left_join(tmb_paired_output, by = c("sample_id"))
 
@@ -105,7 +103,7 @@ annot_info <- hist_df %>%
                 "Sex" = "HARMONY_Gender",
                 "Age" = "HARMONY_age_class_derived",
                 "Molecular_Subtype" = "molecular_subtype") %>%
-  dplyr::select(Sample, Sequencing_Experiment, Diagnosis, Molecular_Subtype, Diagnosis_Type, Tumor_Location, Sex, Age, TMB) %>%
+  dplyr::select(Sample, Sequencing_Experiment, Diagnosis, Molecular_Subtype, Diagnosis_Type, Tumor_Location, CNS_region, Sex, Age, TMB) %>%
   unique()
 
 # save annotation file
