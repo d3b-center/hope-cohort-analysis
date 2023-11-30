@@ -90,6 +90,8 @@ mat <- mat[which(rownames(mat) %in% c(snv_fus_genes_to_keep, cnv_dge_genes_to_ke
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
 annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
 annot_info$Molecular_Subtype <- as.character(annot_info$Molecular_Subtype)
+annot_info$Cancer_Group <- as.character(annot_info$Cancer_Group)
+
 ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experiment)), 
                        col = list(TMB = col_fun_tmb,
                                   Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseagreen",
@@ -119,6 +121,16 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experimen
                                                      "Other/Multiple locations/NOS" = "#7C8F97",
                                                      "Midline" = "#344C68",
                                                      "Cerebellar" = "#94004C"),
+                                  CNS_region = c("Posterior fossa" = "#D4806C",
+                                                 "Other" = "#7C8F97",
+                                                 "Midline" = "#344C68",
+                                                 "Hemispheric" = "#94004C",
+                                                 "Mixed" = "darkgreen"),
+                                  Cancer_Group = c("DMG" = "#053061",
+                                                   "DHG" = "#A6761D",
+                                                   "HGG" = "#4393c3",
+                                                   "IHG" = "#E7298A",
+                                                   "NA" = "#f1f1f1"),
                                   Sex = c("Male" = "#0707CF",
                                           "Female" = "#CC0303"),
                                   Age = c("[0,15]" = "#C7E9C0",
@@ -307,6 +319,16 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(Sequencing_Experimen
                                                      "Other/Multiple locations/NOS" = "#7C8F97",
                                                      "Midline" = "#344C68",
                                                      "Cerebellar" = "#94004C"),
+                                  CNS_region = c("Posterior fossa" = "#D4806C",
+                                                 "Other" = "#7C8F97",
+                                                 "Midline" = "#344C68",
+                                                 "Hemispheric" = "#94004C",
+                                                 "Mixed" = "darkgreen"),
+                                  Cancer_Group = c("DMG" = "#053061",
+                                                   "DHG" = "#A6761D",
+                                                   "HGG" = "#4393c3",
+                                                   "IHG" = "#E7298A",
+                                                   "NA" = "#f1f1f1"),
                                   Sex = c("Male" = "#0707CF",
                                           "Female" = "#CC0303"),
                                   Age = c("[0,15]" = "#C7E9C0",

@@ -125,8 +125,9 @@ annot_info <- hist_df %>%
                 "Tumor_Location" = "HOPE_Tumor.Location.condensed",
                 "Sex" = "HARMONY_Gender",
                 "Age" = "HARMONY_age_class_derived",
-                "Molecular_Subtype" = "molecular_subtype") %>%
-  dplyr::select(Sample, Sequencing_Experiment, Diagnosis, Molecular_Subtype, Diagnosis_Type, Tumor_Location, CNS_region, Sex, Age, TMB) %>%
+                "Molecular_Subtype" = "molecular_subtype",
+                "Cancer_Group" = "cancer_group_short") %>%
+  dplyr::select(Sample, Sequencing_Experiment, Diagnosis, Molecular_Subtype, Diagnosis_Type, Tumor_Location, CNS_region, Cancer_Group, Sex, Age, TMB) %>%
   unique()
 
 # save annotation file
