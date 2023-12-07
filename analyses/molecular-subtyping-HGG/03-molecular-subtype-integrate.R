@@ -26,7 +26,7 @@ hist_with_subtype <- hist %>%
                                           grepl("HGG, H3 wildtype", molecular_subtype) ~ "High-grade glioma, IDH-wildtype and H3-wildtype",
                                           grepl("HGG, IDH", molecular_subtype) ~ "High-grade glioma, IDH-mutant",
                                           molecular_subtype == "HGG, To be classified" ~ "High-grade glioma",
-                                          # account for IGH subtypes
+                                          # account for IHG subtypes
                                           grepl("IHG, NTRK-altered", molecular_subtype) ~ "Infant-type hemispheric glioma, NTRK-altered",
                                           grepl("IHG, ALK-altered", molecular_subtype) ~ "Infant-type hemispheric glioma, ALK-altered",
                                           grepl("IHG, ROS1-altered", molecular_subtype) ~ "Infant-type hemispheric glioma, ROS1-altered",
@@ -46,6 +46,9 @@ hist_with_subtype <- hist %>%
                                      sample_id == "7316-2151" ~ "High-grade neuroepithelial tumor",
                                      sample_id == "7316-2857" ~ "High-grade neuroepithelial tumor",
                                      TRUE ~ NA_character_)) %>% 
+  ## Add mol_sub_broad column
+  mutate(cancer_group_short = case_when(grepl(",", molecular_subtype) ~ substr(molecular_subtype, 1, regexpr(",", molecular_subtype) - 1), 
+                                   grepl("^C3", Kids_First_Biospecimen_ID) ~ "GBM", TRUE ~ NA_character_)) %>%
   mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>%
   select(colnames(.)[!grepl(paste(c("^HARMONY_", "^HOPE_"), collapse = "|"), colnames(.))], 
          starts_with("HARMONY_"), starts_with("HOPE_")) %>%

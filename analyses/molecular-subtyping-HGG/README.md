@@ -35,6 +35,10 @@ have _BRAF_ mutation or other MAPK pathway gene alteration, combined with homozy
 **TP53 status**
 Based on the results from `tp53_nf1_score` module, if `tp53_altered` is either `activated` or `loss`, add `TP53` after molecular subtype; otherwise, molecular subtype keep as it is. 
 
+## Molecular subtyping HGG workflow
+
+![HGG molecular subtyping workflow](./plot/HGG_subtyping_workflow.png)
+
 
 ### Order of analysis
 
