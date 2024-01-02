@@ -43,23 +43,14 @@ if(!file.exists(output_file)){
   hope_cohort_counts <- hope_cohort_counts[grep("^HIST", rownames(hope_cohort_counts), invert = T),]
   hope_cohort_counts <- hope_cohort_counts[rownames(hope_cohort_counts) %in% gencode_gtf$gene_name,]
   
-  # master histology file to get sample_id of interest
-  hist_df <- file.path(data_dir, "master_histology_hope_cohort.tsv") %>% 
-    read_tsv()
-  
-  # manifest of HOPE cohort RNA samples with biospecimens of interest
-  rna_manifest <- list.files(path = file.path(root_dir, "analyses", "merge-files", "input", "manifest"), pattern = "rna", full.names = T) %>%
-    read_tsv()
-  
-  # get library type information from OT v12 histologies
-  hope_rnaseq <- read_tsv(file.path(openpedcan_dir, "data", "histologies.tsv"))
-  hope_rnaseq <- hope_rnaseq %>%
-    filter(sample_id %in% hist_df$Sample_ID,
-           experimental_strategy == "RNA-Seq",
-           Kids_First_Biospecimen_ID %in% rna_manifest$`Kids First Biospecimen ID`) %>%
+  # histology file to get samples of interest
+  hist_df <- read_tsv(file = file.path(data_dir, "Hope-GBM-histologies.tsv"))
+  hist_df <- hist_df %>% 
+    filter(!is.na(HOPE_diagnosis),
+           experimental_strategy == "RNA-Seq") %>%
     dplyr::select(Kids_First_Biospecimen_ID, experimental_strategy, RNA_library)
   hope_cohort_counts <- hope_cohort_counts %>%
-    dplyr::select(hope_rnaseq$Kids_First_Biospecimen_ID)
+    dplyr::select(hist_df$Kids_First_Biospecimen_ID)
   
   output_df <- data.frame()
   for(i in 1:ncol(hope_cohort_counts)){
@@ -67,7 +58,7 @@ if(!file.exists(output_file)){
     patient_of_interest <- colnames(hope_cohort_counts)[i]
     poi_counts <- hope_cohort_counts %>%
       dplyr::select(patient_of_interest)
-    poi_sample_info <- hope_rnaseq %>%
+    poi_sample_info <- hist_df %>%
       filter(Kids_First_Biospecimen_ID %in% patient_of_interest)
     tmp <- run_rnaseq_analysis_noiseq(poi_counts = poi_counts, 
                                       poi_sample_info = poi_sample_info,

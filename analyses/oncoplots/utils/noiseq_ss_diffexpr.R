@@ -45,6 +45,8 @@ run_rnaseq_analysis_noiseq <- function(poi_counts, poi_sample_info, ref_counts, 
     pull(Kids_First_Biospecimen_ID) %>% 
     print()
   
+  stopifnot(identical(colnames(merged_counts), rownames(combined_sample_info)))
+  
   # use DCGA to filter out low count, low variance features
   merged_counts <- DGCA::filterGenes(inputMat = merged_counts, 
                                      filterTypes = c("central", "dispersion"),
@@ -55,17 +57,7 @@ run_rnaseq_analysis_noiseq <- function(poi_counts, poi_sample_info, ref_counts, 
   # convert to ExpressionSet
   merged_counts <- readData(merged_counts, factors = combined_sample_info)
   
-  # using ComBat batch correction only if more than 1 type of RNA library
-  if(length(unique(merged_counts$RNA_library)) > 1){
-    print(unique(merged_counts$RNA_library))
-    print("batch correct")
-    merged_counts <- ComBat(dat = log2(merged_counts@assayData$exprs + 1), batch = merged_counts$RNA_library, mean.only = FALSE)
-    merged_counts <- 2^merged_counts
-    merged_counts <- readData(merged_counts, factors = combined_sample_info)
-  }
-  
   # run noiseq
-  # using corrected counts so no need to normalize again i.e. use norm = "n"
   set.seed(42)
   myresults <- noiseq(input = merged_counts, 
                       factor = "group", 
@@ -78,11 +70,11 @@ run_rnaseq_analysis_noiseq <- function(poi_counts, poi_sample_info, ref_counts, 
   dge_output <- dge_output %>%
     rownames_to_column('genes') %>%
     dplyr::rename("logFC" = "M") %>%
-    filter(prob > 0.8) %>%
+    filter(prob > 0.9) %>%
     mutate(diff_expr = ifelse(logFC < 0, "down", "up"),
            sample = sample_name)
   dge_output <- dge_output %>%
-    dplyr::select(genes, diff_expr, logFC, sample) %>%
+    dplyr::select(genes, diff_expr, logFC, prob, sample) %>%
     unique()
   return(dge_output)
 }

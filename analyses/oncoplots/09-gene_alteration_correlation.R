@@ -12,11 +12,11 @@ input_dir <- file.path(analyses_dir, "results")
 output_dir <- file.path(analyses_dir, "results", "correlation_analysis")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
-# matrix
+# read oncoprint matrix
 mat <- readr::read_tsv(file = file.path(input_dir, "oncoprint.txt"))
 
 # convert to long format
-mat <- melt(mat, id.vars = "Sample", variable.name = "gene", value.name = "alteration_type")
+mat <- melt(mat, id.vars = "sample_id", variable.name = "gene", value.name = "alteration_type")
 mat$gene <- gsub('[*]', '', mat$gene)
 mat <- unique(mat)
 mat$alteration_type <- gsub(";OVE", NA, mat$alteration_type)
@@ -24,29 +24,27 @@ mat$alteration_type <- gsub("OVE", NA, mat$alteration_type)
 mat$alteration_type <- gsub(";UNE", NA, mat$alteration_type)
 mat$alteration_type <- gsub("UNE", NA, mat$alteration_type)
 mat <- mat %>%
-  group_by(Sample, gene) %>%
+  group_by(sample_id, gene) %>%
   summarise(alteration_type = toString(na.omit(alteration_type)))
 mat <- mat %>%
   mutate(alteration = ifelse(alteration_type == "", "Absent", "Present"))
 
-# remove samples that do not have DNA info  
+# read annotation
 annot_info <- read.delim(file.path(input_dir, "annotation.txt"), header = TRUE, check.names = TRUE)
+
+# remove samples that do not have DNA info  
 annot_info <- annot_info %>%
-  filter(Sample %in% mat$Sample, 
+  filter(Sample %in% mat$sample_id, 
          Sequencing_Experiment != "RNA-Seq")
 
-# add two and three age groups
-hist_df <- read_tsv(file.path(data_dir, "master_histology_hope_cohort.tsv")) 
-annot_info <- hist_df %>%
-  dplyr::select(Sample_ID, age_two_groups, age_three_groups) %>%
-  dplyr::rename("Sample" = "Sample_ID",
-                "Age_Two_Groups" = "age_two_groups",
-                "Age_Three_Groups" = "age_three_groups") %>%
-  inner_join(annot_info)
+# split age into two and three groups
+annot_info <- annot_info %>%
+  mutate(Age_Three_Groups = as.character(Age)) %>%
+  mutate(Age_Two_Groups = ifelse(Age %in% c("(15,26]", "(26,40]"), "(15,40]", Age))
 
 # add to matrix
 mat <- mat %>%
-  inner_join(annot_info, by = "Sample") %>%
+  inner_join(annot_info, by = c("sample_id" = "Sample")) %>%
   as.data.frame()
 
 # do correlation with all genes
@@ -54,9 +52,8 @@ cols_to_use <- c("Age_Two_Groups", "Age_Three_Groups", "Sex")
 compute_corr <- function(dat, cols){
   print(unique(dat$gene))
   print(nrow(dat))
-  # stopifnot(nrow(dat) == 69)
   for(i in 1:length(cols)){
-    if(length(unique(dat$alteration)) > 1){
+    if(length(na.omit(unique(dat$alteration))) > 1){
       kw_test <- broom::tidy(kruskal.test(formula = factor(alteration) ~ factor(get(cols[i])), data = dat))
       kruskal_wallis_pval <- kw_test$p.value 
       chisq_test <- chisq.test(x = factor(dat$alteration), y = factor(dat[,cols[i]]))
@@ -67,7 +64,6 @@ compute_corr <- function(dat, cols){
     }
     
     df <- data.frame(variable = cols[i], 
-                     # kruskal_wallis_pval = kruskal_wallis_pval,
                      chisq_test_pval = chisq_test_pval)
     if(i == 1){
       total <- df
@@ -78,7 +74,7 @@ compute_corr <- function(dat, cols){
   return(total)
 }
 
-genes_of_interest <- c("NF1", "TP53", "IDH1", "ATM", "PDGFRA", "CDKN2A", "TSC2", "ASXL1")
+genes_of_interest <- intersect(mat$gene, c("NF1", "TP53", "IDH1", "ATM", "PDGFRA", "CDKN2A", "TSC2", "ASXL1"))
 output <- plyr::ddply(.data = mat, 
                       .variables = "gene", 
                       .fun = function(x) compute_corr(x, cols = cols_to_use))
@@ -93,7 +89,7 @@ output <- output %>%
 coexistence_analysis <- function(mat, gene1, gene2){
   dat <- mat %>%
     filter(gene %in% c(gene1, gene2))
-  dat <- dcast(dat, Sample + Age_Two_Groups + Age_Three_Groups + Sex ~ gene, value.var = "alteration")
+  dat <- dcast(dat, sample_id + Age_Two_Groups + Age_Three_Groups + Sex ~ gene, value.var = "alteration")
   dat <- dat %>%
     mutate(coexistence = ifelse(get(gene1) == "Present" & get(gene2) == "Present", "Present", "Absent"))
   chisq_test_coexistence <- chisq.test(x = dat[,gene1], y = dat[,gene2])

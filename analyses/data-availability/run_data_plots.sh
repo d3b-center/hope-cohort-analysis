@@ -1,14 +1,11 @@
-# circos plot with two and three age groups (with diagnosis)
-Rscript 01-clinical_data_availability_diagnosis.R
+# circos plot with three age groups
+Rscript --vanilla 01-clinical_data_availability_age_three_groups.R
 
-# circos plot with continuous age (with diagnosis)
-Rscript 02-clinical_data_availability_diagnosis_v2.R
+# circos plot with two age groups
+Rscript --vanilla 02-clinical_data_availability_age_two_groups.R
 
-# circos plot with two and three age groups (with WHO grade)
-Rscript 003clinical_data_availability_WHO.R
-
-# circos plot with continuous age (with WHO grade)
-Rscript 04-clinical_data_availability_WHO_v2.R
+# circos plot with continuous age
+Rscript --vanilla 03-clinical_data_availability_age_continuous.R
 
 # linear data availability plot
-Rscript 05-plot_data_availability.R
+Rscript --vanilla 04-sample_data_availability.R

@@ -6,7 +6,6 @@ suppressPackageStartupMessages({
   library(reshape2)
 })
 
-# output directory
 # set directories
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
 data_dir <- file.path(root_dir, "data")
@@ -16,53 +15,53 @@ output_dir <- file.path(analyses_dir, "results", "major_snv")
 dir.create(output_dir, recursive = T, showWarnings = F)
 
 # list of major SNV >= 6% mutation
-# taken from oncoplot_orderby_sex_age_H3F3A_status_norna.pdf
-major_snv <- read.delim(text = "TP53
-NF1
-H3−3A
-ATRX
-BRAF
-PDGFRA
-PIK3CA
-TSC2
-IDH1
-TDG
-ATM
-BCOR
-PIK3C2G
-ARID1A
-CIC
-EGFR
-MSH3
-MSH6
-RAD54B", header = F)
-major_snv <- major_snv$V1
-
-# read oncoprint matrix
 mat = read.table(file.path(input_dir, "oncoprint.txt"),  header = TRUE, stringsAsFactors=FALSE, sep = "\t",check.names = FALSE)
 mat[is.na(mat)] = ""
 rownames(mat) = mat[, 1]
 mat = mat[, -1]
-mat = mat[, colnames(mat) %in% major_snv]
-mat <- melt(as.matrix(mat), value.name = "mutation", varnames = c("sample_id", "gene"))
+mat = t(as.matrix(mat))
+
+# read annotation 
+annot_info <- read.delim(file.path(input_dir, "annotation.txt"), header = TRUE, check.names = TRUE)
+annot_info <- annot_info %>%
+  filter(Sample %in% colnames(mat),
+         Sequencing_Experiment != "RNA-Seq") %>%
+  remove_rownames() %>%
+  column_to_rownames('Sample') %>%
+  as.data.frame()
+samples_to_use <- intersect(rownames(annot_info), colnames(mat))
+mat <- mat[,samples_to_use]
+annot_info <- annot_info[samples_to_use,]
+
+# top 20 genes 
+major_snv <- apply(mat, 1, FUN = function(x) (length(grep("MIS|NOS|FSD|FSI|NOT|SPS|IFD", x))/ncol(mat))*100)
+major_snv <- names(sort(major_snv, decreasing = TRUE)[1:20])
+
+# read oncoprint matrix
+mat <- mat[rownames(mat) %in% major_snv,]
+mat <- melt(as.matrix(t(mat)), value.name = "mutation", varnames = c("sample_id", "gene"))
 
 # only keep SNV annotations
 mat <- mat %>%
   dplyr::mutate(type = ifelse(grepl("MIS|NOS|FSD|FSI|IFD|SPS", mutation), 1, 0))
 mat <- dcast(mat, sample_id~gene, value.var = "type")
-# mat[rowSums(mat) > 0,] %>% dim()
 
 # ALT status, telomere content and MSI percent correlation with the binary matrix
-# read combined file for paired MSI output (n = 73)
-merged_output <- read_tsv(file.path(data_dir, "master_histology_hope_cohort.tsv"))
-merged_output <- merged_output %>%
-  filter(!is.na(msi_paired)) %>%
-  dplyr::rename("sample_id" = "Sample_ID")
 
-# combine the file with oncoprint matrix (n = 68)
+# read alt status and telomere content
+alt_status_output <- read_tsv(file.path("../alt-analysis/results/alt_status_aya_hgg.tsv")) %>%
+  dplyr::select(sample_id, t_n_telomere_content, ALT_status)
+
+# read msi output
+msi_paired_output <- read_tsv(file.path("../msi-sensor-analysis/results/msisensor-pro-paired/Hope-msi-paired.tsv")) %>%
+  dplyr::mutate(Type = ifelse(Percent > 3.5, sample_id, "")) %>%
+  dplyr::rename("msi_paired" = "Percent") %>%
+  dplyr::select(sample_id, msi_paired)
+
+# combine with oncoprint matrix 
 output_df <- mat %>%
-  # filter(sample_id != "7316-2810") %>% # this sample does not have any SNV data so remove it
-  inner_join(merged_output, by = "sample_id")
+  inner_join(alt_status_output) %>%
+  inner_join(msi_paired_output)
 output_df$ALT_status <- ifelse(output_df$ALT_status == "ALT+", 1, ifelse(output_df$ALT_status == "ALT-", 0, NA))
 vars <- c("t_n_telomere_content", "ALT_status", "msi_paired")
 final_df <- data.frame()

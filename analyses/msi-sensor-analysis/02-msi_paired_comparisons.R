@@ -1,4 +1,6 @@
-# comparison of msi sensor pro (paired) vs different variables 
+# Function: comparison of msi sensor pro (T/N paired) vs clinical variables 
+
+# load libraries
 suppressPackageStartupMessages({
   library(ggplot2)
   library(tidyverse)
@@ -8,133 +10,58 @@ suppressPackageStartupMessages({
 
 # set directories
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-input_dir <- file.path(root_dir, "data")
+data_dir <- file.path(root_dir, "data")
 analyses_dir <- file.path(root_dir, "analyses", "msi-sensor-analysis")
+input_dir <- file.path(analyses_dir, "input")
 output_dir <- file.path(analyses_dir, "results", "msisensor-pro-paired")
 dir.create(output_dir, showWarnings = F, recursive = T)
 
-# master histology
-annot <- read_tsv(file = file.path(input_dir, "master_histology_hope_cohort.tsv"))
-output_df <- annot %>%
-  filter(!is.na(msi_paired))
+# read histologies 
+annot <- read_tsv(file = file.path(data_dir, "Hope-GBM-histologies.tsv"))
+annot <- annot %>% 
+  filter(!is.na(HOPE_diagnosis))
 
-# modify type
-output_df <- output_df %>%
-  dplyr::mutate(Type = ifelse(msi_paired > 3.5, Sample_ID, ""))
+# read MSI paired output 
+msi_paired_output <- read_tsv(file.path(output_dir, "Hope-msi-paired.tsv")) %>%
+  dplyr::mutate(Type = ifelse(Percent > 3.5, sample_id, "")) %>%
+  dplyr::rename("msi_paired" = "Percent")
+
+# read TMB paired output 
+tmb_paired_output <- read_tsv("../tmb-calculation/results/wgs_paired/snv-mutation-tmb-coding.tsv") %>%
+  dplyr::rename("tmb_paired" = "tmb")
+
+# read ALT status
+alt_status_output <- read_tsv("../alt-analysis/results/alt_status_aya_hgg.tsv") %>%
+  dplyr::select(sample_id, t_n_telomere_content, ALT_status)
+
+# add proteomic/developmental cluster data
+cluster_data <- read_tsv(file.path(input_dir, "cluster_data_101922.tsv")) %>%
+  dplyr::select(id, dtt.cc, rdt.name)
+
+# combine all
+output_df <- msi_paired_output %>%
+  inner_join(tmb_paired_output, by = c("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode")) %>%
+  inner_join(alt_status_output) %>%
+  inner_join(cluster_data, by = c("sample_id" = "id")) %>%
+  inner_join(annot)
 
 # 1) MSI vs TMB
-p <- ggplot(output_df, aes(msi_paired, TMB_paired)) + 
-  geom_point() + 
+p <- ggplot(output_df, aes(msi_paired, tmb_paired)) + 
+  geom_point(shape = 21) + 
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "red") +
   theme_pubr() + 
-  xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs TMB") +
+  xlab("% Microsatellite Instability") + ylab("TMB") + ggtitle("% Microsatellite Instability vs TMB") +
   stat_cor(method = "pearson", color = "red")
-ggsave(plot = p, filename = file.path(output_dir, "msi_vs_tmb.png"), height = 6, width = 8)
+ggsave(plot = p, filename = file.path(output_dir, "msi_vs_tmb.pdf"))
 
-# 2) proteomics clusters
+# 2) MSI vs Age (three groups)
 plot_data <- output_df %>%
-  dplyr::rename("proteomics_rdt_cc" = "rdt.cc") %>%
-  mutate(proteomics_rdt_cc = as.character(proteomics_rdt_cc)) %>%
-  group_by(proteomics_rdt_cc) %>%
+  mutate(HARMONY_age_class_derived = as.character(HARMONY_age_class_derived)) %>%
+  group_by(HARMONY_age_class_derived) %>%
   mutate(n = n()) %>%
-  mutate(proteomics_rdt_cc = paste0(proteomics_rdt_cc, "\n(n = ",n,")")) 
-p <- ggplot(plot_data, aes(x = as.character(proteomics_rdt_cc), y = msi_paired, color = as.character(proteomics_rdt_cc))) +
-  stat_boxplot(geom = "errorbar", width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
-  xlab("") + 
-  ylab("% Microsatellite Instability") +
-  ggtitle("% Microsatellite Instability vs. Proteomics Cluster") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none")
-q <- ggplot(plot_data %>% filter(!grepl("NA", proteomics_rdt_cc)), aes(x = as.character(proteomics_rdt_cc), y = msi_paired, color = as.character(proteomics_rdt_cc))) +
-  stat_boxplot(geom = "errorbar", width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
-  xlab("") + 
-  ylab("% Microsatellite Instability") +
-  ggtitle("% Microsatellite Instability vs. Proteomics Cluster") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none")
-ggsave(plot = ggarrange(plotlist = list(p, q), ncol = 2), filename = file.path(output_dir, "msi_vs_proteomics_clusters.png"), width = 10, height = 6)
-
-# 3) developmental clusters
-plot_data <- output_df %>%
-  mutate(dtt.cc = as.character(dtt.cc)) %>%
-  group_by(dtt.cc) %>%
-  mutate(n = n()) %>%
-  mutate(dtt.cc = paste0(dtt.cc, "\n(n = ",n,")")) 
-p <- ggplot(plot_data, aes(x = as.character(dtt.cc), y = msi_paired, color = as.character(dtt.cc))) +
-  stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
-  xlab("") + 
-  ylab("% Microsatellite Instability") +
-  ggtitle("% Microsatellite Instability vs. Developmental Cluster") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-q <- ggplot(plot_data %>% filter(!grepl("NA", dtt.cc)), aes(x = as.character(dtt.cc), y = msi_paired, color = as.character(dtt.cc))) +
-  stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
-  xlab("") + 
-  ylab("% Microsatellite Instability") +
-  ggtitle("% Microsatellite Instability vs. Developmental Cluster") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-ggsave(plot = ggarrange(plotlist = list(p, q), ncol = 2), filename = file.path(output_dir, "msi_vs_dev_clusters.png"), width = 10, height = 6)
-
-# 4) age (three groups)
-plot_data <- output_df %>%
-  mutate(age_three_groups = as.character(age_three_groups)) %>%
-  group_by(age_three_groups) %>%
-  mutate(n = n()) %>%
-  mutate(age_three_groups = paste0(age_three_groups, "\n(n = ",n,")")) 
-plot_data$age_three_groups <- factor(plot_data$age_three_groups, levels = c("[0,15]\n(n = 45)", "(15,26]\n(n = 20)", "(26,40]\n(n = 8)"))
-p <- ggplot(plot_data, aes(x = age_three_groups, y = msi_paired, color = as.character(age_three_groups))) +
-  stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
-  xlab("") + 
-  ylab("% Microsatellite Instability") +
-  ggtitle("% Microsatellite Instability vs. Age") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_three_groups.png"), width = 6, height = 6)
-
-# 5) age (two groups)
-plot_data <- output_df %>%
-  mutate(age_two_groups = as.character(age_two_groups)) %>%
-  group_by(age_two_groups) %>%
-  mutate(n = n()) %>%
-  mutate(age_two_groups = paste0(age_two_groups, "\n(n = ",n,")")) 
-plot_data$age_two_groups <- factor(plot_data$age_two_groups, levels = c("[0,15]\n(n = 45)", "(15,40]\n(n = 28)"))
-p <- ggplot(plot_data, aes(x = age_two_groups, y = msi_paired, color = as.character(age_two_groups))) +
+  mutate(HARMONY_age_class_derived = paste0(HARMONY_age_class_derived, "\n(n = ",n,")")) 
+plot_data$HARMONY_age_class_derived <- factor(plot_data$HARMONY_age_class_derived, levels = c("[0,15]\n(n = 43)", "(15,26]\n(n = 19)", "(26,40]\n(n = 8)"))
+p <- ggplot(plot_data, aes(x = HARMONY_age_class_derived, y = msi_paired, color = as.character(HARMONY_age_class_derived))) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
@@ -144,52 +71,67 @@ p <- ggplot(plot_data, aes(x = age_two_groups, y = msi_paired, color = as.charac
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Age") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_two_groups.png"), width = 6, height = 6)
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("[0,15]\n(n = 43)" = "#C7E9C0",
+                              "(15,26]\n(n = 19)" = "#74C476",
+                              "(26,40]\n(n = 8)" = "#238B45"))
+ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_three_groups.pdf"), width = 6, height = 6)
 
-# 6) developmental cluster name
+# 3) MSI vs Age (two groups)
+plot_data <- output_df %>%
+  mutate(HARMONY_age_class_derived = as.character(HARMONY_age_class_derived)) %>%
+  mutate(HARMONY_age_class_derived = ifelse(HARMONY_age_class_derived %in% c("(15,26]", "(26,40]"), "(15,40]", HARMONY_age_class_derived)) %>%
+  group_by(HARMONY_age_class_derived) %>%
+  mutate(n = n()) %>%
+  mutate(HARMONY_age_class_derived = paste0(HARMONY_age_class_derived, "\n(n = ",n,")")) 
+plot_data$HARMONY_age_class_derived <- factor(plot_data$HARMONY_age_class_derived, levels = c("[0,15]\n(n = 43)", "(15,40]\n(n = 27)"))
+p <- ggplot(plot_data, aes(x = plot_data$HARMONY_age_class_derived, y = msi_paired, color = as.character(plot_data$HARMONY_age_class_derived))) +
+  stat_boxplot(geom ='errorbar', width = 0.2) +
+  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
+  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
+  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
+  stat_compare_means(color = "red", size = 4) +
+  xlab("") + 
+  ylab("% Microsatellite Instability") +
+  ggtitle("% Microsatellite Instability vs. Age") +
+  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("[0,15]\n(n = 43)" = "#C7E9C0",
+                                "(15,40]\n(n = 27)" = "#238B45"))
+ggsave(plot = p, filename = file.path(output_dir, "msi_vs_age_two_groups.pdf"), width = 6, height = 6)
+
+# 4) MSI vs Developmental cluster name
 plot_data <- output_df %>%
   mutate(rdt.name = as.character(rdt.name)) %>%
   group_by(rdt.name) %>%
   mutate(n = n()) %>%
   mutate(rdt.name = paste0(rdt.name, "\n(n = ",n,")")) 
-p <- ggplot(plot_data, aes(x = as.character(rdt.name), y = msi_paired, color = as.character(rdt.name))) +
+plot_data$rdt.name <- factor(plot_data$rdt.name, levels = plot_data %>% arrange(dtt.cc) %>% pull(rdt.name) %>% unique())
+p <- ggplot(plot_data, aes(x = rdt.name, y = msi_paired, color = rdt.name)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
+  stat_compare_means(color = "red", size = 4) +
   xlab("") + 
   ylab("% Microsatellite Instability") +
-  ggtitle("% Microsatellite Instability vs. Dev. Cluster Name") +
+  ggtitle("% Microsatellite Instability vs. Dev. Cluster") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-q <- ggplot(plot_data %>% filter(!grepl("NA", rdt.name)), aes(x = as.character(rdt.name), y = msi_paired, color = as.character(rdt.name))) +
-  stat_boxplot(geom ='errorbar', width = 0.2) +
-  geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
-  xlab("") + 
-  ylab("% Microsatellite Instability") +
-  ggtitle("% Microsatellite Instability vs. Dev. Cluster Name") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-ggsave(plot = ggarrange(plotlist = list(p, q), ncol = 2), filename = file.path(output_dir, "msi_vs_dev_cluster_name.png"), width = 18, height = 6)
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Classical\n(n = 17)" = "#88BED8",
+                                "Mesenchymal-IDHMutant\n(n = 35)" = "#89A544",
+                                "Mesenchymal-IDHWT\n(n = 9)" = "#CE9D21",
+                                "Pro-neural\n(n = 9)" = "#CE61A2",
+                                "NA\n(n = 2)" = "gray"))
+ggsave(plot = p, filename = file.path(output_dir, "msi_vs_dev_cluster_name.pdf"), width = 10, height = 6)
 
-# 7) gender
+# 5) MSI vs Gender
 plot_data <- output_df %>%
-  mutate(Gender = as.character(Gender)) %>%
-  group_by(Gender) %>%
+  mutate(HARMONY_Gender = as.character(HARMONY_Gender)) %>%
+  group_by(HARMONY_Gender) %>%
   mutate(n = n()) %>%
-  mutate(Gender = paste0(Gender, "\n(n = ",n,")")) 
-p <- ggplot(plot_data, aes(x = as.character(Gender), y = msi_paired, color = as.character(Gender))) +
+  mutate(HARMONY_Gender = paste0(HARMONY_Gender, "\n(n = ",n,")")) 
+p <- ggplot(plot_data, aes(x = HARMONY_Gender, y = msi_paired, color = HARMONY_Gender)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
@@ -198,90 +140,34 @@ p <- ggplot(plot_data, aes(x = as.character(Gender), y = msi_paired, color = as.
   xlab("") + 
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. Gender") +
-  geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-ggsave(plot = p, filename = file.path(output_dir, "msi_vs_gender.png"), width = 6, height = 6)
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("Male\n(n = 41)" = "#0707CF",
+                                "Female\n(n = 29)" = "#CC0303"))
+p
+ggsave(plot = p, filename = file.path(output_dir, "msi_vs_gender.pdf"), width = 6, height = 6)
 
-# 8) ALT 
-output_df = output_df %>% 
-  group_by(ALT_status) %>% 
+# 6) MSI vs ALT status
+plot_data <- output_df %>%
+  group_by(ALT_status) %>%
   mutate(n = n(), ALT_status = paste0(ALT_status, "\n(n = ", n, ")"))
-p <- ggplot(output_df, aes(x = ALT_status, msi_paired, color = ALT_status)) +
+p <- ggplot(plot_data, aes(x = ALT_status, msi_paired, color = ALT_status)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
-  ggpubr::theme_pubr(base_size = 10) + ylab("") + 
-  stat_compare_means(color = "red", 
-                     label = "p.format",
-                     ref.group = ".all.",
-                     size = 4) +
-  xlab("") + 
+  ggpubr::theme_pubr(base_size = 10) + ylab("") +
+  stat_compare_means(color = "red", size = 4) +
+  xlab("") +
   ylab("% Microsatellite Instability") +
   ggtitle("% Microsatellite Instability vs. ALT Status") +
   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-  theme(legend.position = "none") 
-ggsave(plot = p, filename = file.path(output_dir, "msi_vs_alt_status.png"), height = 6, width = 6)
+  theme(legend.position = "none")
+ggsave(plot = p, filename = file.path(output_dir, "msi_vs_alt_status.pdf"), height = 6, width = 6)
 
-# 9) MSI vs ALT telomere content
+# 7) MSI vs ALT telomere content
 p <- ggplot(output_df, aes(x = msi_paired, y = t_n_telomere_content)) +
-  geom_point() +
+  geom_point(shape = 21) +
   geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "red") +
-  theme_pubr() + 
-  xlab("% MSI") + ylab("TMB") + ggtitle("% MSI vs Telomere content") +
+  theme_pubr() +
+  xlab("% Microsatellite Instability") + ylab("Telomere Content") + ggtitle("% Microsatellite Instability vs Telomere content") +
   stat_cor(method = "pearson", color = "red")
-ggsave(plot = p, filename = file.path(output_dir, "msi_vs_telomere_content.png"))
-
-# # add cluster from miRNA clustering (shiny)
-# mirna_clusters <- read.csv('data/PBTA_Sample_Clusters.csv', check.names = F)
-# mirna_clusters$sample_id <- gsub(".*-7316", "7316", mirna_clusters$sample_id)
-# mirna_clusters$sample_id <- gsub("_.*", "", mirna_clusters$sample_id)
-# output_df <- output_df %>%
-#   inner_join(mirna_clusters, by = "sample_id")
-# 
-# output_df <- output_df %>%
-#   group_by(`5%_cluster`) %>%
-#   mutate(n = n()) %>%
-#   mutate(cluster_5 = paste0(`5%_cluster`, "\n(n = ",n,")")) 
-# output_df <- output_df %>%
-#   group_by(`10%_cluster`) %>%
-#   mutate(n = n()) %>%
-#   mutate(cluster_10 = paste0(`10%_cluster`, "\n(n = ",n,")")) 
-# 
-# p <- ggplot(output_df, aes(x = as.character(cluster_5), y = Percent, color = as.character(cluster_5))) +
-#   stat_boxplot(geom ='errorbar', width = 0.2) +
-#   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
-#   ggpubr::theme_pubr() + ylab("") + 
-#   stat_compare_means(method = "wilcox.test", color = "red", 
-#                      comparisons = list(c("1\n(n = 2)", "2\n(n = 2)"), 
-#                                         c("1\n(n = 2)", "3\n(n = 16)"),
-#                                         c("1\n(n = 2)", "4\n(n = 4)"),
-#                                         c("2\n(n = 2)", "3\n(n = 16)"), 
-#                                         c("2\n(n = 2)", "4\n(n = 4)"),
-#                                         c("3\n(n = 16)", "4\n(n = 4)"))) +
-#   xlab("5% Clusters") + 
-#   ylab("% Microsatellite Instability") +
-#   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-#   theme(legend.position = "none") 
-# ggsave(filename = 'results/msi_sensor_vs_mirna_clusters_5.pdf', width = 4, height = 4)
-# 
-# q <- ggplot(output_df, aes(x = as.character(cluster_10), y = Percent, color = as.character(cluster_10))) +
-#   stat_boxplot(geom ='errorbar', width = 0.2) +
-#   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.5, outlier.size = 1) +
-#   ggpubr::theme_pubr() + ylab("") + 
-#   stat_compare_means(method = "wilcox.test", color = "red", 
-#                      comparisons = list(c("1\n(n = 1)", "2\n(n = 3)"), 
-#                                         c("1\n(n = 1)", "3\n(n = 16)"),
-#                                         c("1\n(n = 1)", "4\n(n = 4)"),
-#                                         c("2\n(n = 3)", "3\n(n = 16)"), 
-#                                         c("2\n(n = 3)", "4\n(n = 4)"),
-#                                         c("3\n(n = 16)", "4\n(n = 4)"))) +
-#   xlab("10% Clusters") + 
-#   ylab("% Microsatellite Instability") +
-#   geom_hline(yintercept = 3.5, linetype = 'dotted', col = 'red') +
-#   theme(legend.position = "none") 
-# ggsave(filename = 'results/msi_sensor_vs_mirna_clusters_10.pdf', width = 4, height = 4)
-
-# correlation
-# broom::tidy(chisq.test(x = output_df$`5%_cluster`, y = output_df$Percent))
-# broom::tidy(lm(output_df$Percent~0 + as.factor(output_df$`5%_cluster`)))
-
+ggsave(plot = p, filename = file.path(output_dir, "msi_vs_telomere_content.pdf"))

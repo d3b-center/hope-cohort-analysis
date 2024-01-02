@@ -46,10 +46,14 @@ merge_cnv <- function(nm){
   x <- data.table::fread(nm)
   
   # map to gene symbols
-  query <- with(x, GRanges(chr, IRanges(start = start, end = end)))
-  subject <- with(gencode_gtf, GRanges(seqnames, IRanges(start = start, end = end, names = gene_symbol)))
+  subject <- with(x, GRanges(chr, IRanges(start = start, end = end)))
+  query <- with(gencode_gtf, GRanges(seqnames, IRanges(start = start, end = end, names = gene_symbol)))
   output <- findOverlaps(query = query, subject = subject, type = "within")
-  output <- data.frame(x[queryHits(output),], gencode_gtf[subjectHits(output),])
+  output <- data.frame(x[subjectHits(output),], gencode_gtf[queryHits(output),])
+  output <- output %>%
+    dplyr::select(chr, start, end, gene_symbol, copy.number, status, 
+                  genotype, uncertainty,WilcoxonRankSumTestPvalue, KolmogorovSmirnovPvalue) %>%
+    unique()
   
   # modify
   output$status <- stringr::str_to_title(output$status)
@@ -60,7 +64,7 @@ merge_cnv <- function(nm){
 }
 
 # get coordinates of genes from gencode v39
-gencode_gtf <- rtracklayer::import(con = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gtf.gz")
+gencode_gtf <- rtracklayer::import(con = "data/gencode.v39.primary_assembly.annotation.gtf.gz")
 gencode_gtf <- as.data.frame(gencode_gtf)
 gencode_gtf <- gencode_gtf %>%
   dplyr::select(seqnames, start, end, gene_name) %>%
@@ -81,30 +85,3 @@ hope_cohort_cnv <- hope_cohort_cnv %>%
   filter(Kids_First_Biospecimen_ID %in% hist_df$Kids_First_Biospecimen_ID)
 print(length(unique(hope_cohort_cnv$Kids_First_Biospecimen_ID)))
 saveRDS(hope_cohort_cnv, file = file.path(output_dir, "Hope-cnv-controlfreec-tumor-only.rds"))
-
-# manifest for msi files
-msi_manifest <- read_tsv(file.path(input_dir, "manifest_tumor_only", "manifest_20230504_083829_msi.tsv"))
-colnames(msi_manifest) <- gsub(" ", "_", colnames(msi_manifest))
-msi_manifest <- msi_manifest %>%
-  dplyr::select(name, Kids_First_Biospecimen_ID, case_id, sample_id) %>%
-  mutate(file_name = gsub('.*/', '', name)) %>%
-  unique()
-
-# filter to BS-ids in histology file only
-msi_manifest <- msi_manifest %>%
-  filter(Kids_First_Biospecimen_ID %in% hist_df$Kids_First_Biospecimen_ID)
-
-# merge msi (n = 90)
-lf <- list.files(path = file.path(input_dir, "msisensor_pro_tumor_only"), pattern = 'msisensor_pro', recursive = T, full.names = T)
-hope_cohort_msi <- lapply(lf, read_tsv)
-hope_cohort_msi <- do.call(rbind, hope_cohort_msi)
-colnames(hope_cohort_msi)[3] <- "Percent"
-hope_cohort_msi$name <- gsub('.*/', '', lf)
-
-# add identifiers 
-hope_cohort_msi <- hope_cohort_msi %>%
-  inner_join(msi_manifest %>% dplyr::select(-c(name)), by = c("name" = "file_name")) %>%
-  dplyr::select(Kids_First_Biospecimen_ID, case_id, sample_id, Total_Number_of_Sites, Number_of_Somatic_Sites, Percent)
-hope_cohort_msi <- unique(hope_cohort_msi)
-print(length(unique(hope_cohort_msi$Kids_First_Biospecimen_ID)))
-saveRDS(hope_cohort_msi, file = file.path(output_dir, "Hope-msi-tumor_only.rds"))

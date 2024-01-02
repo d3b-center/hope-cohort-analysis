@@ -76,42 +76,68 @@ samples_to_use <- intersect(rownames(annot_info), colnames(mat))
 mat <- mat[,samples_to_use]
 annot_info <- annot_info[samples_to_use,]
 
+# only plot top 20 genes 
+snv_fus_genes_to_keep = apply(mat, 1, FUN = function(x) 
+  (length(grep("MIS|NOS|FSD|FSI|NOT|SPS|IFD|FUS", x))/ncol(mat))*100)
+snv_fus_genes_to_keep <- names(sort(snv_fus_genes_to_keep, decreasing = TRUE)[1:20])
+cnv_dge_genes_to_keep = apply(mat, 1, FUN = function(x) 
+  (length(grep("GAI|LOS|OVE|UNE", x))/ncol(mat))*100)
+cnv_dge_genes_to_keep <- names(sort(cnv_dge_genes_to_keep, decreasing = TRUE)[1:20])
+mat <- mat[which(rownames(mat) %in% c(snv_fus_genes_to_keep, cnv_dge_genes_to_keep)),]
+
 # annotation 1
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
-annot_info$Integrated_Diagnosis[is.na(annot_info$Integrated_Diagnosis)] <- "N/A"
-annot_info$Diagnosis_Type[is.na(annot_info$Diagnosis_Type)] <- "N/A"
-annot_info$Tumor_Location[is.na(annot_info$Tumor_Location)] <- "N/A"
-annot_info$Sex[is.na(annot_info$Sex)] <- "N/A"
-annot_info$Age[is.na(annot_info$Age)] <- "N/A"
-annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,40]", "N/A"))
+annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,26]", "(26,40]"))
+annot_info$Molecular_Subtype <- as.character(annot_info$Molecular_Subtype)
+annot_info$Cancer_Group <- as.character(annot_info$Cancer_Group)
+
 ha = HeatmapAnnotation(df = annot_info , 
                        col = list(TMB = col_fun_tmb,
                                   Sequencing_Experiment = c("WGS" = "red",
                                                             "RNA-Seq" = "yellow",
-                                                            "RNA-Seq, WGS" = "orangered",
-                                                            "RNA-Seq, WGS_Tumor_Only" = "orange"),
-                                  Integrated_Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)"="lightseagreen",
-                                                           "Astrocytoma;Oligoastrocytoma" = "mediumorchid2",
-                                                           "Astrocytoma" = "brown2", 
-                                                           "Glioblastoma" = "orange",
-                                                           "Pleomorphic xanthoastrocytoma" = "darkgreen",
-                                                           "Diffuse Midline Glioma" = "blue2",
-                                                           "N/A" = "gray"),
+                                                            "RNA-Seq, WGS" = "orange"),
+                                  Diagnosis = c("High-grade glioma/astrocytoma (WHO grade III/IV)" = "lightseagreen",
+                                                "Diffuse Midline Glioma (WHO grade III/IV)" = "darkgreen",
+                                                "Astrocytoma;Oligoastrocytoma (WHO grade III)" = "mediumorchid2",
+                                                "Astrocytoma (WHO grade III/IV)" = "#5fff57", 
+                                                "Glioblastoma (WHO grade IV)" = "#f268d6",
+                                                "Pleomorphic xanthoastrocytoma (WHO grade II/III)" = "#005082"),
+                                  Molecular_Subtype = c("DMG, H3 K28" = "#053061",
+                                                        "DHG, H3 G35, TP53" = "#A6761D",
+                                                        "HGG, H3 wildtype" = "#4393c3",
+                                                        "HGG, H3 wildtype, TP53" = "darkgreen",
+                                                        "DMG, H3 K28, TP53" = "#BC80BD",
+                                                        "HGG, IDH, TP53" = "#FFFF99",
+                                                        "IHG, NTRK-altered, TP53"  = "#E7298A",
+                                                        "IHG, NTRK-altered" = "#f4a582",
+                                                        "IHG, ROS1-altered" = "#d6604d",
+                                                        "IHG, ALK-altered" = "#E31A1C",
+                                                        "PXA" = "#67001f",
+                                                        "HGG, IDH" = "#B3DE69",
+                                                        "NA" = "#f1f1f1"),
                                   Diagnosis_Type = c("Initial CNS Tumor" = "#cee397",
                                                      "Progressive" = "#827397",
                                                      "Recurrence" = "#363062",
-                                                     "Second Malignancy" = "#005082",
-                                                     "N/A" = "gray"),
-                                  Tumor_Location = c("Cortical" = "magenta",
-                                                     "Other/Multiple locations/NOS" = "pink",
-                                                     "Midline" = "purple",
-                                                     "Cerebellar" = "navy"),
-                                  Sex = c("Female" = "deeppink4",
-                                          "Male" = "navy",
-                                          "N/A" = "gray"),
-                                  Age = c("[0,15]" = "gold",
-                                          "(15,40]" = "purple",
-                                          "N/A" = "gray")),
+                                                     "Second Malignancy" = "#005082"),
+                                  Tumor_Location = c("Cortical" = "#D4806C",
+                                                     "Other/Multiple locations/NOS" = "#7C8F97",
+                                                     "Midline" = "#344C68",
+                                                     "Cerebellar" = "#94004C"),
+                                  CNS_region = c("Posterior fossa" = "#D4806C",
+                                                 "Other" = "#7C8F97",
+                                                 "Midline" = "#344C68",
+                                                 "Hemispheric" = "#94004C",
+                                                 "Mixed" = "darkgreen"),
+                                  Cancer_Group = c("DMG" = "#053061",
+                                                   "DHG" = "#A6761D",
+                                                   "HGG" = "#4393c3",
+                                                   "IHG" = "#E7298A",
+                                                   "NA" = "#f1f1f1"),
+                                  Sex = c("Male" = "#0707CF",
+                                          "Female" = "#CC0303"),
+                                  Age = c("[0,15]" = "#C7E9C0",
+                                          "(15,26]" = "#74C476",
+                                          "(26,40]" = "#238B45")),
                        annotation_name_gp = gpar(fontsize = 9),
                        gp = gpar(col = "#595959"), simple_anno_size = unit(4, "mm"), annotation_name_side = "left",
                        annotation_legend_param = list(
@@ -134,12 +160,12 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
 
-pdf(file = file.path(output_dir, "oncoplot.pdf"), width = 15, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot.pdf"), width = 16, height = 12) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -158,11 +184,11 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex.pdf"), width = 15, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex.pdf"), width = 16, height = 12) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -180,11 +206,11 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_H3F3A.pdf"), width = 15, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_H3F3A.pdf"), width = 16, height = 12) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -209,11 +235,11 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex_H3F3A_status.pdf"), width = 15, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex_H3F3A_status.pdf"), width = 16, height = 12) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -232,11 +258,11 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age.pdf"), width = 15, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age.pdf"), width = 16, height = 12) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()
 
@@ -260,10 +286,10 @@ ht = oncoPrint(mat, get_type = function(x)strsplit(x, ";")[[1]],
                pct_side = "right",
                row_split = amp,
                remove_empty_rows = TRUE,
-               heatmap_legend_param = list(title = "Alterations", nrow = 9, title_position = "topleft", direction = "horizontal",
+               heatmap_legend_param = list(title = "Alterations", title_position = "topleft", direction = "horizontal",
                                            at = c("GAI", "LOS", "FUS", "MIS", "NOS", "FSD", "FSI", "SPS", "IFD", "OVE", "UNE"),
                                            labels = c("Copy gain", "Copy loss", "Gene Fusion", "Missense", "Nonsense", "Frame_Shift_Del", "Frame_Shift_Ins", "Splice site", "In_Frame_Del", "Over Expression", "Under Expression")
                ))
-pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age_H3F3A_status.pdf"), width = 15, height = 27) 
+pdf(file = file.path(output_dir, "oncoplot_orderby_sex_age_H3F3A_status.pdf"), width = 16, height = 12) 
 draw(ht,merge_legend = TRUE, heatmap_legend_side = "right", annotation_legend_side = "right")
 dev.off()

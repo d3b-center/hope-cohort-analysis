@@ -1,5 +1,6 @@
-BRAF
-MET
-PTEN
-KIT
-KDR
+gene_name	hg19	hg38
+BRAF		BRAF
+MET		MET
+PTEN		PTEN
+KIT		KIT
+KDR		KDR
