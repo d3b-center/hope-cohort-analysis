@@ -2,7 +2,8 @@
 
 Module authors: [Komal S. Rathi](https://github.com/komalsrathi/),
                 [Zhuangzhuang Geng](https://github.com/zzgeng),
-                [Jo Lynne Rokita](https://github.com/jharenza)
+                [Jo Lynne Rokita](https://github.com/jharenza),
+		[Joseph M. Dybas] (https://github.com/JosephDybas)
 
 ## Clone the repository
 
