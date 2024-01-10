@@ -95,8 +95,11 @@ col_fun1 = list(c(col_diagnosis, col_gender, col_age, col_dtype, col_annot, col_
   unlist() %>% as.list()
 
 # color mapping for numeric age variable
-col_fun_age <- colorRamp2(breaks = c(min(plot_df$Age_at_Initial_Diagnosis, na.rm = T), median(plot_df$Age_at_Initial_Diagnosis, na.rm = T), max(plot_df$Age_at_Initial_Diagnosis, na.rm = T)),
-                          colors = c("lightskyblue1","skyblue","dodgerblue4"))
+# col_fun_age <- colorRamp2(breaks = c(min(plot_df$Age_at_Initial_Diagnosis, na.rm = T), median(plot_df$Age_at_Initial_Diagnosis, na.rm = T), max(plot_df$Age_at_Initial_Diagnosis, na.rm = T)),
+#                           colors = c("lightskyblue1","skyblue","dodgerblue4"))
+
+col_fun_age <- colorRamp2(breaks = summary(plot_df$Age_at_Initial_Diagnosis),
+                          colors = c("#146CF6", "#188AF0", "#00B7D8", "#00D4B0", "#00E54B", "#00F800"))
 
 # generate plot 
 circos.clear()
