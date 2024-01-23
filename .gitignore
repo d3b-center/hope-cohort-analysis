@@ -13,6 +13,7 @@ scratch/*
 .Rhistory
 .Rproj.user
 .snakemake
+.RData
 
 # The dictionary of words accrued by `mdspell` for spellcheck
 .spelling

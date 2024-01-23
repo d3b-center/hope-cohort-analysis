@@ -5,6 +5,7 @@ library(readr)
 library(tibble)
 library(msigdbr)
 library(GSVA)
+#
 
 
 #Magrittr pipe
@@ -29,22 +30,15 @@ if (!dir.exists(output_dir)) {
 
 #read histology file to data frame
 histologyfile <- file.path(data_dir, "Hope-GBM-histologies-base.tsv")
-#HISTdata <- readr::read_tsv(histologyfile)
 HISTdata <- read.table(histologyfile, sep="\t", quote="\"", header=TRUE)
 #
 
 
 #WCP data input file
-quant_data_file <- file.path(inputfile_dir, "Hope_proteome_imputed_data_liftover.tsv")
+quant_data_file <- file.path(inputfile_dir, "hope-protein-imputed-prot-expression.tsv")
 if (!file.exists(quant_data_file)){
   stop("input quantification file does not exist")
 }
-#
-
-
-#output file
-output_file <- "Hope_proteome_imputed_data_GSVA_BIOCARTA_NEW.tsv"
-gsva_output_file <- file.path(output_dir, output_file)
 #
 
 
@@ -55,7 +49,6 @@ quant_data<-quant_df[,-c(1,2,3)]
 #change column names from kids first IDs (BS_....) to sample IDs (7316-...)
 #use histology file to get corresponding IDs
 quant_data_colnames<-colnames(quant_data)
-print(quant_data_colnames)
 for (i in 1:length(quant_data_colnames)){
   currcolname<-quant_data_colnames[i]
   currsamplename<-HISTdata$sample_id[HISTdata$Kids_First_Biospecimen_ID==currcolname]
@@ -74,12 +67,20 @@ row.names(quant_data_matrix)<-quant_df$ApprovedGeneSymbol
 #
 
 
+#specify annotation category: KEGG, HALLMARK, BIOCARTA
+annotation_category<-"KEGG"
 #human geneset genes from `migsdbr` package
 #KEGG and BIOCARTA have proteasome pathway annotation
 #HALLMARK does not have proteasome pathway annotation
-#human_genesets  <- msigdbr::msigdbr(species = "Homo sapiens", category = "C2", subcategory = "CP:KEGG")
-#human_genesets  <- msigdbr::msigdbr(species = "Homo sapiens", category = "H")
-human_genesets  <- msigdbr::msigdbr(species = "Homo sapiens", category = "C2", subcategory = "CP:BIOCARTA")
+if ( annotation_category == "KEGG" ){
+  human_genesets  <- msigdbr::msigdbr(species = "Homo sapiens", category = "C2", subcategory = "CP:KEGG")
+}else if ( annotation_category == "HALLMARK" ){
+  human_genesets  <- msigdbr::msigdbr(species = "Homo sapiens", category = "H")
+}else if ( annotation_category == "BIOCARTA" ){
+  human_genesets  <- msigdbr::msigdbr(species = "Homo sapiens", category = "C2", subcategory = "CP:BIOCARTA")
+}else {
+  stop("choose HALLMARK, KEGG, OR BIOCARTA AS ANNOTATION CATEGORY")
+}
 #
 #reformat to geneset name and gene symbol tibble and list
 human_genesets_twocols <- human_genesets %>% dplyr::select(gs_name, human_gene_symbol)
@@ -100,6 +101,12 @@ gsea_scores <- GSVA::gsva(quant_data_matrix,
 #reformat
 gsea_scores_df <- as.data.frame(gsea_scores) %>%
   rownames_to_column(var = "geneset_name")
+#
+
+
+#output file
+output_file <- paste("Hope_proteome_imputed_data_GSVA_", annotation_category, ".tsv", sep="")
+gsva_output_file <- file.path(output_dir, output_file)
 #
 
 
