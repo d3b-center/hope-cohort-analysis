@@ -81,7 +81,7 @@ annot_info <- annot_info %>%
   mutate(Cancer_Group = case_when(Cancer_Group == "DHG" ~ "(DHG) Diffuse Hemispheric Glioma",
                                   Cancer_Group == "DMG" ~ "(DMG) Diffuse Midline Glioma",
                                   Cancer_Group == "HGG" ~ "(HGG) High Grade Glioma (not otherwise specified)",
-                                  Cancer_Group == "IHG" ~ "(IHG) Infantile High Grade Glioma",
+                                  Cancer_Group == "IHG" ~ "(IHG) Infantile Hemispheric Glioma",
                                   Cancer_Group == "PXA" ~ "(PXA) Pleomorphic Xanthoastrocytoma"))
 # replace NA values with "Flag"
 annot_info$Cancer_Group[is.na(annot_info$Cancer_Group)] <- "Flag"
@@ -127,7 +127,7 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(`Sequencing Experime
   `Cancer Group` = c("(DMG) Diffuse Midline Glioma" = "#053061",
                      "(DHG) Diffuse Hemispheric Glioma" = "#A6761D",
                      "(HGG) High Grade Glioma (not otherwise specified)" = "#4393c3",
-                     "(IHG) Infantile High Grade Glioma" = "#E7298A",
+                     "(IHG) Infantile Hemispheric Glioma" = "#E7298A",
                      "(PXA) Pleomorphic Xanthoastrocytoma" = "#67001f",
                      "Flag" = "#f1f1f1"),
   Sex = c("Male" = "#0707CF",
