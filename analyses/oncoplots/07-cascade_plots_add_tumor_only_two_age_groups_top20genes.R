@@ -69,20 +69,21 @@ mat <- mat[which(rownames(mat) %in% snv_genes_to_keep),]
 # color code for TMB
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
 
-# Cancer_Group should be PXA where Molecular_Subtype is PXA
-annot_info <- annot_info %>%
-  mutate(Cancer_Group = ifelse(Molecular_Subtype == "PXA", "PXA", Cancer_Group))
+# # Cancer_Group should be PXA where Molecular_Subtype is PXA
+# annot_info <- annot_info %>%
+#   mutate(Cancer_Group = ifelse(Molecular_Subtype == "PXA", "PXA", Cancer_Group))
 
 # remove Molecular_Subtype
 annot_info$Molecular_Subtype <- NULL
 
-# long names for Cancer_Group
-annot_info <- annot_info %>%
-  mutate(Cancer_Group = case_when(Cancer_Group == "DHG" ~ "(DHG) Diffuse Hemispheric Glioma",
-                                  Cancer_Group == "DMG" ~ "(DMG) Diffuse Midline Glioma",
-                                  Cancer_Group == "HGG" ~ "(HGG) High Grade Glioma (not otherwise specified)",
-                                  Cancer_Group == "IHG" ~ "(IHG) Infantile Hemispheric Glioma",
-                                  Cancer_Group == "PXA" ~ "(PXA) Pleomorphic Xanthoastrocytoma"))
+# # long names for Cancer_Group
+# annot_info <- annot_info %>%
+#   mutate(Cancer_Group = case_when(Cancer_Group == "DHG" ~ "(DHG) Diffuse Hemispheric Glioma",
+#                                   Cancer_Group == "DMG" ~ "(DMG) Diffuse Midline Glioma",
+#                                   Cancer_Group == "HGG" ~ "(HGG) High Grade Glioma (not otherwise specified)",
+#                                   Cancer_Group == "IHG" ~ "(IHG) Infantile Hemispheric Glioma",
+#                                   Cancer_Group == "PXA" ~ "(PXA) Pleomorphic Xanthoastrocytoma"))
+
 # replace NA values with "Flag"
 annot_info$Cancer_Group[is.na(annot_info$Cancer_Group)] <- "Flag"
 
