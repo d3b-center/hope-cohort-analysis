@@ -130,6 +130,18 @@ annot_info <- hist_df %>%
   dplyr::select(Sample, Sequencing_Experiment, Diagnosis, Molecular_Subtype, Diagnosis_Type, Tumor_Location, CNS_region, Cancer_Group, Sex, Age, TMB) %>%
   unique()
 
+# Cancer_Group should be PXA where Molecular_Subtype is PXA
+annot_info <- annot_info %>%
+  mutate(Cancer_Group = ifelse(Molecular_Subtype == "PXA", "PXA", Cancer_Group))
+
+# long names for Cancer_Group
+annot_info <- annot_info %>%
+  mutate(Cancer_Group = case_when(Cancer_Group == "DHG" ~ "(DHG) Diffuse Hemispheric Glioma",
+                                  Cancer_Group == "DMG" ~ "(DMG) Diffuse Midline Glioma",
+                                  Cancer_Group == "HGG" ~ "(HGG) High Grade Glioma (not otherwise specified)",
+                                  Cancer_Group == "IHG" ~ "(IHG) Infantile Hemispheric Glioma",
+                                  Cancer_Group == "PXA" ~ "(PXA) Pleomorphic Xanthoastrocytoma"))
+
 # save annotation file
 write.table(annot_info, file = file.path(output_dir, "annotation_add_tumor_only.txt"), quote = F, sep = "\t", row.names = F)
 

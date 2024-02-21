@@ -64,17 +64,17 @@ annot_info$Age <- factor(annot_info$Age, levels = c("[0,15]", "(15,40]"))
 # color code for TMB
 col_fun_tmb = colorRamp2(c(0, max(annot_info$TMB, na.rm = T)), c("white", "magenta3"))
 
-# Cancer_Group should be PXA where Molecular_Subtype is PXA
-annot_info <- annot_info %>%
-  mutate(Cancer_Group = ifelse(Molecular_Subtype == "PXA", "PXA", Cancer_Group))
+# # Cancer_Group should be PXA where Molecular_Subtype is PXA
+# annot_info <- annot_info %>%
+#   mutate(Cancer_Group = ifelse(Molecular_Subtype == "PXA", "PXA", Cancer_Group))
 
-# long names for Cancer_Group
-annot_info <- annot_info %>%
-  mutate(Cancer_Group = case_when(Cancer_Group == "DHG" ~ "(DHG) Diffuse Hemispheric Glioma",
-                                  Cancer_Group == "DMG" ~ "(DMG) Diffuse Midline Glioma",
-                                  Cancer_Group == "HGG" ~ "(HGG) High Grade Glioma (not otherwise specified)",
-                                  Cancer_Group == "IHG" ~ "(IHG) Infantile Hemispheric Glioma",
-                                  Cancer_Group == "PXA" ~ "(PXA) Pleomorphic Xanthoastrocytoma"))
+# # long names for Cancer_Group
+# annot_info <- annot_info %>%
+#   mutate(Cancer_Group = case_when(Cancer_Group == "DHG" ~ "(DHG) Diffuse Hemispheric Glioma",
+#                                   Cancer_Group == "DMG" ~ "(DMG) Diffuse Midline Glioma",
+#                                   Cancer_Group == "HGG" ~ "(HGG) High Grade Glioma (not otherwise specified)",
+#                                   Cancer_Group == "IHG" ~ "(IHG) Infantile Hemispheric Glioma",
+#                                   Cancer_Group == "PXA" ~ "(PXA) Pleomorphic Xanthoastrocytoma"))
 
 # replace NA values with "Flag"
 annot_info$Molecular_Subtype[is.na(annot_info$Molecular_Subtype)] <- "Flag"
