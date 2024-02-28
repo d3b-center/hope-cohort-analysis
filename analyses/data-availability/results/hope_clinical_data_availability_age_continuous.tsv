@@ -1,0 +1,93 @@
+Age	Age_at_Initial_Diagnosis	Gender	Diagnosis	Diagnosis Type	Annotation	Tumor Location
+(15,40]	15.6	Female	Glioblastoma (WHO grade IV)	Second Malignancy	Treatment naive	Cerebellar
+(15,40]	16.01095890410959	Female	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cortical
+(15,40]	16.186301369863013	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+(15,40]	16.693150684931506	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+(15,40]	16.767123287671232	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+(15,40]	16.87123287671233	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+(15,40]	17.076712328767123	Female	Pleomorphic xanthoastrocytoma (WHO grade II/III)	Initial CNS Tumor	Treatment naive	Cortical
+(15,40]	17.07945205479452	Male	Glioblastoma (WHO grade IV)	Progressive	Post-treatment	Other/Multiple locations/NOS
+(15,40]	17.353424657534248	Male	High-grade glioma/astrocytoma (WHO grade III/IV)	Progressive	Treatment naive	Cortical
+(15,40]	17.515068493150686	Female	Glioblastoma (WHO grade IV)	Progressive	Treatment naive	Cortical
+(15,40]	18.046575342465754	Male	High-grade glioma/astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cortical
+(15,40]	18.328767123287673	Male	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cortical
+(15,40]	18.334246575342465	Male	Glioblastoma (WHO grade IV)	Progressive	Post-mortem	Other/Multiple locations/NOS
+(15,40]	18.345205479452055	Female	Glioblastoma (WHO grade IV)	Recurrence	Treatment naive	Cortical
+(15,40]	18.54794520547945	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+(15,40]	18.64109589041096	Female	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+(15,40]	18.887671232876713	Male	Glioblastoma (WHO grade IV)	Recurrence	Post-treatment	Cortical
+(15,40]	20.147945205479452	Male	Glioblastoma (WHO grade IV)	Progressive	Treatment naive	Cortical
+(15,40]	21.413698630136988	Female	Astrocytoma (WHO grade III/IV)	Progressive	Treatment naive	Midline
+(15,40]	21.6	Female	Glioblastoma (WHO grade IV)	Second Malignancy	Treatment naive	Cortical
+(15,40]	22.613698630136987	Male	Astrocytoma (WHO grade III/IV)	Progressive	Post-mortem	Midline
+(15,40]	23.98904109589041	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+(15,40]	25.610958904109587	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+(15,40]	26	Male	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cortical
+(15,40]	26.613698630136987	Male	Glioblastoma (WHO grade IV)	Progressive	Post-mortem	Midline
+(15,40]	30.54794520547945	Female	Astrocytoma (WHO grade III/IV)	Progressive	Post-treatment	Other/Multiple locations/NOS
+(15,40]	30.64109589041096	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Second Malignancy	Treatment naive	Other/Multiple locations/NOS
+(15,40]	33.04657534246575	Male	Astrocytoma;Oligoastrocytoma (WHO grade III)	Recurrence	Post-treatment	Other/Multiple locations/NOS
+(15,40]	37.868493150684934	Male	Glioblastoma (WHO grade IV)	Recurrence	Post-treatment	Other/Multiple locations/NOS
+(15,40]	38.93150684931507	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+(15,40]	39.25753424657534	Male	Glioblastoma (WHO grade IV)	Recurrence	Treatment naive	Other/Multiple locations/NOS
+(15,40]	39.41095890410959	Male	Glioblastoma (WHO grade IV)	Recurrence	Post-treatment	Other/Multiple locations/NOS
+(15,40]	39.94794520547945	Male	Glioblastoma (WHO grade IV)	Recurrence	Post-treatment	Other/Multiple locations/NOS
+[0,15]	0.1917808219178082	Female	Pleomorphic xanthoastrocytoma (WHO grade II/III)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	0.2273972602739726	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	0.5260273972602739	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	0.7041095890410959	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	0.7232876712328767	Male	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	0.7232876712328767	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	0.9232876712328767	Male	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	1.3506849315068492	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	1.7424657534246575	Female	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	2.5178082191780824	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	2.6575342465753424	Female	Glioblastoma (WHO grade IV)	Progressive	Post-treatment	Cortical
+[0,15]	2.758904109589041	Male	Astrocytoma (WHO grade III/IV)	Recurrence	Treatment naive	Cortical
+[0,15]	3.5397260273972604	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	4.183561643835616	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Recurrence	Post-treatment	Other/Multiple locations/NOS
+[0,15]	4.638356164383562	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	5.115068493150685	Female	Astrocytoma (WHO grade III/IV)	Progressive	Post-treatment	Other/Multiple locations/NOS
+[0,15]	5.197260273972603	Female	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Midline
+[0,15]	5.756164383561644	Female	Diffuse Midline Glioma (WHO grade III/IV)	Progressive	Post-mortem	Midline
+[0,15]	5.879452054794521	Female	Astrocytoma (WHO grade III/IV)	Recurrence	Post-treatment	Other/Multiple locations/NOS
+[0,15]	6.024657534246575	Male	Astrocytoma (WHO grade III/IV)	Progressive	Treatment naive	Midline
+[0,15]	6.32054794520548	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cerebellar
+[0,15]	6.501369863013698	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	6.701369863013698	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	6.890410958904109	Male	Glioblastoma (WHO grade IV)	Recurrence	Post-treatment	Cortical
+[0,15]	6.931506849315069	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Post-mortem	Midline
+[0,15]	6.934246575342466	Male	High-grade glioma/astrocytoma (WHO grade III/IV)	Progressive	Post-treatment	Cortical
+[0,15]	7.13972602739726	Male	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Midline
+[0,15]	7.402739726027397	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	7.786301369863014	Male	Glioblastoma (WHO grade IV)	Progressive	Post-mortem	Cortical
+[0,15]	7.86027397260274	Male	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Midline
+[0,15]	8.493150684931507	Male	Diffuse Midline Glioma (WHO grade III/IV)	Progressive	Post-treatment	Midline
+[0,15]	8.506849315068493	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+[0,15]	8.808219178082192	Male	Glioblastoma (WHO grade IV)	Recurrence	Treatment naive	Cortical
+[0,15]	8.994520547945205	Male	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Post-mortem	Midline
+[0,15]	9.03013698630137	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cerebellar
+[0,15]	9.668493150684931	Male	Glioblastoma (WHO grade IV)	Recurrence	Post-treatment	Midline
+[0,15]	9.953424657534246	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Recurrence	Post-mortem	Other/Multiple locations/NOS
+[0,15]	10.063013698630137	Male	Glioblastoma (WHO grade IV)	Progressive	Treatment naive	Other/Multiple locations/NOS
+[0,15]	10.243835616438357	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Progressive	Treatment naive	Cortical
+[0,15]	10.246575342465754	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	10.438356164383562	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+[0,15]	10.487671232876712	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+[0,15]	10.515068493150684	Male	Pleomorphic xanthoastrocytoma (WHO grade II/III)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	11.227397260273973	Female	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Post-treatment	Cerebellar
+[0,15]	11.591780821917808	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+[0,15]	11.652054794520549	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Midline
+[0,15]	11.753424657534246	Male	Diffuse Midline Glioma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+[0,15]	12.01095890410959	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Progressive	Treatment naive	Cortical
+[0,15]	12.06027397260274	Male	High-grade glioma/astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Midline
+[0,15]	12.2986301369863	Male	Diffuse Midline Glioma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+[0,15]	12.452054794520548	Male	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
+[0,15]	12.490410958904109	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cerebellar
+[0,15]	12.756164383561643	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Post-mortem	Midline
+[0,15]	13.172602739726027	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Recurrence	Post-mortem	Cortical
+[0,15]	13.550684931506849	Female	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	14.26027397260274	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Progressive	Treatment naive	Midline
+[0,15]	14.476712328767123	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+[0,15]	14.610958904109589	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Midline
+[0,15]	14.69041095890411	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Midline

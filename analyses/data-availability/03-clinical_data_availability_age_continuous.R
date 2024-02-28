@@ -66,6 +66,9 @@ plot_df <- annot %>%
   mutate(Age = as.character(Age)) %>%
   mutate(Age = ifelse(Age %in% c("(15,26]", "(26,40]"), "(15,40]", Age))
 
+# write out formatted annotation file used for input
+write_tsv(x = plot_df, file = file.path(output_dir, "hope_clinical_data_availability_age_continuous.tsv"))
+
 # variable for splitting the circular heatmap
 split <- factor(plot_df$Age, levels = c("[0,15]", "(15,40]"))
 
