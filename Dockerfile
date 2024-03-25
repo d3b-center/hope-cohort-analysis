@@ -2,8 +2,8 @@ FROM --platform=linux/amd64 rocker/tidyverse:4.2
 MAINTAINER rokita@chop.edu
 WORKDIR /rocker-build/
 
-RUN RSPM="https://packagemanager.rstudio.com/cran/2024-03-01" \
-  && echo "options(repos = c(CRAN='$RSPM'), download.file.method = 'libcurl')" >> /usr/local/lib/R/etc/Rprofile.site
+#RUN RSPM="https://packagemanager.rstudio.com/cran/2023-09-20" \
+#  && echo "options(repos = c(CRAN='$RSPM'), download.file.method = 'libcurl')" >> /usr/local/lib/R/etc/Rprofile.site
 
 COPY script/install_bioc.r .
 COPY script/install_github.r .
@@ -23,7 +23,8 @@ RUN apt update && apt install -y zlib1g-dev \
 	liblzma-dev \
 	libcurl4-openssl-dev \
 	libssl-dev \
-	curl
+	curl \
+	cmake
 	
 
 # install R packages
