@@ -67,7 +67,7 @@ tmb_paired_output <- read_tsv(file.path(tmb_dir, "results/wgs_paired/snv-mutatio
   unique()
 
 # pull TMB (for tumor-only samples)
-tmb_tumor_only_output <- read_tsv("analyses/tmb-calculation/results/wgs_tumor_only/snv-mutation-tmb-coding.tsv") %>%
+tmb_tumor_only_output <- read_tsv(file.path(tmb_dir, "results/wgs_tumor_only/snv-mutation-tmb-coding.tsv")) %>%
   dplyr::rename("TMB" = "tmb") %>%
   dplyr::select(Tumor_Sample_Barcode, TMB) %>%
   filter(Tumor_Sample_Barcode %in% wgs_tumor_only_ids) %>%
