@@ -58,7 +58,7 @@ annot <- annot %>%
   mutate(experimental_strategy = ifelse(Kids_First_Biospecimen_ID %in% wgs_tumor_only_ids, "WGS_tumor_only", experimental_strategy))
 
 # pull TMB (for T/N paired samples)
-tmb_paired_output <- read_tsv("analyses/tmb-calculation/results/wgs_paired/snv-mutation-tmb-coding.tsv") %>%
+tmb_paired_output <- read_tsv(file.path(tmb_dir, "results/wgs_paired/snv-mutation-tmb-coding.tsv")) %>%
   dplyr::rename("TMB" = "tmb") %>%
   dplyr::select(Tumor_Sample_Barcode, TMB) %>%
   filter(Tumor_Sample_Barcode %in% wgs_ids) %>%
