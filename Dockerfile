@@ -1,9 +1,11 @@
 FROM --platform=linux/amd64 rocker/tidyverse:4.2
-MAINTAINER gengz@chop.edu
+MAINTAINER rokita@chop.edu
 WORKDIR /rocker-build/
 
-COPY script/install_bioc.r .
+#RUN RSPM="https://packagemanager.rstudio.com/cran/2023-09-20" \
+#  && echo "options(repos = c(CRAN='$RSPM'), download.file.method = 'libcurl')" >> /usr/local/lib/R/etc/Rprofile.site
 
+COPY script/install_bioc.r .
 COPY script/install_github.r .
 
 ### Install apt-getable packages to start
@@ -21,13 +23,15 @@ RUN apt update && apt install -y zlib1g-dev \
 	liblzma-dev \
 	libcurl4-openssl-dev \
 	libssl-dev \
-	curl
+	curl \
+	cmake
 	
 
 # install R packages
 RUN ./install_bioc.r \
 	Biobase \
 	BiocManager \
+	circlize \
 	corrplot \
 	cowplot \
 	cutpointr \
@@ -95,9 +99,5 @@ RUN wget https://github.com/bedops/bedops/releases/download/v2.4.37/bedops_linux
 # add annoFusedata
 RUN R -e "remotes::install_github('d3b-center/annoFusedata', ref = '321bc4f6db6e9a21358f0d09297142f6029ac7aa', dependencies = TRUE)"
 
-
-# Specify the version of circlize, same to what we used in OpenPedCan
-RUN R -e "remotes::install_github('jokergoo/circlize', ref = 'b7d86409d7f893e881980b705ba1dbc758df847d', dependencies = TRUE)"
-    
 ADD Dockerfile .
     
