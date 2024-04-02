@@ -41,7 +41,6 @@ Sample	Sequencing_Experiment	Diagnosis	Molecular_Subtype	Diagnosis_Type	Tumor_Lo
 7316-3075	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	IHG, ROS1-altered	Initial CNS Tumor	Cortical	Hemispheric	(IHG) Infantile Hemispheric Glioma	Male	[0,15]	0.166737618154792
 7316-3303	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	HGG, H3 wildtype, TP53	Progressive	Midline	Midline	(HGG) High Grade Glioma (not otherwise specified)	Male	(26,40]	1.97306181483171
 7316-3521	RNA-Seq, WGS	High-grade glioma/astrocytoma (WHO grade III/IV)	DMG, H3 K28	Progressive	Midline	Midline	(DMG) Diffuse Midline Glioma	Female	[0,15]	0.889267296825557
-7316-3625	RNA-Seq, WGS	Pleomorphic xanthoastrocytoma (WHO grade II/III)	IHG, ALK-altered	Initial CNS Tumor	Cortical	Hemispheric	(IHG) Infantile Hemispheric Glioma	Female	[0,15]	0.138948015128993
 7316-3636	WGS	Glioblastoma (WHO grade IV)	HGG, H3 wildtype	Initial CNS Tumor	Cortical	Hemispheric	(HGG) High Grade Glioma (not otherwise specified)	Male	[0,15]	0.778108884722363
 7316-37	RNA-Seq, WGS	Astrocytoma (WHO grade III/IV)	HGG, H3 wildtype	Progressive	Other/Multiple locations/NOS	Mixed	(HGG) High Grade Glioma (not otherwise specified)	Female	(26,40]	4.140650850844
 7316-371	RNA-Seq, WGS	High-grade glioma/astrocytoma (WHO grade III/IV)	HGG, H3 wildtype, TP53	Recurrence	Other/Multiple locations/NOS	Midline	(HGG) High Grade Glioma (not otherwise specified)	Female	[0,15]	4.50191569017939
@@ -53,10 +52,10 @@ Sample	Sequencing_Experiment	Diagnosis	Molecular_Subtype	Diagnosis_Type	Tumor_Lo
 7316-409	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	DMG, H3 K28, TP53	Initial CNS Tumor	Midline	Midline	(DMG) Diffuse Midline Glioma	Female	[0,15]	0.444633648412779
 7316-4215	RNA-Seq, WGS	Astrocytoma (WHO grade III/IV)	HGG, IDH, TP53	Initial CNS Tumor	Other/Multiple locations/NOS	Other	(HGG) High Grade Glioma (not otherwise specified)	Male	[0,15]	12.005108507145
 7316-4293	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	HGG, H3 wildtype, TP53	Recurrence	Cortical	Hemispheric	(HGG) High Grade Glioma (not otherwise specified)	Male	(15,26]	2.69559149350247
-7316-4337	RNA-Seq, WGS	Pleomorphic xanthoastrocytoma (WHO grade II/III)	PXA	Initial CNS Tumor	Cortical	Hemispheric	(PXA) Pleomorphic Xanthoastrocytoma	Female	(15,26]	3.25138355401844
+7316-4337	RNA-Seq, WGS	Pleomorphic xanthoastrocytoma (WHO grade III)	PXA	Initial CNS Tumor	Cortical	Hemispheric	(PXA) Pleomorphic Xanthoastrocytoma	Female	(15,26]	3.25138355401844
 7316-4432	RNA-Seq, WGS	Glioblastoma (WHO grade IV)	PXA	Progressive	Cortical	Hemispheric	(PXA) Pleomorphic Xanthoastrocytoma	Female	(15,26]	1.88969300575431
 7316-445	RNA-Seq, WGS	Astrocytoma (WHO grade III/IV)	HGG, H3 wildtype, TP53	Initial CNS Tumor	Cortical	Hemispheric	(HGG) High Grade Glioma (not otherwise specified)	Male	(15,26]	0.889267296825557
-7316-4466	RNA-Seq, WGS	Pleomorphic xanthoastrocytoma (WHO grade II/III)	PXA	Initial CNS Tumor	Cortical	Hemispheric	(PXA) Pleomorphic Xanthoastrocytoma	Male	[0,15]	0.611371266567571
+7316-4466	RNA-Seq, WGS	Pleomorphic xanthoastrocytoma (WHO grade III)	PXA	Initial CNS Tumor	Cortical	Hemispheric	(PXA) Pleomorphic Xanthoastrocytoma	Male	[0,15]	0.611371266567571
 7316-4516	RNA-Seq, WGS	High-grade glioma/astrocytoma (WHO grade III/IV)	DMG, H3 K28, TP53	Initial CNS Tumor	Midline	Midline	(DMG) Diffuse Midline Glioma	Female	[0,15]	5.86360623844352
 7316-4552	RNA-Seq, WGS	Astrocytoma (WHO grade III/IV)	HGG, H3 wildtype	Initial CNS Tumor	Cortical	Hemispheric	(HGG) High Grade Glioma (not otherwise specified)	Male	[0,15]	2.38990586021869
 7316-466	RNA-Seq, WGS	Astrocytoma (WHO grade III/IV)	DMG, H3 K28	Initial CNS Tumor	Midline	Midline	(DMG) Diffuse Midline Glioma	Male	[0,15]	0.333475236309584

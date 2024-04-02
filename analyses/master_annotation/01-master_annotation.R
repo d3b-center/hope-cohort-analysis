@@ -25,7 +25,8 @@ rna_ids <- file.path(data_dir, "Hope-gene-expression-rsem-tpm-collapsed.rds") %>
 # read histologies
 annot <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>%
-  filter(!is.na(HOPE_diagnosis))
+  filter(!is.na(HOPE_diagnosis)) %>%
+  filter(sample_id != "7316-3625")
 
 # fix HOPE_diagnosis_type
 annot <- annot %>%
@@ -133,12 +134,5 @@ annot_info <- annot_info %>%
                                   Cancer_Group == "HGG" ~ "(HGG) High Grade Glioma (not otherwise specified)",
                                   Cancer_Group == "IHG" ~ "(IHG) Infantile Hemispheric Glioma",
                                   Cancer_Group == "PXA" ~ "(PXA) Pleomorphic Xanthoastrocytoma"))
-
-# I think you want a modified master histology file. Can you just tell me what exact columns you/others want so I can create a master 
-# data_availability <- read_tsv("analyses/data-availability/results/hope_clinical_data_availability_age_continuous.tsv")
-# oncoplot <- read_tsv("analyses/oncoplots/results/annotation_add_tumor_only.txt")
-# oncoplot <- oncoplot %>%
-#   dplyr::select(-c(Tumor_Location, Diagnosis_Type, Sex))
-# final_df <- data_availability %>%
-#   left_join(oncoplot)
 write_tsv(annot_info, file.path(output_dir, "master_annotation.tsv"))
+

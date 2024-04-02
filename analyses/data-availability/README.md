@@ -1,4 +1,5 @@
 
+
 ### Authors: 
 
 Komal S. Rathi
@@ -47,7 +48,15 @@ results
 results
 └── hope_clinical_data_availability_age_continuous.pdf
 ```
+***
+`03-clinical_data_availability_age_continuous_weipingma.R`:  This script generates a circular heatmap with clinical variables like `Age`, `Sex`, `Diagnosis`, `Diagnosis Type`, `Annotation`, `Tumor Location`. In this heatmap, `Age` is represented as a continuous variable. This is an updated script by Weiping Ma (cc: weiping.ma@mssm.edu) which adds label to each annotation layer.
 
+#### Output
+
+```
+results
+└── hope_clinical_data_availability_age_continuous_weipingma.pdf
+```
 ***
 `04-sample_data_availability.R`:  This script generates a linear heatmap with sample availability of various data types like `Proteomics`, `Phosphoproteomics`, `WGS` (`WGS tumor-only` as smaller blocks within), `RNAseq`, `Methylation`, and `snRNASeq`.
 
