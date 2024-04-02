@@ -98,7 +98,7 @@ ha = HeatmapAnnotation(df = annot_info %>% dplyr::select(-c(`Sequencing Experime
                 "Astrocytoma;Oligoastrocytoma (WHO grade III)" = "mediumorchid2",
                 "Astrocytoma (WHO grade III/IV)" = "#5fff57", 
                 "Glioblastoma (WHO grade IV)" = "#f268d6",
-                "Pleomorphic xanthoastrocytoma (WHO grade II/III)" = "#005082"),
+                "Pleomorphic xanthoastrocytoma (WHO grade III)" = "#005082"),
   `Molecular Subtype` = c("DMG, H3 K28" = "#053061",
                           "DHG, H3 G35, TP53" = "#A6761D",
                           "HGG, H3 wildtype" = "#4393c3",

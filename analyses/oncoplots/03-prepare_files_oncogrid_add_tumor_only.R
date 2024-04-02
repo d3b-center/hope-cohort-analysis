@@ -58,7 +58,8 @@ rna_ids <- file.path(data_dir, "Hope-gene-expression-rsem-tpm-collapsed.rds") %>
 # read master histology
 hist_df <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
 hist_df <- hist_df %>%
-  filter(!is.na(HOPE_diagnosis))
+  filter(!is.na(HOPE_diagnosis)) %>%
+  filter(sample_id != "7316-3625")
 
 # fix HOPE_diagnosis_type
 hist_df <- hist_df %>%

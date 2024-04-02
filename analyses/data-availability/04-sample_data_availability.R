@@ -18,7 +18,8 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 # read histologies
 annot <- read_tsv(file.path(data_dir, "Hope-GBM-histologies.tsv"))
 annot <- annot %>%
-  filter(!is.na(HOPE_diagnosis))
+  filter(!is.na(HOPE_diagnosis)) %>%
+  filter(sample_id != "7316-3625")
 
 # 0-1 matrix of data
 dat <- annot %>% 
@@ -52,7 +53,7 @@ dat$WGS <- dat$sample_id %in% (annot %>%
                                  pull(sample_id))
 
 # add WGS (tumor-only)
-cnv_tumor_only = readRDS(file.path(data_dir, "Hope-cnv-controlfreec.rds"))
+cnv_tumor_only = readRDS(file.path(data_dir, "Hope-cnv-controlfreec-tumor-only.rds"))
 dat$WGS_tumor_only <- dat$sample_id %in% (annot %>% 
                                             filter(Kids_First_Biospecimen_ID %in% cnv_tumor_only$Kids_First_Biospecimen_ID) %>% 
                                             pull(sample_id))
@@ -100,19 +101,30 @@ q <- ggplot(dat %>% filter(!data_type %in% c("WGS_tumor_only")), aes(sample_id, 
 
 # add numbers for each datatype
 labs = dat %>% 
-  filter(label != FALSE,
-         label != "WGS_tumor_only") %>%
+  filter(label != FALSE) %>%
   group_by(label) %>% 
   summarise(n = n()) %>% 
   mutate(label2 = paste0(label, ' (n = ', n,')')) %>%
   dplyr::select(-c(n))
 
+part1 <- labs %>%
+  filter(label == "WGS") %>%
+  pull(label2) 
+part2 <- labs %>%
+  filter(label == "WGS_tumor_only") %>%
+  pull(label2) 
+labs <- labs %>%
+  filter(label != "WGS_tumor_only") %>%
+  mutate(label2 = ifelse(label == "WGS", paste(part1, part2, sep = "\n"), label2)) 
+
+# modify y-axis labels
 q <- q + scale_y_discrete(limit = labs$label[match(setdiff(levels(dat$data_type), "WGS_tumor_only"), labs$label)],
                           labels = labs$label2[match(setdiff(levels(dat$data_type), "WGS_tumor_only"), labs$label)])
 
-# now add WGS tumor-only
+# now add WGS tumor-only boxes
 dat_tmp <- dat %>%
-  filter(data_type == "WGS_tumor_only") %>%
+  filter(data_type == "WGS_tumor_only",
+         data_availability == TRUE) %>%
   mutate(data_type = "WGS", 
          label = ifelse(label != FALSE | sample_id %in% (annot %>% filter(Kids_First_Biospecimen_ID %in% cnv$Kids_First_Biospecimen_ID) %>% pull(sample_id)), "WGS", FALSE))
 q <- q + geom_tile(data = dat_tmp, aes(height = 0.5, width = 0.9), color = "black", fill = "#2171B5") +
