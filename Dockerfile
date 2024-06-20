@@ -1,12 +1,6 @@
-FROM --platform=linux/amd64 rocker/tidyverse:4.2
-MAINTAINER rokita@chop.edu
+FROM --platform=linux/amd64 rocker/tidyverse:4.4.0
+LABEL maintainer = "Jo Lynne Rokita (rokita@chop.edu)"
 WORKDIR /rocker-build/
-
-#RUN RSPM="https://packagemanager.rstudio.com/cran/2023-09-20" \
-#  && echo "options(repos = c(CRAN='$RSPM'), download.file.method = 'libcurl')" >> /usr/local/lib/R/etc/Rprofile.site
-
-COPY script/install_bioc.r .
-COPY script/install_github.r .
 
 ### Install apt-getable packages to start
 #########################################
@@ -25,50 +19,54 @@ RUN apt update && apt install -y zlib1g-dev \
 	libssl-dev \
 	curl \
 	cmake
-	
 
-# install R packages
-RUN ./install_bioc.r \
-	Biobase \
-	BiocManager \
-	circlize \
-	corrplot \
-	cowplot \
-	cutpointr \
-	ggalluvial \
-	ggpubr \
-	ggthemes \
-	ggstatsplot \
-	ggfortify \
-	ggrepel \
-	GenomicFeatures \
-	GSVA \
-	msigdbr \
-	reshape2 \
-	R.utils \
-	survival \
-	survminer
-	
-## R packages for tp53_nf1_score
-RUN ./install_bioc.r \
-    GenomicRanges \
-    optparse \
-    broom \
-    data.table 
-    
+# Install BiocManager and the desired version of Bioconductor
+RUN R -e "install.packages('BiocManager', dependencies=TRUE)"
+RUN R -e "BiocManager::install(version = '3.19')"
+
+RUN R -e 'BiocManager::install(c( \
+	"Biobase", \
+	"BiocManager", \
+    "broom", \
+	"circlize", \
+    "ComplexHeatmap", \
+	"corrplot", \
+	"cowplot", \
+	"cutpointr", \
+    "data.table", \
+	"ggalluvial", \
+	"ggpubr", \
+	"ggthemes", \
+	"ggstatsplot", \
+	"ggfortify", \
+	"ggrepel", \
+	"GenomicFeatures", \
+    "GenomicRanges", \
+	"GSVA", \
+	"msigdbr", \
+	"optparse", \
+    "reshape2", \
+	"R.utils", \
+	"survival", \
+	"survminer" \
+    ))'
+
+# add GitHub R packages
+RUN R -e "remotes::install_github('d3b-center/annoFusedata', ref = '321bc4f6db6e9a21358f0d09297142f6029ac7aa', dependencies = TRUE)"
+RUN R -e "remotes::install_github('clauswilke/colorblindr', ref = '90d64f8fc50bee7060be577f180ae019a9bbbb84', dependencies = TRUE)"
+
 # Install pip3 and low-level python installation reqs
 RUN apt-get update
 RUN apt-get -y --no-install-recommends install \
     python3-pip  python3-dev
-RUN ln -s /usr/bin/python3 /usr/bin/python    
+RUN ln -s /usr/bin/python3 /usr/bin/python  
+RUN python3 -m pip install --upgrade pip
+
 RUN pip3 install \
     "Cython==0.29.15" \
     "setuptools==46.3.0" \
     "six==1.14.0" \
-    "wheel==0.34.2" 
-
-# Install python3 tools and dependencies
-RUN pip3 install \
+    "wheel==0.34.2" \
     "numpy==1.24.3" \
     "pandas==2.0.1" \
     "matplotlib==3.7.1" \
@@ -77,10 +75,6 @@ RUN pip3 install \
     "rpy2==3.5.0" \
     "utils==1.0.1" 
     
-RUN installGithub.r \
-  jokergoo/ComplexHeatmap \
-	clauswilke/colorblindr 
-
 # Required for mapping segments to genes
 # Add bedtools
 RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.28.0/bedtools-2.28.0.tar.gz && \
@@ -96,8 +90,5 @@ RUN wget https://github.com/bedops/bedops/releases/download/v2.4.37/bedops_linux
     rm -f bedops_linux_x86_64-v2.4.37.tar.bz2 && \
     mv bin/* /usr/local/bin
     
-# add annoFusedata
-RUN R -e "remotes::install_github('d3b-center/annoFusedata', ref = '321bc4f6db6e9a21358f0d09297142f6029ac7aa', dependencies = TRUE)"
-
 ADD Dockerfile .
     
