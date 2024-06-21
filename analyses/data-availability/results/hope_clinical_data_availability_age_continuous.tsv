@@ -2,6 +2,7 @@ Sample	Age	Age_at_Initial_Diagnosis	Gender	Diagnosis	Diagnosis Type	Annotation	T
 7316-24	(15,40]	15.6	Female	Glioblastoma (WHO grade IV)	Second Malignancy	Treatment naive	Cerebellar
 7316-4723	(15,40]	16.01095890410959	Female	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Cortical
 7316-161	(15,40]	16.186301369863013	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
+7316-1106	(15,40]	16.660273972602738	Male	Pleomorphic xanthoastrocytoma (WHO grade II/III)	Initial CNS Tumor	Treatment naive	Cortical
 7316-4917	(15,40]	16.693150684931506	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
 7316-255	(15,40]	16.767123287671232	Female	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cortical
 7316-2176	(15,40]	16.87123287671233	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Treatment naive	Other/Multiple locations/NOS
@@ -67,6 +68,7 @@ Sample	Age	Age_at_Initial_Diagnosis	Gender	Diagnosis	Diagnosis Type	Annotation	T
 7316-622	[0,15]	8.808219178082192	Male	Glioblastoma (WHO grade IV)	Recurrence	Treatment naive	Cortical
 7316-2810	[0,15]	8.994520547945205	Male	Astrocytoma (WHO grade III/IV)	Initial CNS Tumor	Post-mortem	Midline
 7316-195	[0,15]	9.03013698630137	Male	Glioblastoma (WHO grade IV)	Initial CNS Tumor	Treatment naive	Cerebellar
+7316-3000	[0,15]	9.4	Female	Glioblastoma (WHO grade IV)	Progressive	Post-mortem	Cortical
 7316-4942	[0,15]	9.668493150684931	Male	Glioblastoma (WHO grade IV)	Recurrence	Post-treatment	Midline
 7316-371	[0,15]	9.953424657534246	Female	High-grade glioma/astrocytoma (WHO grade III/IV)	Recurrence	Post-mortem	Other/Multiple locations/NOS
 7316-4993	[0,15]	10.063013698630137	Male	Glioblastoma (WHO grade IV)	Progressive	Treatment naive	Other/Multiple locations/NOS
