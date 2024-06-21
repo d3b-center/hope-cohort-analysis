@@ -25,8 +25,8 @@ dat <- tmb_openpedcan %>%
   inner_join(tmb_hope)
 
 # correlation between OpenPedCan and HOPE cohort TMB values
-cor(dat$tmb_openpedcan, dat$tmb_hope) 
-# 0.9999734
+print(cor(dat$tmb_openpedcan, dat$tmb_hope))
+# 1
 
 # correlation between HOPE cohort T/N paired and tumor-only values
 tmb_hope_tumor_only = read_tsv(file.path(results_dir, "wgs_tumor_only", "snv-mutation-tmb-coding.tsv"))
@@ -35,5 +35,5 @@ tmb_hope_tumor_only = tmb_hope_tumor_only %>%
   dplyr::rename("tmb_hope_tumor_only" = "tmb")
 dat = dat %>%
   inner_join(tmb_hope_tumor_only)
-cor(dat$tmb_hope, dat$tmb_hope_tumor_only) 
-# 0.6499329
+print(cor(dat$tmb_hope, dat$tmb_hope_tumor_only))
+# 0.9203342
