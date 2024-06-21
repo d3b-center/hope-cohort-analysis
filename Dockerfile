@@ -38,6 +38,7 @@ RUN R -e 'BiocManager::install(c( \
 	"ggpubr", \
 	"ggthemes", \
 	"ggstatsplot", \
+	"ggforce", \
 	"ggfortify", \
 	"ggrepel", \
 	"GenomicFeatures", \
