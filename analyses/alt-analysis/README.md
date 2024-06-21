@@ -35,7 +35,7 @@ results
 
 ***
 
-`01-correlation_alt_vs_vars.R`: This scripts computes the correlation between ALT-status vs various clinical variables and T/N telomere content vs various clinical variables like Age (two and three groups), Gender, Protein clusters, % Microsatellite instability and TMB.
+`01-correlation_alt_vs_vars.R`: This scripts computes the correlation between ALT-status vs various clinical variables and T/N telomere content vs various clinical variables like Age (two and three groups), Gender, Protein clusters, and TMB.
 
 This script can be run using the following R script:
 
@@ -58,13 +58,11 @@ input
 ```
 results
 ├── alt_status_chisq_output.tsv # chisq output of ALT-status vs Age (2 and 3 groups), gender and protein clusters
-├── alt_status_vs_msi.pdf # ALT status vs % MSI boxplot
 ├── alt_status_vs_tmb.pdf # ALT status vs TMB boxplot
 ├── telomere_content_vs_age_three_groups.pdf # Telomere content vs Age (3. groups) boxplot
 ├── telomere_content_vs_age_two_groups.pdf # Telomere content vs Age (2 groups) boxplot
 ├── telomere_content_vs_alt_status.pdf # Telomere content vs ALT-status boxplot
 ├── telomere_content_vs_dev_cluster_name.pdf # Telomere content vs Protein clusters boxplot
 ├── telomere_content_vs_gender.pdf # Telomere content vs Gender boxplot
-├── telomere_content_vs_msi.pdf # Telomere content vs % MSI scatter plot
 └── telomere_content_vs_tmb.pdf # Telomere content vs TMB scatter plot
 ```
