@@ -1,3 +1,6 @@
+# merge MSI files
+Rscript 00-merge_msi_files.R
+
 # MSI paired vs tumor-only comparison
 Rscript 01-msi_paired_vs_tumor_only.R
 
