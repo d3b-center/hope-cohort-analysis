@@ -55,6 +55,7 @@ RUN R -e 'BiocManager::install(c( \
 # add GitHub R packages
 RUN R -e "remotes::install_github('d3b-center/annoFusedata', ref = '321bc4f6db6e9a21358f0d09297142f6029ac7aa', dependencies = TRUE)"
 RUN R -e "remotes::install_github('clauswilke/colorblindr', ref = '90d64f8fc50bee7060be577f180ae019a9bbbb84', dependencies = TRUE)"
+RUN R -e "remotes::install_github('rcastelo/GSVA', dependencies = TRUE)
 
 # Install pip3 and low-level python installation reqs
 RUN apt-get update
