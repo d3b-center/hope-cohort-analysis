@@ -199,7 +199,6 @@ plot_data$rdt.name <- factor(plot_data$rdt.name, levels = plot_data %>% arrange(
 p <- ggplot(plot_data, aes(x = rdt.name, y = t_n_telomere_content, color = rdt.name)) +
   stat_boxplot(geom ='errorbar', width = 0.2) +
   geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.4, outlier.size = 1) +
-  geom_text_repel(aes(label = Type), na.rm = TRUE, hjust = 0, vjust = 0, size = 3, color = "black") +
   ggpubr::theme_pubr(base_size = 10) + ylab("") + 
   stat_compare_means(color = "red", size = 4) +
   xlab("") + 
