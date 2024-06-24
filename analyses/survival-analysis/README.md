@@ -45,7 +45,7 @@ results
 This script can be run using the following bash script:
 
 ```
-Rscript -e "rmarkdown::render(`02-summary-statics-TP53.Rmd`)"
+Rscript -e "rmarkdown::render('02-summary-statics-TP53.Rmd')"
 ```
 ***
 `03-survival-tp53.Rmd`: This script generates the survival analysis in HOPE cohort, HGG subtype. `Kaplan-Meier` and `Hazard ratio` are plotted to show the impact of factors, such as `molecular subtyping`, `TP53 score`, `TP53 status` and other features, on overall survival. The plots are save in `plot` folder. 
@@ -53,5 +53,5 @@ Rscript -e "rmarkdown::render(`02-summary-statics-TP53.Rmd`)"
 This script can be run using the following bash script:
 
 ```
-Rscript -e "rmarkdown::render(`03-survival-tp53.Rmd`)"
+Rscript -e "rmarkdown::render('03-survival-tp53.Rmd')"
 ```

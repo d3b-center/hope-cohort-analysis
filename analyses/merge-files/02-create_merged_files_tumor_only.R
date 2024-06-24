@@ -56,7 +56,7 @@ merge_cnv <- function(nm){
     unique()
   
   # modify
-  output$status <- stringr::str_to_title(output$status)
+  # output$status <- stringr::str_to_title(output$status)
   if(nrow(output) > 1){
     output$Kids_First_Biospecimen_ID <- sample_name
     return(output)
@@ -64,7 +64,7 @@ merge_cnv <- function(nm){
 }
 
 # get coordinates of genes from gencode v39
-gencode_gtf <- rtracklayer::import(con = "data/gencode.v39.primary_assembly.annotation.gtf.gz")
+gencode_gtf <- rtracklayer::import(con = file.path(root_dir, "data", "gencode.v39.primary_assembly.annotation.gtf.gz"))
 gencode_gtf <- as.data.frame(gencode_gtf)
 gencode_gtf <- gencode_gtf %>%
   dplyr::select(seqnames, start, end, gene_name) %>%
