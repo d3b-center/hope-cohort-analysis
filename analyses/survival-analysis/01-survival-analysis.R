@@ -83,7 +83,7 @@ p <- ggsurvplot(fit,
                 linetype = "strata",
                 legend = "bottom")  %++%
   guides(colour = guide_legend(ncol = 2)) 
-p <- p$plot %++%
+p <- p$plot +
   annotate("text", x = 12000, y = 0.75, label = paste0("Log-rank\nP-value: ", pvalue), cex=6, col="black", vjust=0, hjust = 1.1, fontface=1)
 print(p)
 
