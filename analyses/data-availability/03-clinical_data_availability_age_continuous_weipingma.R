@@ -208,7 +208,7 @@ cex.n = 0.8
 # x.n = unit(100,'mm')
 x.n = -0.05
 text(x = x.n, y = 0.39, 'AYA', cex = cex.n)
-text(x = x.n, y = 0.35, '(n = 33)', cex = cex.n)
+text(x = x.n, y = 0.35, '(n = 34)', cex = cex.n)
 
 text(x = x.n, y = 0.30, 'PED', cex = cex.n)
 text(x = x.n, y = 0.26, '(n = 59)', cex = cex.n)
