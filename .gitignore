@@ -29,3 +29,4 @@ __pycache__/
 
 # Ignore all bash history files
 .bash_history
+*.swp
