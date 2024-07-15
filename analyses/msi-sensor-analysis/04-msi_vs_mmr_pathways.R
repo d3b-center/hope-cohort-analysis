@@ -45,18 +45,26 @@ geneset_db <- base::split(geneset_db$human_gene_symbol, list(geneset_db$gs_name)
 # log2
 tpm_dat <- as.matrix(log2(tpm_dat + 1))
 
-# then calculate the Gaussian-distributed scores
-ssgsea_scores_each <- GSVA::gsva(expr = tpm_dat,
-                                 gset.idx.list = geneset_db,
-                                 method = "ssgsea",
-                                 min.sz = 1, 
-                                 max.sz = 500,
-                                 mx.diff = TRUE) %>% 
-  as.data.frame() %>%
-  tibble::rownames_to_column("pathway_name")
+# convert into an eset (update with newer version of GSVA)
+eset <- Biobase::ExpressionSet(
+  assayData = as.matrix(tpm_dat),
+  phenoData = new("AnnotatedDataFrame", data = annot %>% column_to_rownames("Kids_First_Biospecimen_ID"))
+)
 
-ssgsea_scores_each <- ssgsea_scores_each %>%
-  tidyr::gather(Kids_First_Biospecimen_ID, gsea_score, -c('pathway_name')) %>%
+# run GSVA
+gsva_eset <- GSVA::ssgseaParam(
+  exprData = eset,
+  geneSets = geneset_db,
+  minSize = 1,
+  maxSize = 500
+)
+gsva_eset <- GSVA::gsva(gsva_eset)
+
+# convert to long format
+ssgsea_scores_each <- gsva_eset@assayData$exprs %>%
+  as.data.frame() %>%
+  rownames_to_column("pathway_name") %>%
+  gather("Kids_First_Biospecimen_ID", "gsea_score", -c("pathway_name")) %>%
   dplyr::select(Kids_First_Biospecimen_ID, pathway_name, gsea_score)
 
 # merge with sample ids
