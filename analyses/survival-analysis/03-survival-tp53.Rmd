@@ -36,7 +36,7 @@ source(file.path(analyses_dir, "utils", "survival_models.R"))
 ### transfomr OS_days to OS_years
 
 ```{r}
-HGG_survival <- read_tsv(file.path(input_dir, "HGG_survial_tp53.tsv"))
+HGG_survival <- read_tsv(file.path(input_dir, "HGG_survival_tp53.tsv"))
 
 HGG_survival <- HGG_survival %>%
   mutate(OS_years = (OS_days / 365.25), 
