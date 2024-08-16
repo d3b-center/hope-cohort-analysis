@@ -1,5 +1,19 @@
 # Release note
 
+## Current release (V3)
+- release data: 2024-08-16
+- Overview:
+  - Sequence sample:
+    - 87 RNA-seq
+    - 157 WGS
+    - 80 DNA methylation
+    - 27 snRNA-Seq
+    - 91 Phospho-Proteomics
+    - 91 Whole Cell Proteomics
+- Updates: 
+  - Genomics data from two samples (`7316-1106` and `7316-3000`) were added back in.
+
+
 ## Current release (V2)
 - release data: 2023-11-21
 - Overview:
