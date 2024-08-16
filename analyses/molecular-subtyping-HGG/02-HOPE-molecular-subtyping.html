@@ -358,13 +358,13 @@ display: none;
 
 
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching core tidyverse packages ───────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 2.0.0 ──
+<pre><code>## ── Attaching core tidyverse packages ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 2.0.0 ──
 ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
 ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
 ## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
 ## ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
 ## ✔ purrr     1.0.2     
-## ── Conflicts ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ── Conflicts ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
@@ -556,7 +556,7 @@ pxa_df_biospecimen &lt;- all_data_df %&gt;%
 as.data.frame(table(molecular_subtype_table$molecular_subtype)) %&gt;%
   arrange(desc(Freq))</code></pre>
 <pre><code>##                Var1 Freq
-## 1       DMG, H3 K28   22
+## 1       DMG, H3 K28   21
 ## 2          HGG, IDH    7
 ## 3               PXA    6
 ## 4       DHG, H3 G35    4
@@ -627,7 +627,7 @@ hgg_subtypes &lt;- all_subtypes %&gt;%
   &quot;results&quot;,
   &quot;tp53_altered_status.tsv&quot;), guess_max = 100000) </code></pre>
 <pre><code>## Rows: 189 Columns: 16
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (7): sample_id, Kids_First_Biospecimen_ID_DNA, Kids_First_Biospecimen_ID...
 ## dbl (7): tp53_score, SNV_indel_counts, CNV_loss_counts, SV_counts, Fusion_co...
