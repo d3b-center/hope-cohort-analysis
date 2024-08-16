@@ -1,7 +1,7 @@
 # Release note
 
 ## Current release (V3)
-- release data: 2024-08-16
+- release date: 2024-08-16
 - Overview:
   - Sequence sample:
     - 87 RNA-seq
@@ -15,7 +15,7 @@
 
 
 ## Current release (V2)
-- release data: 2023-11-21
+- release date: 2023-11-21
 - Overview:
   - Sequence sample:
     - 184 RNA-seq
