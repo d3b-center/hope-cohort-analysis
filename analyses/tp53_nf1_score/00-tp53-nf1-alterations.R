@@ -71,10 +71,10 @@ keep_columns <- c("Chromosome",
                   "Tumor_Sample_Barcode",
                   "Hugo_Symbol")
 
-tumoronly_snv <- data.table::fread(snvTumorOnlyFile, select = keep_columns) %>%
+tumoronly_snv <- data.table::fread(snvTumorOnlyFile, select = keep_columns, tmpdir = scratch_dir) %>%
   dplyr::rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode") 
 
-consensus_snv <- data.table::fread(snvConsensusFile, select = keep_columns) %>%
+consensus_snv <- data.table::fread(snvConsensusFile, select = keep_columns, tmpdir = scratch_dir) %>%
   dplyr::rename("Kids_First_Biospecimen_ID" = "Tumor_Sample_Barcode") %>%
   bind_rows(tumoronly_snv)
 
