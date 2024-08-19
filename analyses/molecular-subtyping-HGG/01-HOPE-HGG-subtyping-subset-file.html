@@ -370,7 +370,7 @@ display: none;
 <div id="get-directories" class="section level2">
 <h2>Get directories</h2>
 <pre class="r"><code>root_dir &lt;- rprojroot::find_root(rprojroot::has_dir(&quot;.git&quot;))
-
+scratch_dir &lt;- file.path(root_dir, &quot;scratch&quot;)
 analyses_dir &lt;- hgg_subset_dir &lt;- file.path(root_dir, 
                         &quot;analyses&quot;,
                         &quot;molecular-subtyping-HGG&quot;)
@@ -416,171 +416,12 @@ keep_cols &lt;- c(&quot;Chromosome&quot;,
 # snv files
 snv_tumor_maf &lt;- data.table::fread(
   file.path(root_dir, &quot;data&quot; , &quot;Hope-tumor-only-snv-mutect2.maf.tsv.gz&quot;), 
-  select = keep_cols)</code></pre>
-<pre><code>## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
-## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection</code></pre>
-<pre><code>## Avoidable 9.922 seconds. This file is very unusual: it ends abruptly without a final newline, and also its size is a multiple of 4096 bytes. Please properly end the last row with a newline using for example &#39;echo &gt;&gt; file&#39; to avoid this  time to copy.</code></pre>
-<pre><code>## Warning in data.table::fread(file.path(root_dir, &quot;data&quot;,
-## &quot;Hope-tumor-only-snv-mutect2.maf.tsv.gz&quot;), : Discarded single-line footer:
-## &lt;&lt;TCF12 0 . GRCh38 chr15 57052403 57052404 + Intron DNP AG AG CC rs71209361
-## BS_85J1DDJS NULL AG AG c.149-11347_149-11346delinsCC ENST00000333725 115 53 62
-## TCF12,intron_variant,,ENST00000267811,NM_001322157.3,NM_003205.4,NM_207038.2,NM_001322164.2,NM_001322165.2;TCF12,intron_variant,,ENST00000333725,NM_001322151.2,NM_001322159.3,NM_207037.2,NM_001322152.2,NM_207036.2,NM_001322162.2,NM_001322161.2;TCF12,intron_variant,,ENST00000438423,;TCF12,intron_variant,,ENST00000557843,;TCF&gt;&gt;</code></pre>
-<pre class="r"><code>snv_consensus_hotspot_maf &lt;- data.table::fread(
+  tmpdir = scratch_dir,
+  select = keep_cols)
+
+snv_consensus_hotspot_maf &lt;- data.table::fread(
   file.path(root_dir, &quot;data&quot; , &quot;Hope-snv-consensus-plus-hotspots.maf.tsv.gz&quot;), 
+  tmpdir = scratch_dir,
   select = keep_cols) %&gt;%
   bind_rows(snv_tumor_maf)
 
@@ -715,7 +556,7 @@ cn_status_df &lt;- cn_df %&gt;%
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>defining_lesions_df &lt;- readr::read_tsv(file.path(results_dir, &quot;Hope_HGG_defining_lesions.tsv&quot;)) %&gt;% 
   rename(Tumor_Sample_Barcode = Kids_First_Biospecimen_ID)</code></pre>
-<pre><code>## Rows: 105 Columns: 14
+<pre><code>## Rows: 110 Columns: 14
 ## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (13): Kids_First_Participant_ID, sample_id, Kids_First_Biospecimen_ID, H...
