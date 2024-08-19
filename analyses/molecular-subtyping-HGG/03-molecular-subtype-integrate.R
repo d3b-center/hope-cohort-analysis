@@ -55,7 +55,7 @@ hist_with_subtype <- hist %>%
   select(-short_histology) 
 
 # cancer_group_short is HGG where molecular_subtype is PXA
-hist_with_subtype %>%
+hist_with_subtype <- hist_with_subtype %>%
   mutate(cancer_group_short = ifelse(!is.na(molecular_subtype) & molecular_subtype == "PXA", "HGG", cancer_group_short)) 
 
 # write to file

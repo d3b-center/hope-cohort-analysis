@@ -573,13 +573,12 @@ snv_tumor_maf &lt;- data.table::fread(
 ## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
 ## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection
 ## Warning in writeBin(bfr, con = out, size = 1L): problem writing to connection</code></pre>
-<pre><code>## Avoidable 10.693 seconds. This file is very unusual: it ends abruptly without a final newline, and also its size is a multiple of 4096 bytes. Please properly end the last row with a newline using for example &#39;echo &gt;&gt; file&#39; to avoid this  time to copy.</code></pre>
+<pre><code>## Avoidable 9.922 seconds. This file is very unusual: it ends abruptly without a final newline, and also its size is a multiple of 4096 bytes. Please properly end the last row with a newline using for example &#39;echo &gt;&gt; file&#39; to avoid this  time to copy.</code></pre>
 <pre><code>## Warning in data.table::fread(file.path(root_dir, &quot;data&quot;,
 ## &quot;Hope-tumor-only-snv-mutect2.maf.tsv.gz&quot;), : Discarded single-line footer:
-## &lt;&lt;Unknown 0 . GRCh38 chr14 87009185 87009185 + IGR SNP G G A rs1055532969
-## BS_85J1DDJS NULL G G 116 76 40 A intergenic_variant rs1055532969 1 MODIFIER 1
-## SNV PASS TGA . .  chr14:g.87009185G&gt;A 87009185 1 151834 6.58614e-06 0 1 41390
-## 2.41604e-05 0 0 32808 0 6&gt;&gt;</code></pre>
+## &lt;&lt;TCF12 0 . GRCh38 chr15 57052403 57052404 + Intron DNP AG AG CC rs71209361
+## BS_85J1DDJS NULL AG AG c.149-11347_149-11346delinsCC ENST00000333725 115 53 62
+## TCF12,intron_variant,,ENST00000267811,NM_001322157.3,NM_003205.4,NM_207038.2,NM_001322164.2,NM_001322165.2;TCF12,intron_variant,,ENST00000333725,NM_001322151.2,NM_001322159.3,NM_207037.2,NM_001322152.2,NM_207036.2,NM_001322162.2,NM_001322161.2;TCF12,intron_variant,,ENST00000438423,;TCF12,intron_variant,,ENST00000557843,;TCF&gt;&gt;</code></pre>
 <pre class="r"><code>snv_consensus_hotspot_maf &lt;- data.table::fread(
   file.path(root_dir, &quot;data&quot; , &quot;Hope-snv-consensus-plus-hotspots.maf.tsv.gz&quot;), 
   select = keep_cols) %&gt;%
