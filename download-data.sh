@@ -5,8 +5,8 @@ set -o pipefail
 
 # Set URL and release
 URL=${HOPE_URL:-https://s3.amazonaws.com/d3b-openaccess-us-east-1-prd-pbta/hope-aya}
-RELEASE=${VERSION:-v3}
-PREVIOUS=${VERSION:-v2}
+RELEASE=${VERSION:-v2}
+PREVIOUS=${VERSION:-v1}
 
 # Set the working directory to the directory of this file
 cd "$(dirname "${BASH_SOURCE[0]}")"

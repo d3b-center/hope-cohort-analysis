@@ -1,19 +1,5 @@
 # Release note
 
-## Current release (V3)
-- release date: 2024-08-16
-- Overview:
-  - Sequence sample:
-    - 87 RNA-seq
-    - 157 WGS
-    - 80 DNA methylation
-    - 27 snRNA-Seq
-    - 91 Phospho-Proteomics
-    - 91 Whole Cell Proteomics
-- Updates: 
-  - Genomics data from two samples (`7316-1106` and `7316-3000`) were added back in.
-
-
 ## Current release (V2)
 - release date: 2023-11-21
 - Overview:
@@ -46,14 +32,14 @@
     - Hope-gene-expression-rsem-tpm-collapsed.rds
     - Hope-and-CPTAC-GBM-gene-expression-rsem-tpm-collapsed.rds  
     - Hope-gene-expression-rsem-tpm.rds
-    - Hope-and-CPTAC-GBM.splice-events-rmats.tsv.gz		   
+    - Hope-and-CPTAC-GBM.splice-events-rmats.tsv.gz      
     - Hope-snv-consensus-plus-hotspots.maf.tsv.gz
-    - Hope-cnv-controlfreec-tumor-only.rds			   
+    - Hope-cnv-controlfreec-tumor-only.rds         
     - Hope-sv-manta.tsv.gz
-    - Hope-cnv-controlfreec.rds				   
+    - Hope-cnv-controlfreec.rds          
     - Hope-tumor-only-snv-mutect2.maf.tsv.gz (filtered to remove `t_alt_count ==0` and `t_depth < 4` )
     - Hope-fusion-putative-oncogenic.rds
-    - Hope-gene-counts-rsem-expected_count-collapsed.rds	   
+    - Hope-gene-counts-rsem-expected_count-collapsed.rds     
     - Hope-gene-counts-rsem-expected_count.rds
     - Hope-methyl-beta-values.rds
     - Hope-methyl-m-values.rds
