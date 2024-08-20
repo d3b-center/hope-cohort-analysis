@@ -51,6 +51,7 @@ tpm <- tpm %>%
   dplyr::select(rna_hist$file_name)
 identical(rna_hist$file_name, colnames(tpm))
 colnames(tpm) <- rna_hist$Kids_First_Biospecimen_ID
+print(dim(tpm))
 tpm %>%
   rownames_to_column("gene_id") %>%
   saveRDS(file = file.path(output_dir, "Hope-gene-expression-rsem-tpm.rds"))
@@ -82,6 +83,7 @@ counts <- counts %>%
   dplyr::select(rna_hist$file_name)
 identical(rna_hist$file_name, colnames(counts))
 colnames(counts) <- rna_hist$Kids_First_Biospecimen_ID
+print(dim(counts))
 counts %>%
   rownames_to_column("gene_id") %>%
   saveRDS(file = file.path(output_dir, "Hope-gene-counts-rsem-expected_count.rds"))
@@ -99,7 +101,7 @@ hope_cohort_mutations <- lapply(hope_cohort_mutations, FUN = function(x) readr::
 hope_cohort_mutations <- plyr::rbind.fill(hope_cohort_mutations)
 hope_cohort_mutations <- hope_cohort_mutations %>%
   filter(Tumor_Sample_Barcode %in% hist_df$Kids_First_Biospecimen_ID)
-length(unique(hope_cohort_mutations$Tumor_Sample_Barcode))
+print(length(unique(hope_cohort_mutations$Tumor_Sample_Barcode)))
 data.table::fwrite(x = hope_cohort_mutations, file = file.path(output_dir, "Hope-snv-consensus-plus-hotspots.maf.tsv.gz"), sep = "\t")
 
 # manifest for cnv files
@@ -131,7 +133,7 @@ merge_cnv <- function(nm){
     unique()
 
   # modify
-  output$status <- stringr::str_to_title(output$status)
+  # output$status <- stringr::str_to_title(output$status)
   if(nrow(output) > 1){
     output$Kids_First_Biospecimen_ID <- sample_name
     return(output)
@@ -139,7 +141,7 @@ merge_cnv <- function(nm){
 }
 
 # get coordinates of genes from gencode v39
-gencode_gtf <- rtracklayer::import(con = "data/gencode.v39.primary_assembly.annotation.gtf.gz")
+gencode_gtf <- rtracklayer::import(con = file.path(root_dir, "data", "gencode.v39.primary_assembly.annotation.gtf.gz"))
 gencode_gtf <- as.data.frame(gencode_gtf)
 gencode_gtf <- gencode_gtf %>%
   dplyr::select(seqnames, start, end, gene_name) %>%
