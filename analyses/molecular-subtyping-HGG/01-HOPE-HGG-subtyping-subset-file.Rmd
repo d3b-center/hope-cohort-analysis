@@ -14,7 +14,7 @@ library(annoFuseData)
 
 ```{r directories}
 root_dir <- rprojroot::find_root(rprojroot::has_dir(".git"))
-
+scratch_dir <- file.path(root_dir, "scratch")
 analyses_dir <- hgg_subset_dir <- file.path(root_dir, 
                         "analyses",
                         "molecular-subtyping-HGG")
@@ -59,10 +59,12 @@ keep_cols <- c("Chromosome",
 # snv files
 snv_tumor_maf <- data.table::fread(
   file.path(root_dir, "data" , "Hope-tumor-only-snv-mutect2.maf.tsv.gz"), 
+  tmpdir = scratch_dir,
   select = keep_cols)
 
 snv_consensus_hotspot_maf <- data.table::fread(
   file.path(root_dir, "data" , "Hope-snv-consensus-plus-hotspots.maf.tsv.gz"), 
+  tmpdir = scratch_dir,
   select = keep_cols) %>%
   bind_rows(snv_tumor_maf)
 

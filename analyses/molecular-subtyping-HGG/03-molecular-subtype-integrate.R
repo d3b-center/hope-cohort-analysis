@@ -52,7 +52,13 @@ hist_with_subtype <- hist %>%
   mutate(cancer_group = str_extract(integrated_diagnosis, "[^,]*")) %>%
   select(colnames(.)[!grepl(paste(c("^HARMONY_", "^HOPE_"), collapse = "|"), colnames(.))], 
          starts_with("HARMONY_"), starts_with("HOPE_")) %>%
-  select(-short_histology) %>%
-  write_tsv(file.path(results_dir, "Hope-GBM-histologies.tsv"))
+  select(-short_histology) 
+
+# cancer_group_short is HGG where molecular_subtype is PXA
+hist_with_subtype <- hist_with_subtype %>%
+  mutate(cancer_group_short = ifelse(!is.na(molecular_subtype) & molecular_subtype == "PXA", "HGG", cancer_group_short)) 
+
+# write to file
+hist_with_subtype %>% write_tsv(file.path(results_dir, "Hope-GBM-histologies.tsv"))
 
 
