@@ -39,7 +39,7 @@ do
   fi
 done
 
-GENCODE39="ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gtf.gz"
+GENCODE39="http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gtf.gz"
 if [ ! -e $BASEDIR/data/${GENCODE39##*/} ]
 then
   echo "Downloading ${GENCODE39##*/}"
